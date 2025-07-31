@@ -1,26 +1,128 @@
-@import "tailwindcss";
-
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background-rgb: 18, 18, 18;
+  --foreground-rgb: 255, 255, 255;
+  --primary-rgb: 30, 215, 96;
+  --card-rgb: 24, 24, 24;
+  --card-border-rgb: 40, 40, 40;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  color: rgb(var(--foreground-rgb));
+  background: rgb(var(--background-rgb));
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Header Styles */
+.header {
+  padding: 2rem 0;
+  text-align: center;
+  border-bottom: 1px solid rgb(var(--card-border-rgb));
+  margin-bottom: 2rem;
+}
+
+.header-title {
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.header-subtitle {
+  font-size: 1.2rem;
+  color: #b3b3b3;
+}
+
+/* SongList Styles */
+.song-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.song-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.2rem;
+  background-color: rgb(var(--card-rgb));
+  border-radius: 8px;
+  border: 1px solid transparent;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.song-item:hover {
+  background-color: #282828;
+  border-color: rgb(var(--card-border-rgb));
+}
+
+.song-info {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.song-index {
+  color: #b3b3b3;
+  width: 24px;
+  text-align: right;
+}
+
+.song-title {
+  font-weight: 600;
+  color: rgb(var(--foreground-rgb));
+}
+
+.song-artist {
+  color: #b3b3b3;
+  font-size: 0.9rem;
+}
+
+.song-jacket {
+  border-radius: 4px;
+}
+
+.song-links {
+  display: flex;
+  gap: 1rem;
+}
+
+.song-links a {
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.song-links a:hover {
+  opacity: 1;
+}
+
+/* Footer Styles */
+.footer {
+  margin-top: 4rem;
+  padding: 2rem 0;
+  border-top: 1px solid rgb(var(--card-border-rgb));
+  text-align: center;
+}
+
+.footer-nav-list {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  list-style: none;
+  padding: 0;
+}
+
+.footer-nav-list a {
+  color: #b3b3b3;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-nav-list a:hover {
+  color: rgb(var(--primary-rgb));
 }

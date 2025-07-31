@@ -1,0 +1,41 @@
+{
+  "1": {
+    "title": "센다이 세트리 A",
+    "artist": "マジカルミライ２０２５",
+    "date": "2025-08-01",
+    "songs": [
+      { "title": "Intro", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
+      { "title": "Song One", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
+      { "title": "Song Two", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
+      { "title": "Acoustic Jam", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
+      { "title": "Song Three", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
+      { "title": "Encore", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" }
+    ]
+  },
+  "2": {
+    "title": "센다이 세트리 B",
+    "artist": "マジカルミライ２０２５",
+    "date": "2025-08-02",
+    "songs": [
+      { "title": "Festival Opener", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
+      { "title": "Song Two", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
+      { "title": "New Release", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
+      { "title": "Song One", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
+      { "title": "Song Three", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
+      { "title": "Closing Act", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" }
+    ]
+  },
+  "3": {
+    "title": "센다이 세트리 C",
+    "artist": "マジカルミライ２０２５",
+    "date": "2025-08-03",
+    "songs": [
+      { "title": "Song Three", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
+      { "title": "Acoustic Jam", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
+      { "title": "Song One", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
+      { "title": "Song Two", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
+      { "title": "Fan Request", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
+      { "title": "Goodbye", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" }
+    ]
+  }
+}
