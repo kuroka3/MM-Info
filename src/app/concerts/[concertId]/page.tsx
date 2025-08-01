@@ -2,6 +2,8 @@ import React from 'react';
 import Header from '@/components/Header';
 import SongList from '@/components/SongList';
 
+export const dynamic = 'force-dynamic';
+
 type Song = {
   title: string;
   artist: string;
