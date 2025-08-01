@@ -56,9 +56,22 @@ body {
   transition: background-color 0.2s, border-color 0.2s;
 }
 
+.song-item.higawari {
+  background-color: #004bbb85;
+}
+.song-item.locationgawari {
+  background-color: #63b90063;
+}
+
 .song-item:hover {
   background-color: #282828;
   border-color: rgb(var(--card-border-rgb));
+}
+.song-item.higawari:hover {
+  background-color: #004bbbB3; 
+}
+.song-item.locationgawari:hover {
+  background-color: #63b9008C;
 }
 
 .song-info {

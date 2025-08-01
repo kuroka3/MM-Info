@@ -5,39 +5,34 @@
         "date": "2025-08-01",
         "songs": [
             {
-                "title": "ラストラス",
-                "artist": "*Luna",
-                "spotifyUrl": "spotify:track:4hmC99lE8W0G6FEhhv1MtE",
-                "youtubeUrl": "https://youtu.be/gdmLEu5fVz4",
+                "title": "최종 플레이리스트",
+                "artist": "",
+                "spotifyUrl": "spotify:playlist:68c3I1j7Zp2oN0JbnzbaaA",
+                "youtubeUrl": "https://www.youtube.com/playlist?list=PL9EX5cUgyZ5VOVnNJ68cbuOdQFRaSj2eL",
                 "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg"
-            },
-            {
-                "title": "黙ってロックをやれって言ってんの！",
-                "artist": "猫舘 こたつ",
-                "spotifyUrl": "spotify:track:3iopJ7RxnPyuDdGnkqa7Ra",
-                "youtubeUrl": "https://youtu.be/5gPmBNZK7LI",
-                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e02ded22b7dc5055c6e95c43d2f"
-            },
-            {
-                "title": "少女A",
-                "artist": "Siinamota",
-                "spotifyUrl": "spotify:track:2Vqbs0uzYFRVcgsbFzlJ7T",
-                "youtubeUrl": "https://youtu.be/AqI97zHMoQw",
-                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e02b07e4ed516a7f1d6247857cd"
-            },
-            {
-                "title": "ラヴィ",
-                "artist": "すりぃ",
-                "spotifyUrl": "spotify:track:6T2b2vKSdZuvbUzK3WIGJM",
-                "youtubeUrl": "https://youtu.be/mq88yUFdVng",
-                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e0274d0bafac1ffc9eac1b24ce1"
             },
             {
                 "title": "ヒアソビ",
                 "artist": "Camellia",
                 "spotifyUrl": "spotify:track:6TaOHCEjas8b3Mm4tNZ31g",
                 "youtubeUrl": "https://youtu.be/od4QcDPpNVk",
-                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e022b48211ed1f8553292bdbf5e"
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e022b48211ed1f8553292bdbf5e",
+                "higawari": true
+            },
+            {
+                "title": "アンテナ39",
+                "artist": "柊マグネタイト",
+                "spotifyUrl": "spotify:track:7KCgoyw6qnpVPNw6rPlJHs",
+                "youtubeUrl": "https://youtu.be/7yJRsFFRoQY",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e02027afdcb9050c9633cefd829",
+                "locationgawari": true
+            },
+            {
+                "title": "こちら、幸福安心委員会です。",
+                "artist": "UtataP",
+                "spotifyUrl": "spotify:track:3yphjYSP0G3gvCPQnuEDXu",
+                "youtubeUrl": "https://youtu.be/T4MNOlqgROA",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e026895beb07f517cc8be99d190"
             },
             {
                 "title": "MAGA MAGA",
@@ -47,11 +42,46 @@
                 "jacketUrl": "https://i.scdn.co/image/ab67616d00001e0235bd3c4eabeb8156aedb0fe9"
             },
             {
-                "title": "Flyway",
-                "artist": "halyosy",
-                "spotifyUrl": "spotify:track:5BYsSr7jYdVO4tZi5Uhtk8",
-                "youtubeUrl": "https://youtu.be/pXLnKaiDeVw",
-                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e026b994bd16590a6b7645ca75b"
+                "title": "星屑ユートピア",
+                "artist": "otetsu",
+                "spotifyUrl": "spotify:track:6Cz25J0HYbJCQhglSnP5uz",
+                "youtubeUrl": "https://youtu.be/syk1f6Dj82E",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e026909bfdfa6af455832d6b710"
+            },
+            {
+                "title": "独りんぼエンヴィー",
+                "artist": "koyori(電ポルP)",
+                "spotifyUrl": "spotify:track:5INrirWilD0d03FkwkM60P",
+                "youtubeUrl": "https://youtu.be/UKVioegPPds",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e02d59cb858807bba25a9d211fd"
+            },
+            {
+                "title": "ラヴィ",
+                "artist": "すりぃ",
+                "spotifyUrl": "spotify:track:6T2b2vKSdZuvbUzK3WIGJM",
+                "youtubeUrl": "https://youtu.be/mq88yUFdVng",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e0274d0bafac1ffc9eac1b24ce1"
+            },
+            {
+                "title": "少女A",
+                "artist": "Siinamota",
+                "spotifyUrl": "spotify:track:2Vqbs0uzYFRVcgsbFzlJ7T",
+                "youtubeUrl": "https://youtu.be/AqI97zHMoQw",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e02b07e4ed516a7f1d6247857cd"
+            },
+            {
+                "title": "キミペディア",
+                "artist": "Junky",
+                "spotifyUrl": "spotify:track:0roQw6JroDBLFzWkobzXVy",
+                "youtubeUrl": "https://youtu.be/6DpudRojTB4",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e028287a8257c6821d09ebd00ce"
+            },
+            {
+                "title": "1/6 -out of the gravity-",
+                "artist": "vocaliod-P(noa)",
+                "spotifyUrl": "spotify:track:3ox0bcdCE4E21EzFDDz5ZF",
+                "youtubeUrl": "https://youtu.be/EUsU8kDOv_g",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e02c17e2d1e6b4b8eb1161a8c45"
             },
             {
                 "title": "ヴァニッシュ",
@@ -61,11 +91,11 @@
                 "jacketUrl": "https://i.scdn.co/image/ab67616d00001e026b971e4d86948e95c7830f93"
             },
             {
-                "title": "メテオ",
-                "artist": "John Zeroness",
-                "spotifyUrl": "spotify:track:0kvl0X7t4s9bh4U1Cczx5s",
-                "youtubeUrl": "https://youtu.be/snUfbQzgZm4",
-                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e029dee23f0abf225da7852fd9f"
+                "title": "みかぼし",
+                "artist": "3106。",
+                "spotifyUrl": "spotify:track:6QXa9PJzheX4kE974zIWxc",
+                "youtubeUrl": "https://youtu.be/LVrmR8cHGSs",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e02922110192872e6284741198f"
             },
             {
                 "title": "げんてん",
@@ -75,11 +105,88 @@
                 "jacketUrl": "https://i.scdn.co/image/ab67616d00001e02e807b3304853f44bab87002f"
             },
             {
+                "title": "夜舞うシルエット",
+                "artist": "宮守文学",
+                "spotifyUrl": "spotify:track:2f3eINllEJemgn4MtQoM3r",
+                "youtubeUrl": "https://youtu.be/ho9VLf-V1rA",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e024ebf34fc99b37bc811b31eb0"
+            },
+            {
+                "title": "Flyway",
+                "artist": "halyosy",
+                "spotifyUrl": "spotify:track:5BYsSr7jYdVO4tZi5Uhtk8",
+                "youtubeUrl": "https://youtu.be/pXLnKaiDeVw",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e026b994bd16590a6b7645ca75b"
+            },
+            {
+                "title": "メテオ",
+                "artist": "John Zeroness",
+                "spotifyUrl": "spotify:track:0kvl0X7t4s9bh4U1Cczx5s",
+                "youtubeUrl": "https://youtu.be/snUfbQzgZm4",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e029dee23f0abf225da7852fd9f"
+            },
+            {
+                "title": "Last Night, Good Night",
+                "artist": "livetune",
+                "spotifyUrl": "spotify:track:3rYSsIpkwI11kkBhAYvDSO",
+                "youtubeUrl": "https://youtu.be/T6mMMYSqlM4",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e0241f4667ceff6b2ecae9c1308"
+            },
+            {
+                "title": "StargazeR",
+                "artist": "골반P",
+                "spotifyUrl": "https://www.nicovideo.jp/watch/sm2090149",
+                "youtubeUrl": "https://youtu.be/zBNWup41idY",
+                "jacketUrl": "https://cdn.discordapp.com/attachments/1395691706678120531/1400802120256585808/stargazer.png?ex=688df623&is=688ca4a3&hm=c5997ebba9b05ec65d37ac40d9a906c58c167823437214df9525194726bc0a0c&"
+            },
+            {
+                "title": "Meteor",
+                "artist": "DIVELA",
+                "spotifyUrl": "spotify:track:5wHdoGVofJZUGc6Z6t5wZ5",
+                "youtubeUrl": "https://youtu.be/2kZVEUGLgy4",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e02eff2c7f16ee05fead3c6270f"
+            },
+            {
+                "title": "黙ってロックをやれって言ってんの！",
+                "artist": "猫舘 こたつ",
+                "spotifyUrl": "spotify:track:3iopJ7RxnPyuDdGnkqa7Ra",
+                "youtubeUrl": "https://youtu.be/5gPmBNZK7LI",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e02ded22b7dc5055c6e95c43d2f"
+            },
+            {
+                "title": "ブループラネット",
+                "artist": "DECO*27",
+                "spotifyUrl": "spotify:track:5AE6BOIOkBGf7jAjkS0Cod",
+                "youtubeUrl": "https://youtu.be/-2KzcaiyBFo",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e02f8c4776c3f591bca7ef2b813"
+            },
+            {
+                "title": "Hand in Hand",
+                "artist": "livetune",
+                "spotifyUrl": "spotify:track:7kgTu64wW8N6s4GTk0ksNO",
+                "youtubeUrl": "https://youtu.be/RKtoreimcQ8",
+                "jacketUrl": "https://cdn.discordapp.com/attachments/1395691706678120531/1400801336228057219/sljhTqpY-zqvY6-2jiea-xP-4qcH3ZNw1wHw13qW89YcFTG__NUqgki8Yz6aCcfCw2DHh_DKlzHVB_2tuW7sfOYW9CvLIiYyw0g663VatNEMOD0Sz1H1fVrBBiT31OdCutWS7CekkLa66eVZeAFZ9A.webp?ex=688df568&is=688ca3e8&hm=9350edd459bef0fddba7f7de522bb4a3c4c1534021658b0b993b3a191dcf86dd&"
+            },
+            {
                 "title": "ストリートライト",
                 "artist": "加賀(ネギシャワーP)",
                 "spotifyUrl": "spotify:track:2xlhAtAIdbf2eSGclg46WD",
                 "youtubeUrl": "https://youtu.be/NPOhKU5VTrQ",
                 "jacketUrl": "https://i.scdn.co/image/ab67616d00001e02bb7d80f33e012610c2948ec2"
+            },
+            {
+                "title": "Blessing",
+                "artist": "halyosy",
+                "spotifyUrl": "spotify:track:75ppsVV4CezCovCht9mfbT",
+                "youtubeUrl": "https://youtu.be/E4tIHBx7bqc",
+                "jacketUrl": "https://cdn.discordapp.com/attachments/1395691706678120531/1400801744740683777/blessing.png?ex=688df5c9&is=688ca449&hm=4add3adca188e9e55444921084aac43b683ce0366332d58400763481685e7f70&"
+            },
+            {
+                "title": "ラストラス",
+                "artist": "*Luna",
+                "spotifyUrl": "spotify:track:4hmC99lE8W0G6FEhhv1MtE",
+                "youtubeUrl": "https://youtu.be/gdmLEu5fVz4",
+                "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg"
             }
         ]
     }
