@@ -2,8 +2,6 @@ import React from 'react';
 import Header from '@/components/Header';
 import SongList from '@/components/SongList';
 
-export const dynamic = 'force-dynamic';
-
 type Song = {
   title: string;
   artist: string;
@@ -24,7 +22,7 @@ type ConcertsData = {
 };
 
 async function getConcerts(): Promise<ConcertsData> {
-  const res = await fetch('https://pastebin.com/raw/ruQTXtgQ', { next: { revalidate: 3600 } });
+  const res = await fetch('https://pastebin.com/raw/ruQTXtgQ', { next: { revalidate: 60 } });
   if (!res.ok) {
     throw new Error('Failed to fetch concert data');
   }

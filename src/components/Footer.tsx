@@ -1,8 +1,6 @@
 import Link from 'next/link';
 import React from 'react';
 
-export const dynamic = 'force-dynamic';
-
 type Concert = {
     title: string;
     artist: string;
@@ -21,7 +19,7 @@ type Concerts = {
 }
 
 async function getConcerts(): Promise<Concerts> {
-    const res = await fetch('https://pastebin.com/raw/ruQTXtgQ', { next: { revalidate: 3600 } });
+    const res = await fetch('https://pastebin.com/raw/ruQTXtgQ', { next: { revalidate: 60 } });
     if (!res.ok) {
         throw new Error('Failed to fetch concert data');
     }
