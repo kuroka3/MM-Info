@@ -20,16 +20,18 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
         <div className="song-item" key={index}>
           <div className="song-info">
             <span className="song-index">{index + 1}</span>
-            <Image 
-              src={song.jacketUrl} 
-              alt={song.title} 
-              width={80} 
-              height={80} 
-              className="song-jacket"
-            />
-            <div>
-              <p className="song-title">{song.title}</p>
-              <p className="song-artist">{song.artist}</p>
+            <div className="song-details">
+              <Image
+                src={song.jacketUrl}
+                alt={song.title}
+                width={125}
+                height={125}
+                className="song-jacket"
+              />
+              <div className="song-text-info">
+                <p className="song-title">{song.title}</p>
+                <p className="song-artist">{song.artist}</p>
+              </div>
             </div>
           </div>
           <div className="song-links">

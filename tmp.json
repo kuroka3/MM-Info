@@ -1,41 +1,254 @@
 {
-  "1": {
-    "title": "센다이 세트리 A",
-    "artist": "マジカルミライ２０２５",
-    "date": "2025-08-01",
-    "songs": [
-      { "title": "Intro", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
-      { "title": "Song One", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
-      { "title": "Song Two", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
-      { "title": "Acoustic Jam", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
-      { "title": "Song Three", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
-      { "title": "Encore", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" }
-    ]
-  },
-  "2": {
-    "title": "센다이 세트리 B",
-    "artist": "マジカルミライ２０２５",
-    "date": "2025-08-02",
-    "songs": [
-      { "title": "Festival Opener", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
-      { "title": "Song Two", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
-      { "title": "New Release", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
-      { "title": "Song One", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
-      { "title": "Song Three", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
-      { "title": "Closing Act", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" }
-    ]
-  },
-  "3": {
-    "title": "센다이 세트리 C",
-    "artist": "マジカルミライ２０２５",
-    "date": "2025-08-03",
-    "songs": [
-      { "title": "Song Three", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
-      { "title": "Acoustic Jam", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
-      { "title": "Song One", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
-      { "title": "Song Two", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
-      { "title": "Fan Request", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" },
-      { "title": "Goodbye", "artist": "The Testers", "spotifyUrl": "#", "youtubeUrl": "#", "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg" }
-    ]
-  }
+    "1": {
+        "title": "센다이 세트리 A",
+        "artist": "マジカルミライ２０２５",
+        "date": "2025-08-01",
+        "songs": [
+            {
+                "title": "ラストラス",
+                "artist": "*Luna",
+                "spotifyUrl": "spotify:track:4hmC99lE8W0G6FEhhv1MtE",
+                "youtubeUrl": "https://youtu.be/gdmLEu5fVz4",
+                "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg"
+            },
+            {
+                "title": "黙ってロックをやれって言ってんの！",
+                "artist": "猫舘 こたつ",
+                "spotifyUrl": "spotify:track:3iopJ7RxnPyuDdGnkqa7Ra",
+                "youtubeUrl": "https://youtu.be/5gPmBNZK7LI",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e02ded22b7dc5055c6e95c43d2f"
+            },
+            {
+                "title": "少女A",
+                "artist": "Siinamota",
+                "spotifyUrl": "spotify:track:2Vqbs0uzYFRVcgsbFzlJ7T",
+                "youtubeUrl": "https://youtu.be/AqI97zHMoQw",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e02b07e4ed516a7f1d6247857cd"
+            },
+            {
+                "title": "ラヴィ",
+                "artist": "すりぃ",
+                "spotifyUrl": "spotify:track:6T2b2vKSdZuvbUzK3WIGJM",
+                "youtubeUrl": "https://youtu.be/mq88yUFdVng",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e0274d0bafac1ffc9eac1b24ce1"
+            },
+            {
+                "title": "ヒアソビ",
+                "artist": "Camellia",
+                "spotifyUrl": "spotify:track:6TaOHCEjas8b3Mm4tNZ31g",
+                "youtubeUrl": "https://youtu.be/od4QcDPpNVk",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e022b48211ed1f8553292bdbf5e"
+            },
+            {
+                "title": "MAGA MAGA",
+                "artist": "幽霊一文字",
+                "spotifyUrl": "spotify:track:2Baq0OTzklwcoGey7l0EmN",
+                "youtubeUrl": "https://youtu.be/rWF1q02rD8s",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e0235bd3c4eabeb8156aedb0fe9"
+            },
+            {
+                "title": "Flyway",
+                "artist": "halyosy",
+                "spotifyUrl": "spotify:track:5BYsSr7jYdVO4tZi5Uhtk8",
+                "youtubeUrl": "https://youtu.be/pXLnKaiDeVw",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e026b994bd16590a6b7645ca75b"
+            },
+            {
+                "title": "ヴァニッシュ",
+                "artist": "ぐちり",
+                "spotifyUrl": "spotify:track:4MIU89IIhlHuS6hYg1MFl6",
+                "youtubeUrl": "https://youtu.be/mgiOAFbqvoc",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e026b971e4d86948e95c7830f93"
+            },
+            {
+                "title": "メテオ",
+                "artist": "John Zeroness",
+                "spotifyUrl": "spotify:track:0kvl0X7t4s9bh4U1Cczx5s",
+                "youtubeUrl": "https://youtu.be/snUfbQzgZm4",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e029dee23f0abf225da7852fd9f"
+            },
+            {
+                "title": "げんてん",
+                "artist": "大漠波新",
+                "spotifyUrl": "spotify:track:5b6WT9OdOculJLszzJEMH8",
+                "youtubeUrl": "https://youtu.be/xADz415OHB8",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e02e807b3304853f44bab87002f"
+            },
+            {
+                "title": "ストリートライト",
+                "artist": "加賀(ネギシャワーP)",
+                "spotifyUrl": "spotify:track:2xlhAtAIdbf2eSGclg46WD",
+                "youtubeUrl": "https://youtu.be/NPOhKU5VTrQ",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e02bb7d80f33e012610c2948ec2"
+            }
+        ]
+    },
+    "2": {
+        "title": "센다이 세트리 B",
+        "artist": "マジカルミライ２０２５",
+        "date": "2025-08-02",
+        "songs": [
+            {
+                "title": "ラストラス",
+                "artist": "*Luna",
+                "spotifyUrl": "spotify:track:4hmC99lE8W0G6FEhhv1MtE",
+                "youtubeUrl": "https://youtu.be/gdmLEu5fVz4",
+                "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg"
+            },
+            {
+                "title": "黙ってロックをやれって言ってんの！",
+                "artist": "猫舘 こたつ",
+                "spotifyUrl": "spotify:track:3iopJ7RxnPyuDdGnkqa7Ra",
+                "youtubeUrl": "https://youtu.be/5gPmBNZK7LI",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e02ded22b7dc5055c6e95c43d2f"
+            },
+            {
+                "title": "少女A",
+                "artist": "Siinamota",
+                "spotifyUrl": "spotify:track:2Vqbs0uzYFRVcgsbFzlJ7T",
+                "youtubeUrl": "https://youtu.be/AqI97zHMoQw",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e02b07e4ed516a7f1d6247857cd"
+            },
+            {
+                "title": "ラヴィ",
+                "artist": "すりぃ",
+                "spotifyUrl": "spotify:track:6T2b2vKSdZuvbUzK3WIGJM",
+                "youtubeUrl": "https://youtu.be/mq88yUFdVng",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e0274d0bafac1ffc9eac1b24ce1"
+            },
+            {
+                "title": "ヒアソビ",
+                "artist": "Camellia",
+                "spotifyUrl": "spotify:track:6TaOHCEjas8b3Mm4tNZ31g",
+                "youtubeUrl": "https://youtu.be/od4QcDPpNVk",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e022b48211ed1f8553292bdbf5e"
+            },
+            {
+                "title": "MAGA MAGA",
+                "artist": "幽霊一文字",
+                "spotifyUrl": "spotify:track:2Baq0OTzklwcoGey7l0EmN",
+                "youtubeUrl": "https://youtu.be/rWF1q02rD8s",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e0235bd3c4eabeb8156aedb0fe9"
+            },
+            {
+                "title": "Flyway",
+                "artist": "halyosy",
+                "spotifyUrl": "spotify:track:5BYsSr7jYdVO4tZi5Uhtk8",
+                "youtubeUrl": "https://youtu.be/pXLnKaiDeVw",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e026b994bd16590a6b7645ca75b"
+            },
+            {
+                "title": "ヴァニッシュ",
+                "artist": "ぐちり",
+                "spotifyUrl": "spotify:track:4MIU89IIhlHuS6hYg1MFl6",
+                "youtubeUrl": "https://youtu.be/mgiOAFbqvoc",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e026b971e4d86948e95c7830f93"
+            },
+            {
+                "title": "メテオ",
+                "artist": "John Zeroness",
+                "spotifyUrl": "spotify:track:0kvl0X7t4s9bh4U1Cczx5s",
+                "youtubeUrl": "https://youtu.be/snUfbQzgZm4",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e029dee23f0abf225da7852fd9f"
+            },
+            {
+                "title": "げんてん",
+                "artist": "大漠波新",
+                "spotifyUrl": "spotify:track:5b6WT9OdOculJLszzJEMH8",
+                "youtubeUrl": "https://youtu.be/xADz415OHB8",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e02e807b3304853f44bab87002f"
+            },
+            {
+                "title": "ストリートライト",
+                "artist": "加賀(ネギシャワーP)",
+                "spotifyUrl": "spotify:track:2xlhAtAIdbf2eSGclg46WD",
+                "youtubeUrl": "https://youtu.be/NPOhKU5VTrQ",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e02bb7d80f33e012610c2948ec2"
+            }
+        ]
+    },
+    "3": {
+        "title": "센다이 세트리 C",
+        "artist": "マジカルミライ２０２５",
+        "date": "2025-08-03",
+        "songs": [
+            {
+                "title": "ラストラス",
+                "artist": "*Luna",
+                "spotifyUrl": "spotify:track:4hmC99lE8W0G6FEhhv1MtE",
+                "youtubeUrl": "https://youtu.be/gdmLEu5fVz4",
+                "jacketUrl": "https://magicalmirai.com/2025/images/goods/cd/cd_jacket.jpg"
+            },
+            {
+                "title": "黙ってロックをやれって言ってんの！",
+                "artist": "猫舘 こたつ",
+                "spotifyUrl": "spotify:track:3iopJ7RxnPyuDdGnkqa7Ra",
+                "youtubeUrl": "https://youtu.be/5gPmBNZK7LI",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e02ded22b7dc5055c6e95c43d2f"
+            },
+            {
+                "title": "少女A",
+                "artist": "Siinamota",
+                "spotifyUrl": "spotify:track:2Vqbs0uzYFRVcgsbFzlJ7T",
+                "youtubeUrl": "https://youtu.be/AqI97zHMoQw",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e02b07e4ed516a7f1d6247857cd"
+            },
+            {
+                "title": "ラヴィ",
+                "artist": "すりぃ",
+                "spotifyUrl": "spotify:track:6T2b2vKSdZuvbUzK3WIGJM",
+                "youtubeUrl": "https://youtu.be/mq88yUFdVng",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e0274d0bafac1ffc9eac1b24ce1"
+            },
+            {
+                "title": "ヒアソビ",
+                "artist": "Camellia",
+                "spotifyUrl": "spotify:track:6TaOHCEjas8b3Mm4tNZ31g",
+                "youtubeUrl": "https://youtu.be/od4QcDPpNVk",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e022b48211ed1f8553292bdbf5e"
+            },
+            {
+                "title": "MAGA MAGA",
+                "artist": "幽霊一文字",
+                "spotifyUrl": "spotify:track:2Baq0OTzklwcoGey7l0EmN",
+                "youtubeUrl": "https://youtu.be/rWF1q02rD8s",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e0235bd3c4eabeb8156aedb0fe9"
+            },
+            {
+                "title": "Flyway",
+                "artist": "halyosy",
+                "spotifyUrl": "spotify:track:5BYsSr7jYdVO4tZi5Uhtk8",
+                "youtubeUrl": "https://youtu.be/pXLnKaiDeVw",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e026b994bd16590a6b7645ca75b"
+            },
+            {
+                "title": "ヴァニッシュ",
+                "artist": "ぐちり",
+                "spotifyUrl": "spotify:track:4MIU89IIhlHuS6hYg1MFl6",
+                "youtubeUrl": "https://youtu.be/mgiOAFbqvoc",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e026b971e4d86948e95c7830f93"
+            },
+            {
+                "title": "メテオ",
+                "artist": "John Zeroness",
+                "spotifyUrl": "spotify:track:0kvl0X7t4s9bh4U1Cczx5s",
+                "youtubeUrl": "https://youtu.be/snUfbQzgZm4",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e029dee23f0abf225da7852fd9f"
+            },
+            {
+                "title": "げんてん",
+                "artist": "大漠波新",
+                "spotifyUrl": "spotify:track:5b6WT9OdOculJLszzJEMH8",
+                "youtubeUrl": "https://youtu.be/xADz415OHB8",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e02e807b3304853f44bab87002f"
+            },
+            {
+                "title": "ストリートライト",
+                "artist": "加賀(ネギシャワーP)",
+                "spotifyUrl": "spotify:track:2xlhAtAIdbf2eSGclg46WD",
+                "youtubeUrl": "https://youtu.be/NPOhKU5VTrQ",
+                "jacketUrl": "https://i.scdn.co/image/ab67616d00001e02bb7d80f33e012610c2948ec2"
+            }
+        ]
+    }
 }
