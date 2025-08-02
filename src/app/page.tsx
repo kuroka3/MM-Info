@@ -10,7 +10,11 @@ const menu = [
 
 export default function Home() {
   return (
-    <main className="landing-page min-h-screen flex items-center justify-center">
+    <main className="landing-page min-h-screen flex flex-col items-center justify-center gap-12 px-4 py-16">
+      <h1 className="text-4xl sm:text-5xl font-bold text-center">
+        2025 매지컬 미라이 정보 모음
+      </h1>
+
       <ul className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-3xl">
         {menu.map(({ href, label, icon }) => (
           <li key={href}>
