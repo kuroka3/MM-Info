@@ -27,17 +27,17 @@ async function getConcerts(): Promise<Concerts> {
 }
 
 const Footer = async () => {
-  const concerts = await getConcerts();
+  // const concerts = await getConcerts();
 
   return (
     <footer className="footer">
       <nav>
         <ul className="footer-nav-list">
-          {Object.keys(concerts).map((concertId) => (
+          {/* {Object.keys(concerts).map((concertId) => (
             <li key={concertId}>
               <Link href={`/concerts/${concertId}`}>{concerts[concertId].title}</Link>
             </li>
-          ))}
+          ))} */}
         </ul>
       </nav>
     </footer>
