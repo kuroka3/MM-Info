@@ -20,8 +20,8 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body>
-        <HomeButton />
         <div className="container">
+          <HomeButton />
           <NavBar />
           {children}
           <Footer />

@@ -1,12 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Inter } from 'next/font/google';
 
 const inter = Inter({ subsets: ['latin'], weight: ['600', '700', '800'] });
 
-type Show = { date: string; day: string; block: string; id: string | null };
+type Show = { date: string; day: string; block: string; id: string | null; hidden?: boolean };
 
 type Venue = { venue: string; shows: Show[] };
 
@@ -14,6 +14,7 @@ const raw: Venue[] = [
   {
     venue: '센다이',
     shows: [
+      { date: '08/01', day: '금', block: '낮', id: null, hidden: true },
       { date: '08/01', day: '금', block: '밤', id: '1' },
       { date: '08/02', day: '토', block: '낮', id: null },
       { date: '08/02', day: '토', block: '밤', id: null },
@@ -46,16 +47,35 @@ const raw: Venue[] = [
 ];
 
 const group = (arr: Show[]) => {
-  const map = new Map<string, { day: string; blocks: { block: string; id: string | null }[] }>();
+  const map = new Map<string, {
+    day: string;
+    blocks: { block: string; id: string | null; hidden?: boolean }[];
+  }>();
   arr.forEach((s) => {
     if (!map.has(s.date)) map.set(s.date, { day: s.day, blocks: [] });
-    map.get(s.date)!.blocks.push({ block: s.block, id: s.id });
+    map.get(s.date)!.blocks.push({ block: s.block, id: s.id, hidden: s.hidden });
   });
   return [...map].map(([date, { day, blocks }]) => ({ date, day, blocks }));
 };
 
 export default function Page() {
   const venues = useMemo(() => raw, []);
+  const [showWarning, setShowWarning] = useState(true);
+
+  useEffect(() => {
+    if (localStorage.getItem('setlistSpoilerConfirmed') === 'true') {
+      setShowWarning(false);
+    }
+  }, []);
+
+  const handleYes = () => {
+    localStorage.setItem('setlistSpoilerConfirmed', 'true');
+    setShowWarning(false);
+  };
+
+  const handleNo = () => {
+    window.location.href = '/';
+  };
 
   return (
     <main className={inter.className}>
@@ -76,12 +96,15 @@ export default function Page() {
                   <div key={date} className="date-row">
                     <span className="header-date">{`${date} (${day})`}</span>
                     <div className="block-buttons">
-                      {['낮', '밤'].map((t) => {
-                        const blk = blocks.find((b) => b.block === t);
-                        return blk?.id ? (
+                      {blocks.map(({ block: t, id, hidden }) =>
+                        hidden ? (
+                          <span key={t} className="block-placeholder">
+                            {t}
+                          </span>
+                        ) : id ? (
                           <Link
                             key={t}
-                            href={`/concerts/${blk.id}`}
+                            href={`/concerts/${id}`}
                             className="glass-effect block-link"
                           >
                             {t}
@@ -90,8 +113,8 @@ export default function Page() {
                           <span key={t} className="glass-effect block-disabled">
                             {t}
                           </span>
-                        );
-                      })}
+                        )
+                      )}
                     </div>
                   </div>
                 ))}
@@ -100,6 +123,20 @@ export default function Page() {
           ))}
         </div>
       </section>
+      {showWarning && (
+        <div className="spoiler-overlay">
+          <p className="spoiler-warning">⚠️ 스포일러 주의</p>
+          <p className="spoiler-question">내용을 정말 확인하시겠습니까?</p>
+          <div className="spoiler-actions">
+            <button className="spoiler-yes" onClick={handleYes}>
+              예
+            </button>
+            <button className="spoiler-no" onClick={handleNo}>
+              아니오
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
