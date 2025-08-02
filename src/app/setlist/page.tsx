@@ -37,31 +37,39 @@ const schedule = [
 
 export default function SetlistPage() {
   return (
-    <main className="container" style={{ textAlign: 'center', paddingTop: '4rem' }}>
-      <h1 className="header-title">세트리스트</h1>
-      <p className="header-subtitle" style={{ marginBottom: '2rem' }}>
+    <main className="container pt-16">
+      <h1 className="header-title text-center">세트리스트</h1>
+      <p className="header-subtitle text-center mb-12">
         장소와 날짜별 콘서트를 확인하세요.
       </p>
-      {schedule.map(({ venue, shows }) => (
-        <section key={venue} className="mb-6">
-          <h2 className="text-xl font-bold mb-2">{venue}</h2>
-          <ul className="space-y-1">
-            {shows.map(({ date, day, block, id }) => (
-              <li key={`${date}-${block}`}>
-                {id ? (
-                  <Link href={`/concerts/${id}`} className="text-blue-600 hover:underline">
-                    {date} {day} {block}
-                  </Link>
-                ) : (
-                  <span className="opacity-50 cursor-not-allowed">
-                    {date} {day} {block}
-                  </span>
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
+      <div className="space-y-8">
+        {schedule.map(({ venue, shows }) => (
+          <div
+            key={venue}
+            className="flex flex-col sm:flex-row items-start gap-4 p-6 rounded-2xl border border-[rgb(var(--card-border-rgb))] bg-[rgb(var(--card-rgb))] hover:border-[rgb(var(--primary-rgb))]/40 transition-colors"
+          >
+            <div className="sm:w-1/3 text-3xl sm:text-4xl font-semibold text-left">{venue}</div>
+            <ul className="sm:w-2/3 flex flex-wrap gap-2 list-none p-0 m-0">
+              {shows.map(({ date, day, block, id }) => (
+                <li key={`${date}-${block}`}>
+                  {id ? (
+                    <Link
+                      href={`/concerts/${id}`}
+                      className="px-4 py-2 rounded-lg bg-white/5 text-white hover:bg-white/10 transition-colors"
+                    >
+                      {date} {day} {block}
+                    </Link>
+                  ) : (
+                    <span className="px-4 py-2 rounded-lg bg-white/5 text-gray-400 cursor-not-allowed">
+                      {date} {day} {block}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
     </main>
   );
 }

@@ -1,7 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
 :root {
   --background-rgb: 18, 18, 18;
   --foreground-rgb: 255, 255, 255;
-  --primary-rgb: 30, 215, 96;
+  --primary-rgb: 0, 122, 255;
   --card-rgb: 24, 24, 24;
   --card-border-rgb: 40, 40, 40;
 }
