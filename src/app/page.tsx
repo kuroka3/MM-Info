@@ -1,8 +1,5 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Inter } from 'next/font/google';
-
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter', weight: ['700', '800'] });
 
 const menu = [
   { href: '/setlist', label: '세트리스트', icon: '/list.svg' },
@@ -13,14 +10,11 @@ const menu = [
 
 export default function Home() {
   return (
-    <main
-      className={`${inter.className} landing-page min-h-screen flex flex-col items-center`}
-      aria-label="메인 메뉴"
-    >
+    <main className="landing-page min-h-screen flex flex-col items-center" aria-label="메인 메뉴">
       <div className="w-full max-w-6xl">
         <div className="py-6 text-center">
-          <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight">
-            2025 매지컬 미라이 정보 모음
+          <h1 className="text-6xl sm:text-8xl font-extrabold tracking-tight gradient-text">
+            2025 마지미라 정보 모음
           </h1>
         </div>
 
@@ -37,18 +31,18 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-br from-transparent to-[rgba(255,255,255,0.03)]" />
               </div>
 
-              <div className="flex flex-col items-center justify-center gap-6 text-[rgba(255,255,255,0.95)] w-full h-full">
-                <div className="w-28 h-28 flex items-center justify-center">
+              <div className="flex flex-col items-center justify-center gap-8 text-[rgba(255,255,255,0.95)] w-full h-full">
+                <div className="w-32 h-32 flex items-center justify-center">
                   <Image
                     src={icon}
                     alt=""
-                    width={72}
-                    height={72}
+                    width={96}
+                    height={96}
                     className="opacity-90 group-hover:opacity-100 transition-opacity"
                     priority
                   />
                 </div>
-                <span className="text-4xl sm:text-5xl font-semibold">{label}</span>
+                <span className="text-5xl sm:text-6xl font-semibold">{label}</span>
               </div>
             </Link>
           ))}
