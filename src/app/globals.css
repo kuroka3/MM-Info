@@ -1008,3 +1008,57 @@ body {
   border-radius: 8px;
   visibility: hidden;
 }
+
+/* Spoiler overlay */
+.spoiler-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--blur-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 100;
+}
+
+.spoiler-warning {
+  color: var(--accent-red);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.spoiler-question {
+  margin-bottom: 24px;
+}
+
+.spoiler-actions {
+  display: flex;
+  gap: 16px;
+}
+
+.spoiler-yes,
+.spoiler-no {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.spoiler-yes {
+  background: var(--accent-red);
+  color: var(--text-primary);
+}
+
+.spoiler-no {
+  background: var(--surface-tertiary);
+  color: var(--text-secondary);
+}

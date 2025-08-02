@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Inter } from 'next/font/google';
 
 const inter = Inter({ subsets: ['latin'], weight: ['600', '700', '800'] });
@@ -60,6 +60,22 @@ const group = (arr: Show[]) => {
 
 export default function Page() {
   const venues = useMemo(() => raw, []);
+  const [showWarning, setShowWarning] = useState(true);
+
+  useEffect(() => {
+    if (localStorage.getItem('setlistSpoilerConfirmed') === 'true') {
+      setShowWarning(false);
+    }
+  }, []);
+
+  const handleYes = () => {
+    localStorage.setItem('setlistSpoilerConfirmed', 'true');
+    setShowWarning(false);
+  };
+
+  const handleNo = () => {
+    window.location.href = '/';
+  };
 
   return (
     <main className={inter.className}>
@@ -107,6 +123,20 @@ export default function Page() {
           ))}
         </div>
       </section>
+      {showWarning && (
+        <div className="spoiler-overlay">
+          <p className="spoiler-warning">⚠️ 스포일러 주의</p>
+          <p className="spoiler-question">내용을 정말 확인하시겠습니까?</p>
+          <div className="spoiler-actions">
+            <button className="spoiler-yes" onClick={handleYes}>
+              예
+            </button>
+            <button className="spoiler-no" onClick={handleNo}>
+              아니오
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
