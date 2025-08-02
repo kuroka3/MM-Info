@@ -524,6 +524,11 @@ body {
   margin: 0;
 }
 
+.footer-nav-list li {
+  /* Provide vertical space so hovered links don't overlap */
+  padding: 4px 0;
+}
+
 .footer-nav-list a {
   color: var(--text-secondary);
   text-decoration: none;
@@ -537,6 +542,7 @@ body {
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  display: block;
 }
 
 .footer-nav-list a::before {
@@ -867,7 +873,8 @@ body {
 
 /* Landing Page */
 .landing-main {
-  min-height: 100vh;
+  /* Reduce main height so the footer is visible on standard PC displays */
+  min-height: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -889,7 +896,6 @@ body {
   grid-template-columns: repeat(2, 1fr);
   gap: 24px;
   width: 100%;
-  height: calc(100vh - 140px);
 }
 
 .menu-card {
