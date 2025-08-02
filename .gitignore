@@ -64,3 +64,6 @@ next-env.d.ts
 
 # Test files
 /.dev/*
+
+# Image files
+/.github/*
