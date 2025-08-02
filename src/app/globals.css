@@ -988,6 +988,8 @@ body {
   border-radius: 8px;
   font-size: 0.875rem;
   font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
   transition: background 0.3s ease;
 }
 
@@ -1061,4 +1063,28 @@ body {
 .spoiler-no {
   background: var(--surface-tertiary);
   color: var(--text-secondary);
+}
+
+/* Loading Spinner */
+.loading-spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 400px);
+  min-height: 200px;
+}
+
+.loading-spinner {
+  width: 6rem;
+  height: 6rem;
+  border: 4px solid var(--surface-tertiary);
+  border-top-color: var(--accent-blue);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

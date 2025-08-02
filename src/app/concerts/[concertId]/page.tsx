@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import Header from '@/components/Header';
 import SongList from '@/components/SongList';
 import SpoilerGate from '@/components/SpoilerGate';
@@ -27,17 +27,22 @@ async function getConcerts(): Promise<ConcertsData> {
   if (!res.ok) {
     throw new Error('Failed to fetch concert data');
   }
-  return res.json();
+  return await res.json();
 }
 
 type ConcertPageProps = Promise<{
   concertId: string;
 }>;
 
-const ConcertPage = async ( props: { params: ConcertPageProps }) => {
+async function Songs({ concertId }: { concertId: string }) {
   const concerts = await getConcerts();
-  const concertId = (await props.params).concertId as keyof typeof concerts;
-  const concert = concerts[concertId];
+  const concert = concerts[concertId as keyof typeof concerts];
+  return <SongList songs={concert.songs} />;
+}
+
+const ConcertPage = async ( props: { params: ConcertPageProps}) => {
+  const concerts = await getConcerts();
+  const concert = concerts[(await props.params).concertId];
 
   if (!concert) {
     return (
@@ -52,7 +57,13 @@ const ConcertPage = async ( props: { params: ConcertPageProps }) => {
       <main>
         <Header title={concert.title} artist={concert.artist} date={concert.date} />
         <section className="container">
-          <SongList songs={concert.songs} />
+          <Suspense fallback={
+            <div className="loading-spinner-container">
+              <div className="loading-spinner"></div>
+            </div>
+          }>
+            <Songs concertId={(await props.params).concertId} />
+          </Suspense>
         </section>
       </main>
     </SpoilerGate>
