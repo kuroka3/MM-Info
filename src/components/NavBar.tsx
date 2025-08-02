@@ -15,9 +15,9 @@ export default function NavBar() {
   if (pathname === '/') return null;
 
   return (
-    <nav className="w-full py-4 flex justify-center gap-6 sm:gap-10 text-lg sm:text-xl font-semibold">
+    <nav className="nav-bar">
       {links.map(({ href, label }) => (
-        <Link key={href} href={href} className="hover:text-[#007aff]">
+        <Link key={href} href={href} className="nav-link">
           {label}
         </Link>
       ))}

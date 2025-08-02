@@ -1,6 +1,3 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
 
@@ -774,4 +771,192 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* Navigation Bar */
+.nav-bar {
+  width: 100%;
+  padding: 16px 0;
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+@media (min-width: 640px) {
+  .nav-bar {
+    gap: 40px;
+    font-size: 1.25rem;
+  }
+}
+
+.nav-link {
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: var(--accent-blue);
+}
+
+/* Home Button */
+.home-button {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: var(--text-primary);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  backdrop-filter: blur(20px);
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  z-index: 50;
+}
+
+.home-button:hover {
+  box-shadow: 0 0 10px var(--accent-blue);
+  transform: scale(1.02);
+}
+
+/* Landing Page */
+.landing-main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.landing-wrapper {
+  width: 100%;
+  max-width: 1200px;
+}
+
+.landing-header {
+  padding: 24px 0;
+  text-align: center;
+}
+
+.landing-menu {
+  margin-top: 32px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  width: 100%;
+  height: calc(100vh - 140px);
+}
+
+.menu-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  padding: 32px;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.95);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.menu-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.6);
+  z-index: -1;
+}
+
+.menu-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: linear-gradient(to bottom right, transparent, rgba(255, 255, 255, 0.03));
+  pointer-events: none;
+}
+
+.menu-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 15px var(--accent-blue);
+}
+
+.menu-icon {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.menu-label {
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .menu-icon {
+    width: 64px;
+    height: 64px;
+  }
+
+  .menu-label {
+    font-size: 1.5rem;
+  }
+}
+
+/* Setlist Page */
+.feature-list {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.date-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.block-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.block-link {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+
+.block-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.block-disabled {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
 }

@@ -71,29 +71,23 @@ export default function Page() {
           {venues.map(({ venue, shows }) => (
             <div key={venue} className="feature-card">
               <h3 className="feature-title">{venue}</h3>
-              <div className="mt-6 flex flex-col gap-4">
+              <div className="feature-list">
                 {group(shows).map(({ date, day, blocks }) => (
-                  <div
-                    key={date}
-                    className="flex flex-wrap items-center justify-center gap-4"
-                  >
+                  <div key={date} className="date-row">
                     <span className="header-date">{`${date} (${day})`}</span>
-                    <div className="flex gap-2">
+                    <div className="block-buttons">
                       {['낮', '밤'].map((t) => {
                         const blk = blocks.find((b) => b.block === t);
                         return blk?.id ? (
                           <Link
                             key={t}
                             href={`/concerts/${blk.id}`}
-                            className="glass-effect px-4 py-2 rounded-lg text-sm font-semibold transition hover:bg-[rgba(255,255,255,0.1)]"
+                            className="glass-effect block-link"
                           >
                             {t}
                           </Link>
                         ) : (
-                          <span
-                            key={t}
-                            className="glass-effect px-4 py-2 rounded-lg text-sm text-gray-500"
-                          >
+                          <span key={t} className="glass-effect block-disabled">
                             {t}
                           </span>
                         );

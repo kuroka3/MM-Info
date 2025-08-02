@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Footer from "@/components/Footer";
 import NavBar from "@/components/NavBar";
+import HomeButton from "@/components/HomeButton";
 
 export const metadata: Metadata = {
   title: "세트리스트",
@@ -19,6 +20,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body>
+        <HomeButton />
         <div className="container">
           <NavBar />
           {children}
