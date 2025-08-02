@@ -861,6 +861,7 @@ body {
     width: 60px;
     height: 60px;
     margin-bottom: 8px;
+    font-size: 0.75rem;
   }
 }
 
@@ -993,4 +994,11 @@ body {
   border-radius: 8px;
   font-size: 0.875rem;
   color: var(--text-secondary);
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.block-placeholder {
+  padding: 8px 16px;
+  border-radius: 8px;
+  visibility: hidden;
 }
