@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 
 const links = [
   { href: '/setlist', label: '세트리스트' },
@@ -12,15 +13,31 @@ const links = [
 
 export default function NavBar() {
   const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
   if (pathname === '/') return null;
 
   return (
     <nav className="nav-bar">
-      {links.map(({ href, label }) => (
-        <Link key={href} href={href} className="nav-link">
-          {label}
-        </Link>
-      ))}
+      <button
+        className="nav-toggle"
+        aria-label="Toggle navigation menu"
+        aria-expanded={isOpen}
+        onClick={() => setIsOpen((prev) => !prev)}
+      >
+        ☰
+      </button>
+      <div className={`nav-links${isOpen ? ' open' : ''}`}>
+        {links.map(({ href, label }) => (
+          <Link
+            key={href}
+            href={href}
+            className="nav-link"
+            onClick={() => setIsOpen(false)}
+          >
+            {label}
+          </Link>
+        ))}
+      </div>
     </nav>
   );
 }
