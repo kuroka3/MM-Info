@@ -53,7 +53,6 @@ const ConcertPage = async ( props: { params: ConcertPageProps}) => {
   }
 
   return (
-<<<<<<< HEAD
     <main>
       <Header title={concert.title} artist={concert.artist} date={concert.date} />
       <section className="container">
@@ -66,16 +65,6 @@ const ConcertPage = async ( props: { params: ConcertPageProps}) => {
         </Suspense>
       </section>
     </main>
-=======
-    <SpoilerGate>
-      <main>
-        <Header title={concert.title} artist={concert.artist} date={concert.date} />
-        <section className="container">
-          <SongList songs={concert.songs} />
-        </section>
-      </main>
-    </SpoilerGate>
->>>>>>> origin/master
   );
 };
 
