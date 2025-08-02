@@ -3,6 +3,7 @@ import Image from 'next/image';
 
 interface Song {
   title: string;
+  krtitle?: string;
   artist: string;
   spotifyUrl: string;
   youtubeUrl: string;
@@ -25,6 +26,8 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
           ? 'song-item locationgawari'
           : 'song-item';
 
+        const finalTitle = song.krtitle ? `${song.krtitle} (${song.title})` : song.title;
+
         return (
           <div className={itemClass} key={index}>
             <div className="song-info">
@@ -38,7 +41,7 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
                   className="song-jacket"
                 />
                 <div className="song-text-info">
-                  <p className="song-title">{song.title}</p>
+                  <p className="song-title">{finalTitle}</p>
                   <p className="song-artist">{song.artist}</p>
                 </div>
               </div>
