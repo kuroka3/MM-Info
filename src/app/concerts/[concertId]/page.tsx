@@ -53,18 +53,20 @@ const ConcertPage = async ( props: { params: ConcertPageProps}) => {
   }
 
   return (
-    <main>
-      <Header title={concert.title} artist={concert.artist} date={concert.date} />
-      <section className="container">
-        <Suspense fallback={
-          <div className="loading-spinner-container">
-            <div className="loading-spinner"></div>
-          </div>
-        }>
-          <Songs concertId={(await props.params).concertId} />
-        </Suspense>
-      </section>
-    </main>
+    <SpoilerGate>
+      <main>
+        <Header title={concert.title} artist={concert.artist} date={concert.date} />
+        <section className="container">
+          <Suspense fallback={
+            <div className="loading-spinner-container">
+              <div className="loading-spinner"></div>
+            </div>
+          }>
+            <Songs concertId={(await props.params).concertId} />
+          </Suspense>
+        </section>
+      </main>
+    </SpoilerGate>
   );
 };
 
