@@ -1,6 +1,7 @@
 import React from 'react';
 import Header from '@/components/Header';
 import SongList from '@/components/SongList';
+import SpoilerGate from '@/components/SpoilerGate';
 
 type Song = {
   title: string;
@@ -47,12 +48,14 @@ const ConcertPage = async ( props: { params: ConcertPageProps }) => {
   }
 
   return (
-    <main>
-      <Header title={concert.title} artist={concert.artist} date={concert.date} />
-      <section className="container">
-        <SongList songs={concert.songs} />
-      </section>
-    </main>
+    <SpoilerGate>
+      <main>
+        <Header title={concert.title} artist={concert.artist} date={concert.date} />
+        <section className="container">
+          <SongList songs={concert.songs} />
+        </section>
+      </main>
+    </SpoilerGate>
   );
 };
 
