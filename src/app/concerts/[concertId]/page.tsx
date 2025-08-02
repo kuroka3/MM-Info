@@ -39,13 +39,19 @@ const ConcertPage = async ( props: { params: ConcertPageProps }) => {
   const concert = concerts[concertId];
 
   if (!concert) {
-    return <div className="container"><p>Concert not found.</p></div>;
+    return (
+      <div className="container">
+        <p>콘서트를 찾을 수 없습니다.</p>
+      </div>
+    );
   }
 
   return (
-    <main className="container">
+    <main>
       <Header title={concert.title} artist={concert.artist} date={concert.date} />
-      <SongList songs={concert.songs} />
+      <section className="container">
+        <SongList songs={concert.songs} />
+      </section>
     </main>
   );
 };
