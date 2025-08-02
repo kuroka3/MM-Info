@@ -21,7 +21,7 @@ type Concerts = {
 async function getConcerts(): Promise<Concerts> {
     const res = await fetch('https://pastebin.com/raw/ruQTXtgQ', { next: { revalidate: 60 } });
     if (!res.ok) {
-        throw new Error('Failed to fetch concert data');
+        throw new Error('콘서트 데이터를 가져오지 못했습니다.');
     }
     return res.json();
 }
