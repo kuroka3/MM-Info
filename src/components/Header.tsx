@@ -9,7 +9,7 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ title, artist, date }) => {
   return (
     <header className="header">
-      <div className="header-content">
+      <div className="container header-content">
         <h1 className="header-title">{title}</h1>
         <p className="header-subtitle">{artist} • {date}</p>
       </div>
