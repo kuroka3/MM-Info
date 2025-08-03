@@ -235,15 +235,15 @@ export default function CallGuideSongPage() {
       if (!playerRef.current) return;
       if (e.code === 'Space') {
         e.preventDefault();
-        if (isPlaying) playerRef.current.pauseVideo();
-        else playerRef.current.playVideo();
+        if (isPlaying) playerRef.current.pauseVideo?.();
+        else playerRef.current.playVideo?.();
         autoScrollRef.current = true;
         scrollToLine(activeLine);
       } else if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
         e.preventDefault();
         const delta = e.code === 'ArrowLeft' ? -5 : 5;
         const t = Math.max(0, Math.min((playerRef.current.getDuration?.() ?? 0), currentTime + delta));
-        playerRef.current.seekTo(t, true);
+        playerRef.current.seekTo?.(t, true);
         setCurrentTime(t);
         autoScrollRef.current = true;
         const idx = timeToLine(t);
@@ -396,8 +396,8 @@ export default function CallGuideSongPage() {
               className="control-button"
               onClick={() => {
                 if (!playerRef.current) return;
-                if (isPlaying) playerRef.current.pauseVideo();
-                else playerRef.current.playVideo();
+                if (isPlaying) playerRef.current.pauseVideo?.();
+                else playerRef.current.playVideo?.();
                 autoScrollRef.current = true;
                 scrollToLine(activeLine);
               }}
