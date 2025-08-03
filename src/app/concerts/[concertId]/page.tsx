@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import React, { Suspense } from 'react';
 import Header from '@/components/Header';
 import SongList from '@/components/SongList';
@@ -35,6 +36,13 @@ type ConcertPageProps = {
   params: Promise<{ concertId: string }>;
   searchParams: Promise<{ date?: string; block?: string }>;
 };
+
+export async function generateMetadata({ params }: ConcertPageProps): Promise<Metadata> {
+  const { concertId } = await params;
+  const concerts = await getConcerts();
+  const concert = concerts[concertId];
+  return { title: concert ? concert.title : '콘서트를 찾을 수 없습니다.' };
+}
 
 const ConcertPage = async ({ params, searchParams }: ConcertPageProps) => {
   const { concertId } = await params;
