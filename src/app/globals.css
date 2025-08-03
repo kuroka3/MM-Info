@@ -1424,7 +1424,7 @@ body {
 .lyric-row {
   line-height: 1.6;
   color: var(--text-secondary);
-  font-size: 1.5rem;
+  font-size: clamp(1rem, 5vw, 1.5rem);
 }
 
 .lyric-char {
