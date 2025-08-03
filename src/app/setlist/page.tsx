@@ -18,7 +18,7 @@ const raw: Venue[] = [
       { date: '08/01', day: '금', block: '밤', id: '1' },
       { date: '08/02', day: '토', block: '낮', id: '2' },
       { date: '08/02', day: '토', block: '밤', id: '1' },
-      { date: '08/03', day: '일', block: '낮', id: null },
+      { date: '08/03', day: '일', block: '낮', id: '2' },
       { date: '08/03', day: '일', block: '밤', id: null },
     ],
   },
