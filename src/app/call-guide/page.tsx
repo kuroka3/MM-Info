@@ -2,6 +2,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import SpoilerGate from '@/components/SpoilerGate';
 import { callSongs } from '@/data/songs';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = { title: '콜 가이드' };
 
 export default function CallGuideIndex() {
   return (
