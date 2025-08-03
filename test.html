@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Lyrics Timing Editor (Advanced)</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+        :root {
+            --bg: #0f111a;
+            --card: #1f2232;
+            --accent: #6366f1;
+            --muted: #444;
+            --text: #eee;
+            --radius: 6px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 0;
+        }
+
+        .layout {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 16px;
+        }
+
+        .top {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .box {
+            background: var(--card);
+            padding: 12px;
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 0.75rem;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid var(--muted);
+            background: #161b37;
+            color: #fff;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        button {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--accent);
+            color: #fff;
+        }
+
+        button.secondary {
+            background: var(--muted);
+        }
+
+        .video-wrapper {
+            position: relative;
+            padding-top: 56.25%;
+            background: #000;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        #player {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .editor {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .parsed {
+            flex: 1;
+            min-width: 320px;
+            max-height: 550px;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .line-group {
+            background: #1b234a;
+            padding: 10px;
+            border-radius: 6px;
+            position: relative;
+        }
+
+        .line-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .tokens-row {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .token {
+            position: relative;
+            padding: 6px 9px;
+            background: #1f2232;
+            border: 1px solid var(--muted);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .token.has-time {
+            background: #0fa;
+            border-color: #0cf;
+        }
+
+        .token.selected {
+            outline: 2px solid #fff;
+        }
+
+        .token small {
+            position: absolute;
+            right: 2px;
+            bottom: 2px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 0.55rem;
+        }
+
+        .token-buttons {
+            margin-top: 6px;
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .adjust-panel {
+            background: #0f163f;
+            padding: 8px;
+            border-radius: 6px;
+            margin-top: 6px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .small {
+            font-size: 0.7rem;
+            color: #aaa;
+        }
+
+        pre {
+            background: #0f132d;
+            padding: 12px;
+            border-radius: 6px;
+            overflow: auto;
+            max-height: 300px;
+        }
+
+        .export-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .summary {
+            margin-top: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .token-info {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        .jump {
+            background: #222;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid #555;
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="layout">
+        <div class="top">
+            <div class="box">
+                <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                    <div style="flex:1; min-width:180px;">
+                        <label for="youtubeUrl">YouTube 링크 또는 ID</label>
+                        <input id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=RKtoreimcQ8" />
+                    </div>
+                    <div style="flex:1; min-width:120px;">
+                        <label for="titleInput">곡명</label>
+                        <input id="titleInput" placeholder="Hand in Hand" />
+                    </div>
+                    <div style="flex:1; min-width:120px;">
+                        <label for="artistInput">아티스트</label>
+                        <input id="artistInput" placeholder="kz(livetune)" />
+                    </div>
+                </div>
+                <div style="margin-top:8px;">
+                    <label for="summaryInput">요약 (줄별로 개행)</label>
+                    <textarea id="summaryInput" rows="2"
+                        placeholder="인트로: 스네어에 맞춰 <<박수>>&#10;펜라이트 좌↔우↔상 흔들기"></textarea>
+                </div>
+                <div class="controls">
+                    <button id="loadVideoBtn">영상 불러오기</button>
+                    <button class="secondary" id="parseLyricsBtn">가사 파싱</button>
+                    <button id="exportJsonBtn">JSON 미리보기</button>
+                    <button id="downloadBtn">다운로드</button>
+                    <button class="secondary" id="clearTimesBtn">타이밍 초기화</button>
+                </div>
+                <div class="small">
+                    가사 입력은 3줄씩(원문 / 발음 / 번역), 빈 줄로 구분. <br />
+                    클릭: 현재 영상 시간 부여, 다시 클릭: 제거, 선택 후 숫자 조정/±0.05/재생 점프 가능.
+                </div>
+            </div>
+            <div class="box">
+                <div class="video-wrapper">
+                    <div id="player"></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-top:6px;">
+                    <div>재생 시간: <strong><span id="currentTime">0.00</span>s</strong></div>
+                    <div>
+                        <button id="playTokenBtn" style="padding:6px 10px;">선택 토큰 재생 ▶</button>
+                    </div>
+                </div>
+                <div class="small">YouTube API 기반 재생(링크 입력 후 '영상 불러오기' 클릭).</div>
+            </div>
+        </div>
+
+        <div class="editor">
+            <div class="box" style="flex:1; min-width:360px; max-width:600px;">
+                <label for="lyricsInput">가사 입력 (3줄씩, 빈 줄 구분)</label>
+                <textarea id="lyricsInput" rows="18"
+                    placeholder="例:&#10;目を閉じて　視えるその&#10;メオトジテ ミエルソノ&#10;눈을 감고 보이는 그&#10;&#10;指先へ　めがけた&#10;ユビサキエ メガケタ&#10;손가락 끝을 쫓았어"></textarea>
+            </div>
+            <div class="box parsed" id="parsedContainer">
+                <!-- 파싱된 라인들 -->
+            </div>
+        </div>
+
+        <div class="box">
+            <div class="export-row">
+                <div>
+                    <button id="showPreviewBtn">미리보기</button>
+                    <button id="downloadJsonBtn">.json 저장</button>
+                </div>
+                <div style="flex:1;">
+                    <label>생성된 JSON</label>
+                    <pre id="output">{ }</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let player;
+        let structured = [];
+        let selectedTokenRef = null; // { lineIdx, tokenIdx, type }
+
+        function extractVideoId(urlOrId) {
+            try {
+                const u = new URL(urlOrId);
+                if (u.searchParams.get('v')) return u.searchParams.get('v');
+                const path = u.pathname;
+                if (path.startsWith('/shorts/')) return path.split('/')[2];
+            } catch { }
+            return urlOrId.trim();
+        }
+
+        function slugify(s) {
+            return s.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+        }
+
+        // YouTube IFrame API
+        function loadYouTubeAPI() {
+            if (window.YT && window.YT.Player) return initPlayer();
+            const tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            document.head.appendChild(tag);
+            window.onYouTubeIframeAPIReady = initPlayer;
+        }
+
+        function initPlayer() {
+            const raw = document.getElementById('youtubeUrl').value.trim();
+            const vid = extractVideoId(raw);
+            if (!vid) return alert('YouTube 아이디나 URL을 넣어주세요');
+            if (player) {
+                player.loadVideoById(vid);
+                return;
+            }
+            player = new YT.Player('player', {
+                videoId: vid,
+                playerVars: { controls: 1, modestbranding: 1, rel: 0 },
+                events: {
+                    onReady: () => {
+                        setInterval(updateTime, 150);
+                    }
+                }
+            });
+        }
+
+        function updateTime() {
+            if (!player || !player.getCurrentTime) return;
+            const t = player.getCurrentTime();
+            document.getElementById('currentTime').textContent = t.toFixed(2);
+            // 자동 하이라이트: 재생시간과 가까운 토큰 강조 (optional)
+            // 여기선 선택된 토큰이 아니면 넘김
+        }
+
+        function parseLyricsInput() {
+            structured = [];
+            selectedTokenRef = null;
+            const raw = document.getElementById('lyricsInput').value.trim();
+            if (!raw) return;
+            const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            for (let i = 0; i + 2 < lines.length; i += 3) {
+                const jp = lines[i];
+                const pron = lines[i + 1];
+                const ko = lines[i + 2];
+                const maxLen = Math.max(jp.length, pron.length, ko.length);
+                const tokens = [];
+                for (let j = 0; j < maxLen; j++) {
+                    tokens.push({
+                        jp: jp[j] || '',
+                        pron: pron[j] || '',
+                        ko: ko[j] || '',
+                        time: { jp: null, pron: null, ko: null }
+                    });
+                }
+                structured.push({ jp, pron, ko, tokens });
+            }
+            renderParsed();
+        }
+
+        function renderParsed() {
+            const container = document.getElementById('parsedContainer');
+            container.innerHTML = '';
+            structured.forEach((line, li) => {
+                const group = document.createElement('div');
+                group.className = 'line-group';
+                // header
+                const header = document.createElement('div');
+                header.className = 'line-header';
+                const title = document.createElement('div');
+                title.innerHTML = `<strong>라인 ${li + 1}</strong> 원문: ${line.jp}`;
+                header.appendChild(title);
+                group.appendChild(header);
+
+                // tokens for jp/pron/ko
+                ['jp', 'pron', 'ko'].forEach(type => {
+                    const row = document.createElement('div');
+                    row.style.marginTop = '6px';
+                    const label = document.createElement('div');
+                    label.textContent = type.toUpperCase();
+                    label.style.fontSize = '0.75rem';
+                    row.appendChild(label);
+                    const tokensWrapper = document.createElement('div');
+                    tokensWrapper.className = 'tokens-row';
+                    line.tokens.forEach((tok, ti) => {
+                        const span = document.createElement('div');
+                        span.className = 'token';
+                        if (selectedTokenRef
+                            && selectedTokenRef.lineIdx === li
+                            && selectedTokenRef.tokenIdx === ti
+                            && selectedTokenRef.type === type) {
+                            span.classList.add('selected');
+                        }
+                        let disp = tok[type];
+                        if (disp === ' ') disp = '\u00A0';
+                        span.textContent = disp;
+                        if (tok.time && tok.time[type] != null) {
+                            span.classList.add('has-time');
+                            const small = document.createElement('small');
+                            small.textContent = tok.time[type].toFixed(2);
+                            span.appendChild(small);
+                        }
+                        span.onclick = (e) => {
+                            if (!tok.time) tok.time = { jp: null, pron: null, ko: null };
+                            const current = player && player.getCurrentTime ? player.getCurrentTime() : 0;
+                            // 공백이면 이전 같은 type 토큰 시간 복사
+                            if (tok[type] === ' ' || tok[type] === '\u00A0') {
+                                // 이전 non-space 토큰 찾아서 시간 복사
+                                const tokens = structured[li].tokens;
+                                for (let k = ti - 1; k >= 0; k--) {
+                                    const prev = tokens[k];
+                                    if (prev[type] && prev[type] !== ' ' && prev.time && prev.time[type] != null) {
+                                        tok.time[type] = prev.time[type];
+                                        break;
+                                    }
+                                }
+                                // 없으면 현재 시간
+                                if (tok.time[type] == null) tok.time[type] = current;
+                            } else {
+                                // 일반 토큰: 토글
+                                if (tok.time[type] != null) {
+                                    tok.time[type] = null;
+                                } else {
+                                    tok.time[type] = current;
+                                }
+                            }
+                            selectedTokenRef = { lineIdx: li, tokenIdx: ti, type };
+                            renderParsed();
+                            showAdjustPanel(structured[li], li, ti);
+                        };
+                        span.oncontextmenu = (e) => {
+                            e.preventDefault();
+                            // 우클릭으로 선택만
+                            selectedTokenRef = { lineIdx: li, tokenIdx: ti, type };
+                            renderParsed();
+                            showAdjustPanel(line, li, ti);
+                        };
+                        tokensWrapper.appendChild(span);
+                    });
+                    group.appendChild(tokensWrapper);
+                });
+
+                // adjust panel placeholder
+                const adjustContainer = document.createElement('div');
+                adjustContainer.className = 'adjust-panel';
+                adjustContainer.id = `adjust-${li}`;
+                group.appendChild(adjustContainer);
+
+                container.appendChild(group);
+            });
+            // after rendering, if a token is selected, show its adjust
+            if (selectedTokenRef) {
+                const { lineIdx, tokenIdx } = selectedTokenRef;
+                const line = structured[lineIdx];
+                showAdjustPanel(line, lineIdx, tokenIdx);
+            }
+        }
+
+        function showAdjustPanel(line, lineIdx, tokenIdx) {
+            // clear previous panels
+            structured.forEach((l, li) => {
+                const panel = document.getElementById(`adjust-${li}`);
+                if (panel) panel.innerHTML = '';
+            });
+            if (!selectedTokenRef) return;
+            const { type } = selectedTokenRef;
+            const tok = line.tokens[tokenIdx];
+            const panel = document.getElementById(`adjust-${lineIdx}`);
+            if (!panel) return;
+            panel.innerHTML = '';
+            const info = document.createElement('div');
+            info.innerHTML = `<div><strong>선택:</strong> 라인 ${lineIdx + 1} / 토큰 ${tokenIdx + 1} / 종류: ${type.toUpperCase()}</div>`;
+            panel.appendChild(info);
+
+            // current time display and nudge
+            const curTime = (tok.time && tok.time[type] != null) ? tok.time[type].toFixed(3) : 'unset';
+            const timeRow = document.createElement('div');
+            timeRow.style.display = 'flex';
+            timeRow.style.gap = '8px';
+            timeRow.style.alignItems = 'center';
+
+            const timeLabel = document.createElement('div');
+            timeLabel.textContent = `시간: `;
+            timeRow.appendChild(timeLabel);
+
+            const timeInput = document.createElement('input');
+            timeInput.type = 'number';
+            timeInput.step = '0.01';
+            timeInput.min = '0';
+            timeInput.value = tok.time && tok.time[type] != null ? tok.time[type].toFixed(2) : '';
+            timeInput.style.width = '80px';
+            timeInput.onchange = () => {
+                const v = parseFloat(timeInput.value);
+                if (!tok.time) tok.time = { jp: null, pron: null, ko: null };
+                if (!isNaN(v)) tok.time[type] = v;
+                else tok.time[type] = null;
+                renderParsed();
+            };
+            timeRow.appendChild(timeInput);
+
+            const minusBtn = document.createElement('button');
+            minusBtn.textContent = '-0.05';
+            minusBtn.style.padding = '4px 8px';
+            minusBtn.onclick = () => {
+                if (!tok.time) tok.time = { jp: null, pron: null, ko: null };
+                if (tok.time[type] == null) return;
+                tok.time[type] = Math.max(0, tok.time[type] - 0.05);
+                renderParsed();
+            };
+            timeRow.appendChild(minusBtn);
+            const plusBtn = document.createElement('button');
+            plusBtn.textContent = '+0.05';
+            plusBtn.style.padding = '4px 8px';
+            plusBtn.onclick = () => {
+                if (!tok.time) tok.time = { jp: null, pron: null, ko: null };
+                if (tok.time[type] == null) tok.time[type] = 0;
+                tok.time[type] = tok.time[type] + 0.05;
+                renderParsed();
+            };
+            timeRow.appendChild(plusBtn);
+
+            panel.appendChild(timeRow);
+
+            // actions: jump, play
+            const actions = document.createElement('div');
+            actions.style.display = 'flex';
+            actions.style.gap = '10px';
+            actions.style.marginTop = '4px';
+
+            const jumpBtn = document.createElement('button');
+            jumpBtn.textContent = '재생 위치로 점프';
+            jumpBtn.onclick = () => {
+                if (!tok.time || tok.time[type] == null) return;
+                player.seekTo(tok.time[type], true);
+            };
+            actions.appendChild(jumpBtn);
+
+            const setFromCurrent = document.createElement('button');
+            setFromCurrent.textContent = '현재 시간으로 설정';
+            setFromCurrent.onclick = () => {
+                if (!player || !player.getCurrentTime) return;
+                const cur = player.getCurrentTime();
+                if (!tok.time) tok.time = { jp: null, pron: null, ko: null };
+                tok.time[type] = cur;
+                renderParsed();
+            };
+            actions.appendChild(setFromCurrent);
+
+            const clearBtn = document.createElement('button');
+            clearBtn.textContent = '삭제';
+            clearBtn.onclick = () => {
+                if (!tok.time) tok.time = { jp: null, pron: null, ko: null };
+                tok.time[type] = null;
+                renderParsed();
+            };
+            actions.appendChild(clearBtn);
+
+            panel.appendChild(actions);
+        }
+
+        function buildJSON() {
+            const title = document.getElementById('titleInput').value.trim() || 'untitled';
+            const artist = document.getElementById('artistInput').value.trim() || '';
+            const videoId = extractVideoId(document.getElementById('youtubeUrl').value.trim() || '');
+            const slug = slugify(title);
+            const thumbnail = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+            const summaryRaw = document.getElementById('summaryInput').value.trim().split('\n').filter(l => l.trim()).map((s, i) => ({ time: i * 5, text: s }));
+            // 공백 토큰에 대해 직전 같은 종류 시간 자동 채움
+            function propagateSpaceTimes() {
+                structured.forEach(line => {
+                    ['jp', 'pron', 'ko'].forEach(type => {
+                        let lastTime = null;
+                        line.tokens.forEach(tok => {
+                            if (tok[type] && tok[type] !== ' ') {
+                                if (tok.time && tok.time[type] != null) lastTime = tok.time[type];
+                            } else { // 공백
+                                if ((!tok.time || tok.time[type] == null) && lastTime != null) {
+                                    if (!tok.time) tok.time = { jp: null, pron: null, ko: null };
+                                    tok.time[type] = lastTime;
+                                }
+                            }
+                        });
+                    });
+                });
+            }
+            const lyrics = structured.map(line => {
+                const jpTokens = [];
+                const pronTokens = [];
+                const koTokens = [];
+                line.tokens.forEach(tok => {
+                    if (tok.jp !== '') jpTokens.push({ text: tok.jp, time: tok.time?.jp != null ? Number(tok.time.jp.toFixed(2)) : null });
+                    if (tok.pron !== '') pronTokens.push({ text: tok.pron, time: tok.time?.pron != null ? Number(tok.time.pron.toFixed(2)) : null });
+                    if (tok.ko !== '') koTokens.push({ text: tok.ko, time: tok.time?.ko != null ? Number(tok.time.ko.toFixed(2)) : null });
+                });
+                return { jp: jpTokens, pron: pronTokens, ko: koTokens };
+            });
+
+            return {
+                slug, title, artist, videoId, thumbnail, summary: summaryRaw, lyrics
+            };
+        }
+
+        function downloadJSONFile() {
+            propagateSpaceTimes();
+            const data = buildJSON();
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${data.slug || 'lyrics'}.json`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+
+        // 이벤트 바인딩
+        document.getElementById('loadVideoBtn').addEventListener('click', () => {
+            loadYouTubeAPI();
+            setTimeout(initPlayer, 200);
+        });
+        document.getElementById('parseLyricsBtn').addEventListener('click', parseLyricsInput);
+        document.getElementById('showPreviewBtn').addEventListener('click', () => {
+            document.getElementById('output').textContent = JSON.stringify(buildJSON(), null, 2);
+        });
+        document.getElementById('downloadJsonBtn').addEventListener('click', downloadJSONFile);
+        document.getElementById('clearTimesBtn').addEventListener('click', () => {
+            structured.forEach(l => l.tokens.forEach(t => t.time = { jp: null, pron: null, ko: null }));
+            selectedTokenRef = null;
+            renderParsed();
+        });
+        document.getElementById('playTokenBtn').addEventListener('click', () => {
+            if (!selectedTokenRef) return;
+            const { lineIdx, tokenIdx, type } = selectedTokenRef;
+            const tok = structured[lineIdx].tokens[tokenIdx];
+            if (tok.time && tok.time[type] != null) {
+                player.seekTo(tok.time[type], true);
+                player.playVideo && player.playVideo();
+            }
+        });
+
+        // YouTube API load helper
+        function loadYouTubeAPI() {
+            if (window.YT && window.YT.Player) return;
+            const tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            document.head.appendChild(tag);
+            window.onYouTubeIframeAPIReady = initPlayer;
+        }
+
+        // 초기 로드
+        window.addEventListener('load', () => {
+            // placeholder 예시 (optional)
+        });
+    </script>
+</body>
+
+</html>

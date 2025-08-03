@@ -1,0 +1,84 @@
+{
+  "slug": "hand-in-hand",
+  "title": "Hand in Hand",
+  "artist": "kz(livetune)",
+  "videoId": "RKtoreimcQ8",
+  "thumbnail": "https://img.youtube.com/vi/RKtoreimcQ8/hqdefault.jpg",
+  "summary": [
+    { "time": 0, "text": "인트로: 스네어에 맞춰 <<박수>>" },
+    { "time": 10, "text": "미쿠의 'hand in hand'에 맞춰 펜라이트를 좌↔우↔상으로 흔들기" },
+    { "time": 12, "text": "동시에 'hand in hand!' 콜" }
+  ],
+  "lyrics": [
+    {
+      "jp": [
+        { "text": "目", "time": 0.0 },
+        { "text": "を", "time": 0.3 },
+        { "text": "閉", "time": 0.6 },
+        { "text": "じ", "time": 0.9 },
+        { "text": "て", "time": 1.2 }
+      ],
+      "pron": [
+        { "text": "메", "time": 0.0 },
+        { "text": "오", "time": 0.3 },
+        { "text": "토", "time": 0.6 },
+        { "text": "지", "time": 0.9 },
+        { "text": "테", "time": 1.2 }
+      ],
+      "ko": [
+        { "text": "눈", "time": 0.0 },
+        { "text": "을", "time": 0.3 },
+        { "text": " ", "time": 0.6 },
+        { "text": "감", "time": 0.9 },
+        { "text": "고", "time": 1.2 }
+      ]
+    },
+    {
+      "jp": [
+        { "text": "視", "time": 1.5 },
+        { "text": "え", "time": 1.8 },
+        { "text": "る", "time": 2.1 },
+        { "text": "そ", "time": 2.4 },
+        { "text": "の", "time": 2.7 }
+      ],
+      "pron": [
+        { "text": "미", "time": 1.5 },
+        { "text": "에", "time": 1.8 },
+        { "text": "루", "time": 2.1 },
+        { "text": "소", "time": 2.4 },
+        { "text": "노", "time": 2.7 }
+      ],
+      "ko": [
+        { "text": "보", "time": 1.5 },
+        { "text": "이", "time": 1.8 },
+        { "text": "는", "time": 2.1 },
+        { "text": " ", "time": 2.4 },
+        { "text": "그", "time": 2.7 }
+      ]
+    },
+    {
+      "jp": [
+        { "text": "Hand", "time": 10.0 },
+        { "text": " ", "time": 10.3 },
+        { "text": "in", "time": 10.6 },
+        { "text": " ", "time": 10.9 },
+        { "text": "Hand", "time": 11.2 }
+      ],
+      "pron": [
+        { "text": "핸", "time": 10.0 },
+        { "text": "드", "time": 10.3 },
+        { "text": "인", "time": 10.6 },
+        { "text": "핸", "time": 10.9 },
+        { "text": "드", "time": 11.2 }
+      ],
+      "ko": [
+        { "text": "핸", "time": 10.0 },
+        { "text": "드", "time": 10.3 },
+        { "text": "인", "time": 10.6 },
+        { "text": "핸", "time": 10.9 },
+        { "text": "드", "time": 11.2 }
+      ],
+      "call": { "text": "Hand in hand!", "start": 12, "end": 13 }
+    }
+  ]
+}
