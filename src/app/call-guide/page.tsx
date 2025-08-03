@@ -17,8 +17,13 @@ export default function CallGuideIndex() {
       <section className="container call-section">
         <div className="call-list">
           {callSongs.map((song) => (
-            <div key={song.slug} className="call-item">
-              <Link href={`/call-guide/${song.slug}`} className="call-info-link">
+            <Link
+              key={song.slug}
+              href={`/call-guide/${song.slug}`}
+              className="call-item"
+              style={{ textDecoration: 'none' }}
+            >
+              <div className="call-info-link">
                 <Image
                   src={song.thumbnail}
                   alt={song.title}
@@ -30,13 +35,13 @@ export default function CallGuideIndex() {
                   <p className="song-title">{song.title}</p>
                   <p className="song-artist">{song.artist}</p>
                 </div>
-              </Link>
+              </div>
               <div className="call-item-summary">
                 {song.summary.split('\n').map((line, i) => (
                   <p key={i}>{line}</p>
                 ))}
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </section>

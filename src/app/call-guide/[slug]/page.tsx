@@ -74,21 +74,25 @@ export default function CallGuideSongPage({
       const jpChars = Array.from(line.jp);
       const pronChars = Array.from(line.pron);
       const koChars = Array.from(line.ko);
-      const jp = interpolateTokens(
-        jpChars.map((text, i) => ({
-          text,
-          time: line.times?.jp?.[i]?.[0],
-        }))
-      );
-      const pron = pronChars.map((text, i) => ({
-        text,
-        time: jp[i]?.time,
-      }));
-      const ko = koChars.map((text, i) => ({
-        text,
-        time: jp[i]?.time,
-      }));
-      return { jp, pron, ko, call: line.call };
+      const jp = jpChars.map<Token>((text) => ({ text }));
+      const pron = pronChars.map<Token>((text) => ({ text }));
+      const ko = koChars.map<Token>((text) => ({ text }));
+
+      if (line.times) {
+        Object.entries(line.times).forEach(([key, time]) => {
+          const [ji, pi, ki] = key.split('-').map((n) => parseInt(n, 10));
+          if (!isNaN(ji) && jp[ji]) jp[ji].time = time;
+          if (!isNaN(pi) && pron[pi]) pron[pi].time = time;
+          if (!isNaN(ki) && ko[ki]) ko[ki].time = time;
+        });
+      }
+
+      return {
+        jp: interpolateTokens(jp),
+        pron: interpolateTokens(pron),
+        ko: interpolateTokens(ko),
+        call: line.call,
+      };
     });
   }, [song]);
 
@@ -115,7 +119,7 @@ export default function CallGuideSongPage({
   useEffect(() => {
     if (!ready) return;
     const interval = setInterval(() => {
-      const t = playerRef.current?.getCurrentTime() ?? 0;
+      const t = playerRef.current?.getCurrentTime?.() ?? 0;
       setCurrentTime(t);
     }, 100);
     return () => clearInterval(interval);

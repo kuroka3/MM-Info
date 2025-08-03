@@ -16,17 +16,13 @@ export interface Call {
   pos?: number;
 }
 
-export type TimeMap = Record<number, number[]>;
+export type TimeMap = Record<string, number>;
 
 export interface LyricLine {
   jp: string;
   pron: string;
   ko: string;
-  times?: {
-    jp?: TimeMap;
-    pron?: TimeMap;
-    ko?: TimeMap;
-  };
+  times?: TimeMap;
   call?: Call;
 }
 
