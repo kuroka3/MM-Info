@@ -37,7 +37,6 @@ export default function CallGuideSongPage({
   const song = callSongs.find((s) => s.slug === slug);
   const playerRef = useRef<YTPlayer | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
-  const [ready, setReady] = useState(false);
   const tokenRefs = useRef<HTMLSpanElement[][]>([]);
   const [callPositions, setCallPositions] = useState<number[]>([]);
 
@@ -57,10 +56,11 @@ export default function CallGuideSongPage({
         last = i;
       }
     }
-    if (last >= 0) {
-      const lastTime = res[last].time ?? 0;
-      for (let j = last + 1; j < res.length; j++) res[j].time = lastTime;
-    }
+    if (last < 0) return res as Token[];
+
+    const lastTime = res[last].time ?? 0;
+    for (let j = last + 1; j < res.length; j++) res[j].time = lastTime;
+
     if (res[0].time == null) res[0].time = 0;
     for (let i = 1; i < res.length; i++) {
       if (res[i].time == null) res[i].time = res[i - 1].time ?? 0;
@@ -95,35 +95,41 @@ export default function CallGuideSongPage({
       };
     });
   }, [song]);
-
   useEffect(() => {
     if (!song) return;
-    window.onYouTubeIframeAPIReady = () => {
+    let frame: number;
+
+    const update = () => {
+      const t = playerRef.current?.getCurrentTime?.() ?? 0;
+      setCurrentTime(t);
+      frame = requestAnimationFrame(update);
+    };
+
+    const onReady = (e: { target: YTPlayer }) => {
+      playerRef.current = e.target;
+      frame = requestAnimationFrame(update);
+    };
+
+    const createPlayer = () => {
       playerRef.current = new window.YT.Player('player', {
         videoId: song.videoId,
-        events: {
-          onReady: () => setReady(true),
-        },
+        events: { onReady },
       }) as unknown as YTPlayer;
     };
 
     if (window.YT && window.YT.Player) {
-      window.onYouTubeIframeAPIReady();
-    } else if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
-      const tag = document.createElement('script');
-      tag.src = 'https://www.youtube.com/iframe_api';
-      document.body.appendChild(tag);
+      createPlayer();
+    } else {
+      window.onYouTubeIframeAPIReady = createPlayer;
+      if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
+        const tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        document.body.appendChild(tag);
+      }
     }
-  }, [song]);
 
-  useEffect(() => {
-    if (!ready) return;
-    const interval = setInterval(() => {
-      const t = playerRef.current?.getCurrentTime?.() ?? 0;
-      setCurrentTime(t);
-    }, 100);
-    return () => clearInterval(interval);
-  }, [ready]);
+    return () => cancelAnimationFrame(frame);
+  }, [song]);
 
   useLayoutEffect(() => {
     setCallPositions(
@@ -138,84 +144,85 @@ export default function CallGuideSongPage({
 
   const callActive = (line: ProcessedLine) =>
     line.call ? currentTime >= line.call.start && currentTime <= line.call.end : false;
-  const charActive = (token: Token) => currentTime >= (token.time ?? 0);
+  const charActive = (token: Token) =>
+    token.time != null && currentTime >= token.time;
 
   if (!song) return <main>노래를 찾을 수 없습니다.</main>;
 
   return (
     <SpoilerGate>
-    <main>
-      <header className="header">
-        <Link href="/call-guide" className="container header-content" style={{ textDecoration: 'none' }}>
-          <h1 className="header-title">콜 가이드</h1>
-          <p className="header-subtitle">{song.title}</p>
-        </Link>
-      </header>
+      <main>
+        <header className="header">
+          <Link href="/call-guide" className="container header-content" style={{ textDecoration: 'none' }}>
+            <h1 className="header-title">콜 가이드</h1>
+            <p className="header-subtitle">{song.title}</p>
+          </Link>
+        </header>
 
-      <section className="container call-section">
-        <div className="player-wrapper">
-          <div id="player" className="video-player" />
-        </div>
+        <section className="container call-section">
+          <div className="player-wrapper">
+            <div id="player" className="video-player" />
+          </div>
 
-        <div className="glass-effect call-summary-box">
-          <h3 className="call-summary-title">콜 정리</h3>
-          {song.summary.split('\n').map((line, i) => (
-            <p key={i}>{line}</p>
-          ))}
-        </div>
+          <div className="glass-effect call-summary-box">
+            <h3 className="call-summary-title">콜 정리</h3>
+            {song.summary.split('\n').map((line, i) => (
+              <p key={i}>{line}</p>
+            ))}
+          </div>
 
-        <div className="lyrics">
-          {lyrics.map((line, idx) => (
-            <div key={idx} className="lyric-line">
-              <div
-                className={`lyric-call${callActive(line) ? ' active' : ''}`}
-                style={
-                  line.call?.pos != null
-                    ? { left: callPositions[idx], transform: 'none' }
-                    : undefined
-                }
-              >
-                {line.call?.text ?? ''}
+          <div className="lyrics">
+            {lyrics.map((line, idx) => (
+              <div key={idx} className="lyric-line">
+                <div
+                  className={`lyric-call${callActive(line) ? ' active' : ''}`}
+                  style={
+                    line.call?.pos != null
+                      ? { left: callPositions[idx], transform: 'none' }
+                      : undefined
+                  }
+                >
+                  {line.call?.text ?? ''}
+                </div>
+                <div className="lyric-row">
+                  {line.jp.map((token, i) => (
+                    <span
+                      key={i}
+                      ref={(el) => {
+                        if (!tokenRefs.current[idx]) tokenRefs.current[idx] = [];
+                        tokenRefs.current[idx][i] = el!;
+                      }}
+                      className={`lyric-char${charActive(token) ? ' active' : ''}`}
+                    >
+                      {token.text}
+                    </span>
+                  ))}
+                </div>
+                <div className="lyric-row">
+                  {line.pron.map((token, i) => (
+                    <span
+                      key={i}
+                      className={`lyric-char${charActive(token) ? ' active' : ''}`}
+                    >
+                      {token.text}
+                    </span>
+                  ))}
+                </div>
+                <div className="lyric-row">
+                  {line.ko.map((token, i) => (
+                    <span
+                      key={i}
+                      className={`lyric-char${charActive(token) ? ' active' : ''}`}
+                    >
+                      {token.text}
+                    </span>
+                  ))}
+                </div>
               </div>
-              <div className="lyric-row">
-                {line.jp.map((token, i) => (
-                  <span
-                    key={i}
-                    ref={(el) => {
-                      if (!tokenRefs.current[idx]) tokenRefs.current[idx] = [];
-                      tokenRefs.current[idx][i] = el!;
-                    }}
-                    className={`lyric-char${charActive(token) ? ' active' : ''}`}
-                  >
-                    {token.text}
-                  </span>
-                ))}
-              </div>
-              <div className="lyric-row">
-                {line.pron.map((token, i) => (
-                  <span
-                    key={i}
-                    className={`lyric-char${charActive(token) ? ' active' : ''}`}
-                  >
-                    {token.text}
-                  </span>
-                ))}
-              </div>
-              <div className="lyric-row">
-                {line.ko.map((token, i) => (
-                  <span
-                    key={i}
-                    className={`lyric-char${charActive(token) ? ' active' : ''}`}
-                  >
-                    {token.text}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-    </main>
+            ))}
+          </div>
+        </section>
+      </main>
     </SpoilerGate>
   );
 }
