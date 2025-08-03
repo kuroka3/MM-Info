@@ -1,7 +1,15 @@
 'use client';
 
-import { useEffect, useRef, useState, use, useMemo, useLayoutEffect } from 'react';
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+  useLayoutEffect,
+  useCallback,
+} from 'react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import SpoilerGate from '@/components/SpoilerGate';
 import { callSongs, Call, LyricLine } from '@/data/songs';
 
@@ -19,6 +27,11 @@ interface ProcessedLine {
 
 interface YTPlayer {
   getCurrentTime: () => number;
+  getDuration: () => number;
+  playVideo: () => void;
+  pauseVideo: () => void;
+  seekTo: (seconds: number, allowSeekAhead?: boolean) => void;
+  destroy: () => void;
 }
 
 declare global {
@@ -28,17 +41,18 @@ declare global {
   }
 }
 
-export default function CallGuideSongPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = use(params);
+export default function CallGuideSongPage() {
+  const { slug } = useParams<{ slug: string }>();
   const song = callSongs.find((s) => s.slug === slug);
   const playerRef = useRef<YTPlayer | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
   const tokenRefs = useRef<HTMLSpanElement[][]>([]);
+  const lineRefs = useRef<HTMLDivElement[]>([]);
   const [callPositions, setCallPositions] = useState<number[]>([]);
+  const autoScrollRef = useRef(true);
+  const programmaticScrollRef = useRef(false);
 
   const interpolateTokens = (tokens: Token[]): Token[] => {
     const res = tokens.map((t) => ({ ...t }));
@@ -95,8 +109,13 @@ export default function CallGuideSongPage({
       };
     });
   }, [song]);
+
   useEffect(() => {
     if (!song) return;
+    tokenRefs.current = [];
+    lineRefs.current = [];
+    setCallPositions([]);
+
     let frame: number;
 
     const update = () => {
@@ -105,15 +124,28 @@ export default function CallGuideSongPage({
       frame = requestAnimationFrame(update);
     };
 
-    const onReady = (e: { target: YTPlayer }) => {
-      playerRef.current = e.target;
-      frame = requestAnimationFrame(update);
-    };
+    frame = requestAnimationFrame(update);
 
     const createPlayer = () => {
       playerRef.current = new window.YT.Player('player', {
         videoId: song.videoId,
-        events: { onReady },
+        host: 'https://www.youtube-nocookie.com',
+        playerVars: {
+          controls: 0,
+          disablekb: 1,
+          iv_load_policy: 3,
+          rel: 0,
+          modestbranding: 1,
+        },
+        events: {
+          onReady: (e: { target: YTPlayer }) => {
+            playerRef.current = e.target;
+            setDuration(e.target.getDuration?.() ?? 0);
+          },
+          onStateChange: (e: { data: number }) => {
+            setIsPlaying(e.data === 1);
+          },
+        },
       }) as unknown as YTPlayer;
     };
 
@@ -128,19 +160,86 @@ export default function CallGuideSongPage({
       }
     }
 
-    return () => cancelAnimationFrame(frame);
-  }, [song]);
+    setCurrentTime(0);
 
-  useLayoutEffect(() => {
+    return () => {
+      cancelAnimationFrame(frame);
+      playerRef.current?.destroy?.();
+      playerRef.current = null;
+    };
+  }, [slug, song]);
+
+  const computeCallPositions = useCallback(() => {
     setCallPositions(
       lyrics.map((line, idx) => {
         const pos = line.call?.pos;
         if (pos == null) return 0;
-        const el = tokenRefs.current[idx]?.[pos];
-        return el?.offsetLeft ?? 0;
+        const charEl = tokenRefs.current[idx]?.[pos];
+        const lineEl = lineRefs.current[idx];
+        if (!charEl || !lineEl) return 0;
+        const charRect = charEl.getBoundingClientRect();
+        const lineRect = lineEl.getBoundingClientRect();
+        return charRect.left - lineRect.left;
       })
     );
   }, [lyrics]);
+
+  useLayoutEffect(computeCallPositions, [computeCallPositions]);
+  useEffect(() => {
+    window.addEventListener('resize', computeCallPositions);
+    return () => window.removeEventListener('resize', computeCallPositions);
+  }, [computeCallPositions]);
+
+  const scrollToActiveLine = useCallback(() => {
+    if (!autoScrollRef.current) return;
+    const idx = (() => {
+      for (let i = lyrics.length - 1; i >= 0; i--) {
+        const start = lyrics[i].jp[0]?.time ?? 0;
+        if (currentTime >= start) return i;
+      }
+      return 0;
+    })();
+    const el = lineRefs.current[idx];
+    if (el) {
+      programmaticScrollRef.current = true;
+      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      setTimeout(() => {
+        programmaticScrollRef.current = false;
+      }, 500);
+    }
+  }, [lyrics, currentTime]);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!playerRef.current) return;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (isPlaying) playerRef.current.pauseVideo();
+        else playerRef.current.playVideo();
+        autoScrollRef.current = true;
+        scrollToActiveLine();
+      } else if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
+        e.preventDefault();
+        const delta = e.code === 'ArrowLeft' ? -5 : 5;
+        const t = Math.max(0, Math.min((playerRef.current.getDuration?.() ?? 0), currentTime + delta));
+        playerRef.current.seekTo(t, true);
+        setCurrentTime(t);
+        autoScrollRef.current = true;
+        setTimeout(scrollToActiveLine, 100);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isPlaying, currentTime, scrollToActiveLine]);
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (programmaticScrollRef.current) return;
+      autoScrollRef.current = false;
+    };
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const callActive = (line: ProcessedLine) =>
     line.call ? currentTime >= line.call.start && currentTime <= line.call.end : false;
@@ -152,6 +251,7 @@ export default function CallGuideSongPage({
   return (
     <SpoilerGate>
       <main>
+        <div id="player" className="video-background" />
         <header className="header">
           <Link href="/call-guide" className="container header-content" style={{ textDecoration: 'none' }}>
             <h1 className="header-title">콜 가이드</h1>
@@ -160,10 +260,6 @@ export default function CallGuideSongPage({
         </header>
 
         <section className="container call-section">
-          <div className="player-wrapper">
-            <div id="player" className="video-player" />
-          </div>
-
           <div className="glass-effect call-summary-box">
             <h3 className="call-summary-title">콜 정리</h3>
             {song.summary.split('\n').map((line, i) => (
@@ -173,7 +269,13 @@ export default function CallGuideSongPage({
 
           <div className="lyrics">
             {lyrics.map((line, idx) => (
-              <div key={idx} className="lyric-line">
+              <div
+                key={idx}
+                className="lyric-line"
+                ref={(el) => {
+                  lineRefs.current[idx] = el!;
+                }}
+              >
                 <div
                   className={`lyric-call${callActive(line) ? ' active' : ''}`}
                   style={
@@ -222,6 +324,43 @@ export default function CallGuideSongPage({
             ))}
           </div>
         </section>
+
+        <div className="player-controls">
+          <button
+            onClick={() => {
+              if (!playerRef.current) return;
+              if (isPlaying) playerRef.current.pauseVideo();
+              else playerRef.current.playVideo();
+            }}
+          >
+            {isPlaying ? '일시정지' : '재생'}
+          </button>
+          <input
+            type="range"
+            min={0}
+            max={duration || 0}
+            step={0.1}
+            value={currentTime}
+            onChange={(e) => {
+              const t = Number(e.target.value);
+              playerRef.current?.seekTo(t, true);
+              setCurrentTime(t);
+              autoScrollRef.current = true;
+              scrollToActiveLine();
+            }}
+            style={{ flex: 1 }}
+          />
+        </div>
+
+        <button
+          className="scroll-top"
+          onClick={() => {
+            autoScrollRef.current = false;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        >
+          ↑
+        </button>
       </main>
     </SpoilerGate>
   );
