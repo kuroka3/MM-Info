@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import SpoilerGate from '@/components/SpoilerGate';
 import { callSongs } from '@/data/songs';
 
 export default function CallGuideIndex() {
   return (
+    <SpoilerGate>
     <main>
       <header className="header">
         <div className="container header-content">
@@ -30,8 +32,8 @@ export default function CallGuideIndex() {
                 </div>
               </Link>
               <div className="call-item-summary">
-                {song.summary.map((c) => (
-                  <p key={c.time}>{c.text}</p>
+                {song.summary.split('\n').map((line, i) => (
+                  <p key={i}>{line}</p>
                 ))}
               </div>
             </div>
@@ -39,5 +41,6 @@ export default function CallGuideIndex() {
         </div>
       </section>
     </main>
+    </SpoilerGate>
   );
 }

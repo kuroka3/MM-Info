@@ -13,23 +13,21 @@ export interface Call {
   text: string;
   start: number;
   end: number;
+  pos?: number;
 }
 
-export interface Token {
-  text: string;
-  time: number;
-}
+export type TimeMap = Record<number, number[]>;
 
 export interface LyricLine {
-  jp: Token[];
-  pron: Token[];
-  ko: Token[];
+  jp: string;
+  pron: string;
+  ko: string;
+  times?: {
+    jp?: TimeMap;
+    pron?: TimeMap;
+    ko?: TimeMap;
+  };
   call?: Call;
-}
-
-export interface CallSummary {
-  time: number;
-  text: string;
 }
 
 export interface CallSong {
@@ -38,7 +36,7 @@ export interface CallSong {
   artist: string;
   videoId: string;
   thumbnail: string;
-  summary: CallSummary[];
+  summary: string;
   lyrics: LyricLine[];
 }
 

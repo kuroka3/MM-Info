@@ -4,16 +4,20 @@ import React, { useEffect, useLayoutEffect, useState } from 'react';
 
 interface Props {
   children: React.ReactNode;
+  storageKey?: string;
 }
 
-const SpoilerGate: React.FC<Props> = ({ children }) => {
+const SpoilerGate: React.FC<Props> = ({
+  children,
+  storageKey = 'spoilerConfirmed',
+}) => {
   const [showWarning, setShowWarning] = useState(true);
 
   useLayoutEffect(() => {
-    if (localStorage.getItem('setlistSpoilerConfirmed') === 'true') {
+    if (localStorage.getItem(storageKey) === 'true') {
       setShowWarning(false);
     }
-  }, []);
+  }, [storageKey]);
 
   useEffect(() => {
     if (!showWarning) return;
@@ -25,7 +29,7 @@ const SpoilerGate: React.FC<Props> = ({ children }) => {
   }, [showWarning]);
 
   const handleYes = () => {
-    localStorage.setItem('setlistSpoilerConfirmed', 'true');
+    localStorage.setItem(storageKey, 'true');
     setShowWarning(false);
   };
 

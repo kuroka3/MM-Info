@@ -1359,17 +1359,11 @@ body {
   margin-bottom: 0.5rem;
 }
 
-.call-summary-list {
-  list-style: none;
-  padding: 0;
+.call-summary-box p {
+  margin: 0;
 }
 
-.call-summary-list li {
-  text-align: center;
-  color: var(--text-primary);
-}
-
-.call-summary-list li + li {
+.call-summary-box p + p {
   margin-top: 0.25rem;
 }
 
@@ -1381,13 +1375,18 @@ body {
 
 .lyric-line {
   text-align: center;
+  position: relative;
+  padding-top: 1.5rem;
 }
 
 .lyric-call {
   color: var(--text-tertiary);
   min-height: 1.5rem;
-  display: inline-block;
   transition: color 0.3s ease, text-shadow 0.3s ease;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .lyric-call.active {
