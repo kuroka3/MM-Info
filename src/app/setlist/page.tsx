@@ -1,7 +1,5 @@
-'use client';
-
+import type { Metadata } from 'next';
 import Link from 'next/link';
-import { useMemo } from 'react';
 import { Inter } from 'next/font/google';
 import SpoilerGate from '@/components/SpoilerGate';
 
@@ -47,6 +45,8 @@ const raw: Venue[] = [
   },
 ];
 
+export const metadata: Metadata = { title: '세트리스트' };
+
 const group = (arr: Show[]) => {
   const map = new Map<string, {
     day: string;
@@ -60,7 +60,7 @@ const group = (arr: Show[]) => {
 };
 
 export default function Page() {
-  const venues = useMemo(() => raw, []);
+  const venues = raw;
 
   return (
     <SpoilerGate>

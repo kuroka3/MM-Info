@@ -1,3 +1,7 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = { title: '기획전 정보' };
+
 export default function ExhibitionInfoPage() {
   return (
     <main className="container" style={{ textAlign: 'center', paddingTop: '4rem' }}>
