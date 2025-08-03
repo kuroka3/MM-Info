@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 
 interface Props {
   children: React.ReactNode;
@@ -9,11 +9,20 @@ interface Props {
 const SpoilerGate: React.FC<Props> = ({ children }) => {
   const [showWarning, setShowWarning] = useState(true);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (localStorage.getItem('setlistSpoilerConfirmed') === 'true') {
       setShowWarning(false);
     }
   }, []);
+
+  useEffect(() => {
+    if (!showWarning) return;
+    const originalStyle = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, [showWarning]);
 
   const handleYes = () => {
     localStorage.setItem('setlistSpoilerConfirmed', 'true');

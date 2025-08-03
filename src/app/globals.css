@@ -1110,10 +1110,7 @@ body {
 /* Spoiler overlay */
 .spoiler-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background: var(--blur-bg);
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(20px);
