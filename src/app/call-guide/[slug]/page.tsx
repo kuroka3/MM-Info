@@ -9,7 +9,7 @@ import React, {
   useCallback,
 } from 'react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import SpoilerGate from '@/components/SpoilerGate';
 import { callSongs, Call, LyricLine } from '@/data/songs';
 
@@ -43,7 +43,14 @@ declare global {
 
 export default function CallGuideSongPage() {
   const { slug } = useParams<{ slug: string }>();
+  const router = useRouter();
   const song = callSongs.find((s) => s.slug === slug);
+  const songIndex = callSongs.findIndex((s) => s.slug === slug);
+  const prevSong = songIndex > 0 ? callSongs[songIndex - 1] : null;
+  const nextSong =
+    songIndex >= 0 && songIndex < callSongs.length - 1
+      ? callSongs[songIndex + 1]
+      : null;
   const playerRef = useRef<YTPlayer | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -53,6 +60,7 @@ export default function CallGuideSongPage() {
   const [callPositions, setCallPositions] = useState<number[]>([]);
   const autoScrollRef = useRef(true);
   const programmaticScrollRef = useRef(false);
+  const [activeLine, setActiveLine] = useState(0);
 
   const interpolateTokens = (tokens: Token[]): Token[] => {
     const res = tokens.map((t) => ({ ...t }));
@@ -169,6 +177,22 @@ export default function CallGuideSongPage() {
     };
   }, [slug, song]);
 
+  const timeToLine = useCallback(
+    (t: number) => {
+      for (let i = lyrics.length - 1; i >= 0; i--) {
+        const start = lyrics[i].jp[0]?.time ?? 0;
+        if (t >= start) return i;
+      }
+      return 0;
+    },
+    [lyrics]
+  );
+
+  useEffect(() => {
+    const idx = timeToLine(currentTime);
+    if (idx !== activeLine) setActiveLine(idx);
+  }, [currentTime, timeToLine, activeLine]);
+
   const computeCallPositions = useCallback(() => {
     setCallPositions(
       lyrics.map((line, idx) => {
@@ -183,22 +207,14 @@ export default function CallGuideSongPage() {
       })
     );
   }, [lyrics]);
-
   useLayoutEffect(computeCallPositions, [computeCallPositions]);
   useEffect(() => {
+    document.fonts?.ready.then(computeCallPositions);
     window.addEventListener('resize', computeCallPositions);
     return () => window.removeEventListener('resize', computeCallPositions);
   }, [computeCallPositions]);
 
-  const scrollToActiveLine = useCallback(() => {
-    if (!autoScrollRef.current) return;
-    const idx = (() => {
-      for (let i = lyrics.length - 1; i >= 0; i--) {
-        const start = lyrics[i].jp[0]?.time ?? 0;
-        if (currentTime >= start) return i;
-      }
-      return 0;
-    })();
+  const scrollToLine = useCallback((idx: number) => {
     const el = lineRefs.current[idx];
     if (el) {
       programmaticScrollRef.current = true;
@@ -207,7 +223,12 @@ export default function CallGuideSongPage() {
         programmaticScrollRef.current = false;
       }, 500);
     }
-  }, [lyrics, currentTime]);
+  }, []);
+
+  useEffect(() => {
+    if (!autoScrollRef.current) return;
+    scrollToLine(activeLine);
+  }, [activeLine, scrollToLine]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -217,7 +238,7 @@ export default function CallGuideSongPage() {
         if (isPlaying) playerRef.current.pauseVideo();
         else playerRef.current.playVideo();
         autoScrollRef.current = true;
-        scrollToActiveLine();
+        scrollToLine(activeLine);
       } else if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
         e.preventDefault();
         const delta = e.code === 'ArrowLeft' ? -5 : 5;
@@ -225,12 +246,13 @@ export default function CallGuideSongPage() {
         playerRef.current.seekTo(t, true);
         setCurrentTime(t);
         autoScrollRef.current = true;
-        setTimeout(scrollToActiveLine, 100);
+        const idx = timeToLine(t);
+        setTimeout(() => scrollToLine(idx), 100);
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [isPlaying, currentTime, scrollToActiveLine]);
+  }, [isPlaying, currentTime, scrollToLine, timeToLine, activeLine]);
 
   useEffect(() => {
     const onScroll = () => {
@@ -245,6 +267,8 @@ export default function CallGuideSongPage() {
     line.call ? currentTime >= line.call.start && currentTime <= line.call.end : false;
   const charActive = (token: Token) =>
     token.time != null && currentTime >= token.time;
+
+  const progress = duration ? (currentTime / duration) * 100 : 0;
 
   if (!song) return <main>노래를 찾을 수 없습니다.</main>;
 
@@ -271,9 +295,16 @@ export default function CallGuideSongPage() {
             {lyrics.map((line, idx) => (
               <div
                 key={idx}
-                className="lyric-line"
+                className={`lyric-line${idx === activeLine ? ' focused' : ''}`}
                 ref={(el) => {
                   lineRefs.current[idx] = el!;
+                }}
+                onClick={() => {
+                  const t = line.jp[0]?.time ?? 0;
+                  playerRef.current?.seekTo(t, true);
+                  setCurrentTime(t);
+                  autoScrollRef.current = true;
+                  scrollToLine(idx);
                 }}
               >
                 <div
@@ -326,16 +357,9 @@ export default function CallGuideSongPage() {
         </section>
 
         <div className="player-controls">
-          <button
-            onClick={() => {
-              if (!playerRef.current) return;
-              if (isPlaying) playerRef.current.pauseVideo();
-              else playerRef.current.playVideo();
-            }}
-          >
-            {isPlaying ? '일시정지' : '재생'}
-          </button>
           <input
+            suppressHydrationWarning
+            className="player-seek"
             type="range"
             min={0}
             max={duration || 0}
@@ -346,20 +370,76 @@ export default function CallGuideSongPage() {
               playerRef.current?.seekTo(t, true);
               setCurrentTime(t);
               autoScrollRef.current = true;
-              scrollToActiveLine();
+               const idx = timeToLine(t);
+               scrollToLine(idx);
             }}
-            style={{ flex: 1 }}
+            style={{
+              background: `linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.8) ${progress}%, rgba(255,255,255,0.3) ${progress}%, rgba(255,255,255,0.3) 100%)`,
+            }}
           />
+          <div className="player-buttons">
+            <button
+              className="control-button"
+              disabled={!prevSong}
+              onClick={() => {
+                if (!prevSong) return;
+                autoScrollRef.current = true;
+                router.push(`/call-guide/${prevSong.slug}`);
+              }}
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="15,5 7,12 15,19" />
+                <rect x="5" y="5" width="2" height="14" />
+              </svg>
+            </button>
+            <button
+              className="control-button"
+              onClick={() => {
+                if (!playerRef.current) return;
+                if (isPlaying) playerRef.current.pauseVideo();
+                else playerRef.current.playVideo();
+                autoScrollRef.current = true;
+                scrollToLine(activeLine);
+              }}
+            >
+              {isPlaying ? (
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="6" y="5" width="4" height="14" />
+                  <rect x="14" y="5" width="4" height="14" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="8,5 19,12 8,19" />
+                </svg>
+              )}
+            </button>
+            <button
+              className="control-button"
+              disabled={!nextSong}
+              onClick={() => {
+                if (!nextSong) return;
+                autoScrollRef.current = true;
+                router.push(`/call-guide/${nextSong.slug}`);
+              }}
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="9,5 17,12 9,19" />
+                <rect x="17" y="5" width="2" height="14" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         <button
-          className="scroll-top"
+          className="scroll-top control-button"
           onClick={() => {
             autoScrollRef.current = false;
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
         >
-          ↑
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <polyline points="6,15 12,9 18,15" stroke="currentColor" strokeWidth="2" fill="none" />
+          </svg>
         </button>
       </main>
     </SpoilerGate>
