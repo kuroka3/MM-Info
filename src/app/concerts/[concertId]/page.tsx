@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import Header from '@/components/Header';
 import SongList from '@/components/SongList';
+import PlaylistPopup from '@/components/PlaylistPopup';
 import SpoilerGate from '@/components/SpoilerGate';
 
 type Song = {
@@ -30,19 +31,16 @@ async function getConcerts(): Promise<ConcertsData> {
   return await res.json();
 }
 
-type ConcertPageProps = Promise<{
-  concertId: string;
-}>;
+type ConcertPageProps = {
+  params: Promise<{ concertId: string }>;
+  searchParams: Promise<{ date?: string; block?: string }>;
+};
 
-async function Songs({ concertId }: { concertId: string }) {
+const ConcertPage = async ({ params, searchParams }: ConcertPageProps) => {
+  const { concertId } = await params;
+  const { date, block } = await searchParams;
   const concerts = await getConcerts();
-  const concert = concerts[concertId as keyof typeof concerts];
-  return <SongList songs={concert.songs} />;
-}
-
-const ConcertPage = async ( props: { params: ConcertPageProps}) => {
-  const concerts = await getConcerts();
-  const concert = concerts[(await props.params).concertId];
+  const concert = concerts[concertId];
 
   if (!concert) {
     return (
@@ -52,19 +50,33 @@ const ConcertPage = async ( props: { params: ConcertPageProps}) => {
     );
   }
 
+  const playlist = concert.songs.find(
+    (s) => s.title === '최종 플레이리스트' || s.artist === ''
+  );
+  const songs = concert.songs;
+
+  const displayDate = date && block ? `${date} ${block} 공연` : concert.date;
+
   return (
     <SpoilerGate>
       <main>
-        <Header title={concert.title} artist={concert.artist} date={concert.date} />
+        <Header title={concert.title} artist={concert.artist} date={displayDate} />
         <section className="container">
           <Suspense fallback={
             <div className="loading-spinner-container">
               <div className="loading-spinner"></div>
             </div>
           }>
-            <Songs concertId={(await props.params).concertId} />
+          <SongList songs={songs} />
           </Suspense>
         </section>
+                {playlist && (
+          <PlaylistPopup
+            spotifyUrl={playlist.spotifyUrl}
+            youtubeUrl={playlist.youtubeUrl}
+            jacketUrl={playlist.jacketUrl}
+          />
+        )}
       </main>
     </SpoilerGate>
   );
