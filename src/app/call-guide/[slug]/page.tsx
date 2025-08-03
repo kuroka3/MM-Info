@@ -53,6 +53,8 @@ export default function CallGuideSongPage() {
       : null;
   const playerRef = useRef<YTPlayer | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
+  const [displayTime, setDisplayTime] = useState(0);
+  const currentTimeRef = useRef(0);
   const [duration, setDuration] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const tokenRefs = useRef<HTMLSpanElement[][]>([]);
@@ -60,6 +62,7 @@ export default function CallGuideSongPage() {
   const [callPositions, setCallPositions] = useState<number[]>([]);
   const autoScrollRef = useRef(true);
   const programmaticScrollRef = useRef(false);
+  const seekingRef = useRef(false);
   const [activeLine, setActiveLine] = useState(0);
 
   const interpolateTokens = (tokens: Token[]): Token[] => {
@@ -124,15 +127,15 @@ export default function CallGuideSongPage() {
     lineRefs.current = [];
     setCallPositions([]);
 
-    let frame: number;
-
     const update = () => {
+      if (seekingRef.current) return;
       const t = playerRef.current?.getCurrentTime?.() ?? 0;
+      currentTimeRef.current = t;
       setCurrentTime(t);
-      frame = requestAnimationFrame(update);
     };
 
-    frame = requestAnimationFrame(update);
+    update();
+    const interval = window.setInterval(update, 100);
 
     const createPlayer = () => {
       playerRef.current = new window.YT.Player('player', {
@@ -169,13 +172,25 @@ export default function CallGuideSongPage() {
     }
 
     setCurrentTime(0);
+    setDisplayTime(0);
+    currentTimeRef.current = 0;
 
     return () => {
-      cancelAnimationFrame(frame);
+      clearInterval(interval);
       playerRef.current?.destroy?.();
       playerRef.current = null;
     };
   }, [slug, song]);
+
+  useEffect(() => {
+    let frame: number;
+    const smooth = () => {
+      setDisplayTime((prev) => prev + (currentTimeRef.current - prev) * 0.2);
+      frame = requestAnimationFrame(smooth);
+    };
+    frame = requestAnimationFrame(smooth);
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   const timeToLine = useCallback(
     (t: number) => {
@@ -189,9 +204,10 @@ export default function CallGuideSongPage() {
   );
 
   useEffect(() => {
-    const idx = timeToLine(currentTime);
+    const baseTime = seekingRef.current ? displayTime : currentTime;
+    const idx = timeToLine(baseTime);
     if (idx !== activeLine) setActiveLine(idx);
-  }, [currentTime, timeToLine, activeLine]);
+  }, [currentTime, displayTime, timeToLine, activeLine]);
 
   const computeCallPositions = useCallback(() => {
     setCallPositions(
@@ -244,7 +260,9 @@ export default function CallGuideSongPage() {
         const delta = e.code === 'ArrowLeft' ? -5 : 5;
         const t = Math.max(0, Math.min((playerRef.current.getDuration?.() ?? 0), currentTime + delta));
         playerRef.current.seekTo?.(t, true);
+        currentTimeRef.current = t;
         setCurrentTime(t);
+        setDisplayTime(t);
         autoScrollRef.current = true;
         const idx = timeToLine(t);
         setTimeout(() => scrollToLine(idx), 100);
@@ -268,7 +286,7 @@ export default function CallGuideSongPage() {
   const charActive = (token: Token) =>
     token.time != null && currentTime >= token.time;
 
-  const progress = duration ? (currentTime / duration) * 100 : 0;
+  const progress = duration ? (displayTime / duration) * 100 : 0;
 
   if (!song) return <main>노래를 찾을 수 없습니다.</main>;
 
@@ -302,7 +320,9 @@ export default function CallGuideSongPage() {
                 onClick={() => {
                   const t = line.jp[0]?.time ?? 0;
                   playerRef.current?.seekTo(t, true);
+                  currentTimeRef.current = t;
                   setCurrentTime(t);
+                  setDisplayTime(t);
                   autoScrollRef.current = true;
                   scrollToLine(idx);
                 }}
@@ -364,14 +384,43 @@ export default function CallGuideSongPage() {
             min={0}
             max={duration || 0}
             step={0.1}
-            value={currentTime}
+            value={displayTime}
+            onPointerDown={() => {
+              seekingRef.current = true;
+              autoScrollRef.current = false;
+            }}
             onChange={(e) => {
               const t = Number(e.target.value);
               playerRef.current?.seekTo(t, true);
+              currentTimeRef.current = t;
               setCurrentTime(t);
+              setDisplayTime(t);
+            }}
+            onPointerUp={(e) => {
+              const t = Number(e.currentTarget.value);
+              playerRef.current?.seekTo(t, true);
+              currentTimeRef.current = t;
+              setCurrentTime(t);
+              setDisplayTime(t);
               autoScrollRef.current = true;
-               const idx = timeToLine(t);
-               scrollToLine(idx);
+              const idx = timeToLine(t);
+              scrollToLine(idx);
+              setTimeout(() => {
+                seekingRef.current = false;
+              }, 200);
+            }}
+            onPointerCancel={(e) => {
+              const t = Number(e.currentTarget.value);
+              playerRef.current?.seekTo(t, true);
+              currentTimeRef.current = t;
+              setCurrentTime(t);
+              setDisplayTime(t);
+              autoScrollRef.current = true;
+              const idx = timeToLine(t);
+              scrollToLine(idx);
+              setTimeout(() => {
+                seekingRef.current = false;
+              }, 200);
             }}
             style={{
               background: `linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.8) ${progress}%, rgba(255,255,255,0.3) ${progress}%, rgba(255,255,255,0.3) 100%)`,

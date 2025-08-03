@@ -1457,7 +1457,7 @@ body {
   border-radius: 8px;
   backdrop-filter: blur(8px);
   cursor: pointer;
-  transition: box-shadow 0.3s ease;
+  transition: background 0.2s linear, box-shadow 0.3s ease;
 }
 
 .player-seek::-webkit-slider-thumb {
