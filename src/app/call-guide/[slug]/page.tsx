@@ -9,6 +9,7 @@ import React, {
   useCallback,
 } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import SpoilerGate from '@/components/SpoilerGate';
 import { callSongs, Call, LyricLine } from '@/data/songs';
@@ -302,6 +303,15 @@ export default function CallGuideSongPage() {
         </header>
 
         <section className="container call-section">
+          <div className="call-song-jacket">
+            <Image
+              src={song.thumbnail}
+              alt={song.title}
+              width={200}
+              height={150}
+              className="song-jacket"
+            />
+          </div>
           <div className="glass-effect call-summary-box">
             <h3 className="call-summary-title">콜 정리</h3>
             {song.summary.split('\n').map((line, i) => (

@@ -1356,6 +1356,12 @@ body {
   filter: blur(20px) brightness(0.4);
 }
 
+.call-song-jacket {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
 .call-summary-box {
   padding: 1rem;
   border-radius: 12px;

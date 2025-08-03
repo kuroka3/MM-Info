@@ -31,7 +31,7 @@ export default function CallGuideIndex() {
                   src={song.thumbnail}
                   alt={song.title}
                   width={80}
-                  height={80}
+                  height={60}
                   className="song-jacket"
                 />
                 <div className="song-text-info">
