@@ -20,7 +20,11 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
   return (
     <div className="song-list">
       {songs.map((song, index) => {
-        const itemClass = song.higawari
+        const isFinalPlaylist =
+          song.title === '최종 플레이리스트' || song.artist === '';
+        const itemClass = isFinalPlaylist
+          ? 'song-item final-playlist'
+          : song.higawari
           ? 'song-item higawari'
           : song.locationgawari
           ? 'song-item locationgawari'
@@ -31,7 +35,9 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
         return (
           <div className={itemClass} key={index}>
             <div className="song-info">
-              <span className="song-index">{index + 1}</span>
+              {!isFinalPlaylist && (
+                <span className="song-index">{index + 1}</span>
+              )}
               <div className="song-details">
                 <Image
                   src={song.jacketUrl}
@@ -41,36 +47,48 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
                   className="song-jacket"
                 />
                 <div className="song-text-info">
-                  <p className="song-title">{finalTitle}</p>
-                  <p className="song-artist">{song.artist}</p>
+                  <p className="song-title">
+                    {isFinalPlaylist ? (
+                      <>
+                        최종 플레이<wbr />리스트
+                      </>
+                    ) : (
+                      finalTitle
+                    )}
+                  </p>
+                  {song.artist && <p className="song-artist">{song.artist}</p>}
                 </div>
               </div>
             </div>
             <div className="song-links">
-              <a
-                href={song.spotifyUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Image
-                  src="/spotify.svg"
-                  alt="Spotify"
-                  width={24}
-                  height={24}
-                />
-              </a>
-              <a
-                href={song.youtubeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Image
-                  src="/youtube.svg"
-                  alt="YouTube"
-                  width={24}
-                  height={24}
-                />
-              </a>
+              {song.spotifyUrl && (
+                <a
+                  href={song.spotifyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Image
+                    src="/spotify.svg"
+                    alt="Spotify"
+                    width={24}
+                    height={24}
+                  />
+                </a>
+              )}
+              {song.youtubeUrl && (
+                <a
+                  href={song.youtubeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Image
+                    src="/youtube.svg"
+                    alt="YouTube"
+                    width={24}
+                    height={24}
+                  />
+                </a>
+              )}
             </div>
           </div>
         );

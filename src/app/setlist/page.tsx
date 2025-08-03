@@ -104,7 +104,9 @@ export default function Page() {
                         ) : id ? (
                           <Link
                             key={t}
-                            href={`/concerts/${id}`}
+                            href={`/concerts/${id}?date=${encodeURIComponent(
+                              date
+                            )}&block=${encodeURIComponent(t)}`}
                             className="glass-effect block-link"
                           >
                             {t}
