@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Inter } from 'next/font/google';
+import SpoilerGate from '@/components/SpoilerGate';
 
 const inter = Inter({ subsets: ['latin'], weight: ['600', '700', '800'] });
 
@@ -60,26 +61,11 @@ const group = (arr: Show[]) => {
 
 export default function Page() {
   const venues = useMemo(() => raw, []);
-  const [showWarning, setShowWarning] = useState(true);
-
-  useEffect(() => {
-    if (localStorage.getItem('setlistSpoilerConfirmed') === 'true') {
-      setShowWarning(false);
-    }
-  }, []);
-
-  const handleYes = () => {
-    localStorage.setItem('setlistSpoilerConfirmed', 'true');
-    setShowWarning(false);
-  };
-
-  const handleNo = () => {
-    window.location.href = '/';
-  };
 
   return (
-    <main className={inter.className}>
-      <header className="header">
+    <SpoilerGate>
+      <main className={inter.className}>
+        <header className="header">
         <div className="container header-content">
           <h1 className="header-title">세트리스트</h1>
           <p className="header-subtitle">공연 회차를 선택하세요</p>
@@ -125,20 +111,7 @@ export default function Page() {
           ))}
         </div>
       </section>
-      {showWarning && (
-        <div className="spoiler-overlay">
-          <p className="spoiler-warning">⚠️ 스포일러 주의</p>
-          <p className="spoiler-question">내용을 정말 확인하시겠습니까?</p>
-          <div className="spoiler-actions">
-            <button className="spoiler-yes" onClick={handleYes}>
-              예
-            </button>
-            <button className="spoiler-no" onClick={handleNo}>
-              아니오
-            </button>
-          </div>
-        </div>
-      )}
-    </main>
+      </main>
+    </SpoilerGate>
   );
 }
