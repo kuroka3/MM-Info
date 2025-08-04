@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const { song } = await getSongData(slug);
   return {
-    title: `${song.title} - 콜 가이드`,
+    title: `${song.krtitle ? song.krtitle : song.title} - 콜 가이드`,
   };
 }
 

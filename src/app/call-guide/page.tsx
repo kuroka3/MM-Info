@@ -3,6 +3,7 @@ import Image from 'next/image';
 import SpoilerGate from '@/components/SpoilerGate';
 import type { Metadata } from 'next';
 import prisma from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 
 export const metadata: Metadata = { title: '콜 가이드' };
 
@@ -18,7 +19,13 @@ export default async function CallGuideIndex() {
       summary: {
         not: null,
       },
+      lyrics: {
+        not: Prisma.JsonNull
+      }
     },
+    orderBy: {
+      slug: 'asc'
+    }
   });
 
   return (
