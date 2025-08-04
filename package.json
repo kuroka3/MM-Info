@@ -6,9 +6,7 @@
     "dev": "next dev",
     "build": "prisma generate && prisma migrate deploy && next build",
     "start": "next start",
-    "lint": "next lint",
-    "db:seed": "prisma db seed",
-    "seed": "node scripts/seed.js"
+    "lint": "next lint"
   },
   "dependencies": {
     "@prisma/client": "^6.13.0",

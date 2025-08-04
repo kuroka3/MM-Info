@@ -22,14 +22,14 @@ async function getSetlist(setlistId: string) {
   });
 }
 
-// --- Metadata Generation (runs separately on the server) ---
+// --- Metadata Generation ---
 export async function generateMetadata({ params }: { params: Promise<{ concertId: string }> }): Promise<Metadata> {
   const setlist = await getSetlist((await params).concertId);
   return { title: setlist ? setlist.name : '세트리스트를 찾을 수 없습니다.' };
 }
 
 // --- Async Component for Loading UI ---
-async function SetlistContent({ setlistId }: { setlistId: string }) {
+async function SetlistContent({ setlistId, date, block }: { setlistId: string, date: string, block: string }) {
   const setlist = await getSetlist(setlistId);
 
   if (!setlist) {
@@ -55,9 +55,11 @@ async function SetlistContent({ setlistId }: { setlistId: string }) {
     (s) => s.title === '최종 플레이리스트' || s.artist === ''
   );
 
+  const dateString = `${date} ${block} 공연`
+
   return (
     <>
-      <Header title={setlist.name} artist="マジカルミライ２０２５" date="" />
+      <Header title={setlist.name} artist="マジカルミライ２０２５" date={dateString} />
       <section className="container">
         <SongList songs={songs} />
       </section>
@@ -72,7 +74,10 @@ async function SetlistContent({ setlistId }: { setlistId: string }) {
   );
 }
 
-const ConcertPage = async ({ params }: { params: Promise<{ concertId: string }> }) => {
+const ConcertPage = async ({ params, searchParams }: { params: Promise<{ concertId: string }>, searchParams: Promise<{ date: string, block: string }> }) => {
+  const date = (await searchParams).date;
+  const block = (await searchParams).block;
+
   return (
     <SpoilerGate>
       <main>
@@ -81,7 +86,7 @@ const ConcertPage = async ({ params }: { params: Promise<{ concertId: string }> 
             <div className="loading-spinner"></div>
           </div>
         }>
-          <SetlistContent setlistId={(await params).concertId} />
+          <SetlistContent setlistId={(await params).concertId} date={date} block={block} />
         </Suspense>
       </main>
     </SpoilerGate>
