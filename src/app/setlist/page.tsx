@@ -8,6 +8,7 @@ import type { Concert } from '@prisma/client';
 const inter = Inter({ subsets: ['latin'], weight: ['600', '700', '800'] });
 
 export const metadata: Metadata = { title: '세트리스트' };
+export const revalidate = 60;
 
 const group = (arr: Concert[]) => {
   const map = new Map<string, {

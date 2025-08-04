@@ -6,6 +6,7 @@ import prisma from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 
 export const metadata: Metadata = { title: '콜 가이드' };
+export const revalidate = 60;
 
 export default async function CallGuideIndex() {
   const songs = await prisma.song.findMany({

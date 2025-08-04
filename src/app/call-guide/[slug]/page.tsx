@@ -11,6 +11,8 @@ interface PageProps {
   }>;
 }
 
+export const revalidate = 60;
+
 const getSongData = async (slug: string): Promise<{ song: Song; prevSong: Song | null; nextSong: Song | null }> => {
     const allCallSongs = await prisma.song.findMany({
         where: {

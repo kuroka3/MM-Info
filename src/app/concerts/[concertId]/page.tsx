@@ -6,6 +6,8 @@ import PlaylistPopup from '@/components/PlaylistPopup';
 import SpoilerGate from '@/components/SpoilerGate';
 import prisma from '@/lib/prisma';
 
+export const revalidate = 60;
+
 async function getSetlist(setlistId: string) {
   return prisma.setlist.findUnique({
     where: { id: parseInt(setlistId) },
