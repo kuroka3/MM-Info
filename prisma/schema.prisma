@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Song {
+  id        Int       @id @default(autoincrement())
+  title     String
+  krtitle   String?
+  artist    String
+  slug      String?   @unique
+  videoId   String?
+  summary   String?
+  lyrics    Json?
+  spotify   String?
+  youtube   String?
+  thumbnail String?
+  part      String[]
+  setlists  SetlistSong[]
+}
+
+model Venue {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  concerts Concert[]
+}
+
+model Concert {
+  id        Int      @id @default(autoincrement())
+  title     String
+  date      String
+  day       String
+  block     String
+  hidden    Boolean?
+  setlist   Setlist? @relation(fields: [setlistId], references: [id])
+  venueId   Int?
+  setlistId Int?
+  Venue     Venue?   @relation(fields: [venueId], references: [id])
+}
+
+model Setlist {
+  id      Int       @id @default(autoincrement())
+  name    String
+  songs   SetlistSong[]
+  Concert Concert[]
+}
+
+model SetlistSong {
+  setlist   Setlist @relation(fields: [setlistId], references: [id])
+  setlistId Int
+  song      Song    @relation(fields: [songId], references: [id])
+  songId    Int
+  order     Int
+  higawari Boolean?
+  locationgawari Boolean?
+
+  @@id([setlistId, order])
+}

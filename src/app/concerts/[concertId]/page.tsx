@@ -4,97 +4,88 @@ import Header from '@/components/Header';
 import SongList from '@/components/SongList';
 import PlaylistPopup from '@/components/PlaylistPopup';
 import SpoilerGate from '@/components/SpoilerGate';
+import prisma from '@/lib/prisma';
 
-type Song = {
-  title: string;
-  artist: string;
-  spotifyUrl: string;
-  youtubeUrl: string;
-  jacketUrl: string;
-};
-
-type Concert = {
-  title: string;
-  artist: string;
-  date: string;
-  songs: Song[];
-};
-
-type ConcertsData = {
-  [id: string]: Concert;
-};
-
-async function getConcerts(): Promise<ConcertsData> {
-  const res = await fetch('https://pastebin.com/raw/ruQTXtgQ', { next: { revalidate: 60 } });
-  if (!res.ok) {
-    throw new Error('Failed to fetch concert data');
-  }
-  return await res.json();
+async function getSetlist(setlistId: string) {
+  return prisma.setlist.findUnique({
+    where: { id: parseInt(setlistId) },
+    include: {
+      songs: {
+        include: {
+          song: true,
+        },
+        orderBy: {
+          order: 'asc',
+        },
+      },
+    },
+  });
 }
 
-type ConcertPageProps = {
-  params: Promise<{ concertId: string }>;
-  searchParams: Promise<{ date?: string; block?: string }>;
-};
-
-export async function generateMetadata({ params }: ConcertPageProps): Promise<Metadata> {
-  const { concertId } = await params;
-  const concerts = await getConcerts();
-  const concert = concerts[concertId];
-  return { title: concert ? concert.title : '콘서트를 찾을 수 없습니다.' };
+// --- Metadata Generation (runs separately on the server) ---
+export async function generateMetadata({ params }: { params: Promise<{ concertId: string }> }): Promise<Metadata> {
+  const setlist = await getSetlist((await params).concertId);
+  return { title: setlist ? setlist.name : '세트리스트를 찾을 수 없습니다.' };
 }
 
-const ConcertPage = async ({ params, searchParams }: ConcertPageProps) => {
-  const { concertId } = await params;
-  const { date, block } = await searchParams;
-  const concerts = await getConcerts();
-  const concert = concerts[concertId];
+// --- Async Component for Loading UI ---
+async function SetlistContent({ setlistId }: { setlistId: string }) {
+  const setlist = await getSetlist(setlistId);
 
-  if (!concert) {
+  if (!setlist) {
     return (
       <div className="container">
-        <p>콘서트를 찾을 수 없습니다.</p>
+        <p>세트리스트를 찾을 수 없습니다.</p>
       </div>
     );
   }
 
-  const playlist = concert.songs.find(
+  const songs = setlist.songs.map(item => ({
+    title: item.song.title,
+    artist: item.song.artist,
+    spotifyUrl: item.song.spotify || '',
+    youtubeUrl: item.song.youtube || '',
+    jacketUrl: item.song.thumbnail || '',
+    part: item.song.part || '',
+    higawari: item.higawari || false,
+    locationgawari: item.locationgawari || false,
+  }));
+
+  const playlist = songs.find(
     (s) => s.title === '최종 플레이리스트' || s.artist === ''
   );
-  const songs = concert.songs;
 
-  const displayDate = date && block ? `${date} ${block} 공연` : concert.date;
+  return (
+    <>
+      <Header title={setlist.name} artist="マジカルミライ２０２５" date="" />
+      <section className="container">
+        <SongList songs={songs} />
+      </section>
+      {playlist && (
+        <PlaylistPopup
+          spotifyUrl={playlist.spotifyUrl}
+          youtubeUrl={playlist.youtubeUrl}
+          jacketUrl={playlist.jacketUrl}
+        />
+      )}
+    </>
+  );
+}
 
+const ConcertPage = async ({ params }: { params: Promise<{ concertId: string }> }) => {
   return (
     <SpoilerGate>
       <main>
-        <Header title={concert.title} artist={concert.artist} date={displayDate} />
-        <section className="container">
-          <Suspense fallback={
-            <div className="loading-spinner-container">
-              <div className="loading-spinner"></div>
-            </div>
-          }>
-          <SongList songs={songs} />
-          </Suspense>
-        </section>
-                {playlist && (
-          <PlaylistPopup
-            spotifyUrl={playlist.spotifyUrl}
-            youtubeUrl={playlist.youtubeUrl}
-            jacketUrl={playlist.jacketUrl}
-          />
-        )}
+        <Suspense fallback={
+          <div className="loading-spinner-container">
+            <div className="loading-spinner"></div>
+          </div>
+        }>
+          <SetlistContent setlistId={(await params).concertId} />
+        </Suspense>
       </main>
     </SpoilerGate>
   );
 };
 
 export default ConcertPage;
-
-export async function generateStaticParams() {
-  const concerts = await getConcerts();
-  return Object.keys(concerts).map((concertId) => ({
-    concertId,
-  }));
-}

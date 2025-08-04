@@ -2,65 +2,40 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Inter } from 'next/font/google';
 import SpoilerGate from '@/components/SpoilerGate';
+import prisma from '@/lib/prisma';
+import type { Concert } from '@prisma/client';
 
 const inter = Inter({ subsets: ['latin'], weight: ['600', '700', '800'] });
 
-type Show = { date: string; day: string; block: string; id: string | null; hidden?: boolean };
-
-type Venue = { venue: string; shows: Show[] };
-
-const raw: Venue[] = [
-  {
-    venue: '센다이',
-    shows: [
-      { date: '08/01', day: '금', block: '낮', id: null, hidden: true },
-      { date: '08/01', day: '금', block: '밤', id: '1' },
-      { date: '08/02', day: '토', block: '낮', id: '2' },
-      { date: '08/02', day: '토', block: '밤', id: '1' },
-      { date: '08/03', day: '일', block: '낮', id: '2' },
-      { date: '08/03', day: '일', block: '밤', id: '1' },
-    ],
-  },
-  {
-    venue: '오사카',
-    shows: [
-      { date: '08/09', day: '토', block: '낮', id: null },
-      { date: '08/09', day: '토', block: '밤', id: null },
-      { date: '08/10', day: '일', block: '낮', id: null },
-      { date: '08/10', day: '일', block: '밤', id: null },
-      { date: '08/11', day: '월', block: '낮', id: null },
-      { date: '08/11', day: '월', block: '밤', id: null },
-    ],
-  },
-  {
-    venue: '도쿄',
-    shows: [
-      { date: '08/29', day: '금', block: '낮', id: null },
-      { date: '08/29', day: '금', block: '밤', id: null },
-      { date: '08/30', day: '토', block: '낮', id: null },
-      { date: '08/30', day: '토', block: '밤', id: null },
-      { date: '08/31', day: '일', block: '낮', id: null },
-      { date: '08/31', day: '일', block: '밤', id: null },
-    ],
-  },
-];
-
 export const metadata: Metadata = { title: '세트리스트' };
 
-const group = (arr: Show[]) => {
+const group = (arr: Concert[]) => {
   const map = new Map<string, {
     day: string;
-    blocks: { block: string; id: string | null; hidden?: boolean }[];
+    blocks: { block: string; id: number | null; hidden?: boolean | null }[];
   }>();
   arr.forEach((s) => {
     if (!map.has(s.date)) map.set(s.date, { day: s.day, blocks: [] });
-    map.get(s.date)!.blocks.push({ block: s.block, id: s.id, hidden: s.hidden });
+    map.get(s.date)!.blocks.push({ block: s.block, id: s.setlistId, hidden: s.hidden });
   });
   return [...map].map(([date, { day, blocks }]) => ({ date, day, blocks }));
 };
 
-export default function Page() {
-  const venues = raw;
+export default async function Page() {
+  const venues = await prisma.venue.findMany({
+    include: {
+      concerts: {
+        orderBy: [
+          {
+            date: 'asc',
+          },
+          {
+            block: 'asc',
+          },
+        ],
+      },
+    },
+  });
 
   return (
     <SpoilerGate>
@@ -74,11 +49,11 @@ export default function Page() {
 
       <section className="container">
         <div className="features-grid">
-          {venues.map(({ venue, shows }) => (
-            <div key={venue} className="feature-card">
-              <h3 className="feature-title">{venue}</h3>
+          {venues.map(({ name, concerts }) => (
+            <div key={name} className="feature-card">
+              <h3 className="feature-title">{name}</h3>
               <div className="feature-list">
-                {group(shows).map(({ date, day, blocks }) => (
+                {group(concerts).map(({ date, day, blocks }) => (
                   <div key={date} className="date-row">
                     <span className="header-date">{`${date} (${day})`}</span>
                     <div className="block-buttons">

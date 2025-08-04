@@ -67,3 +67,4 @@ next-env.d.ts
 
 # Image files
 /.github/*
+/src/generated/prisma
