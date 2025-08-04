@@ -19,7 +19,7 @@ const getSongData = async (slug: string): Promise<{ song: Song; prevSong: Song |
           summary: { not: null },
           lyrics: { not: Prisma.JsonNull },
         },
-        orderBy: { title: 'asc' },
+        orderBy: { slug: 'asc' },
     });
 
     const songIndex = allCallSongs.findIndex((s) => s.slug === slug);
