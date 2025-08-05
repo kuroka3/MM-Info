@@ -1,0 +1,12 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = { title: '오사카 - 기획전 정보' };
+
+export default function ExhibitionInfoPage() {
+  return (
+    <main className="container" style={{ textAlign: 'center', paddingTop: '4rem' }}>
+      <h1 className="header-title">오사카 기획전 정보</h1>
+      <p className="header-subtitle">추가 예정입니다.</p>
+    </main>
+  );
+}
