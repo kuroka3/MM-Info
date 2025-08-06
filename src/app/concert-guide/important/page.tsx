@@ -64,9 +64,150 @@ export default function ImportantNoticesPage() {
       </section>
 
       <section id="expo" className="container notice-section">
-        <div className="notice-box">
+        <div className="notice-box info-box">
           <h2 className="section-title">기획전</h2>
-          <p>기획전 입장에는 해당 날짜의 기획전 티켓이 필요하며, 5세 이하 어린이는 보호자 1명당 1명까지 무료입니다.</p>
+
+          <h3 className="info-subtitle">기획전 티켓 안내</h3>
+          <ul className="notice-list">
+            <li>기획전의 입장에는 “기획전 티켓”이 필요합니다.</li>
+            <li>티켓에 기재된 일정에만 사용 가능합니다. 착오 없으시길 바랍니다.</li>
+            <li>
+              티켓 구매 시 개인 정보를 등록하셔야 합니다. 또한, 여러 장 구매 시에는
+              동반자의 개인 정보도 등록해 주십시오. 협조 감사합니다.
+            </li>
+            <li>
+              티켓 소지 보호자 1명당 5세 이하 아동 1명까지 무료 동반 가능합니다.
+              아동 연령 확인을 위해 보험증 등 연령 확인이 가능한 증명서를
+              지참해 주십시오.
+            </li>
+          </ul>
+
+          <h3 className="info-subtitle">당일권 판매 안내</h3>
+          <ul className="notice-list">
+            <li>“기획전 티켓”은 현장에서도 판매합니다.</li>
+            <li>티켓은 구매 당일에만 유효합니다.</li>
+            <li>
+              <p>매일 13:00부터 “당일권 판매소”에서 판매할 예정입니다.</p>
+              <p className="info-note">
+                ※ 당일 입장 상황에 따라 판매 시작 시간이 변경될 수 있습니다. 양해
+                부탁드립니다.
+              </p>
+              <p className="info-note">
+                ※ 판매 시작 30분 전에는 대기줄에 합류할 수 없습니다. 양해
+                부탁드립니다.
+              </p>
+              <p className="info-note">
+                ※ 판매 매수는 예매 상황 및 당일 입장 상황에 따라 변동될 수
+                있습니다.
+              </p>
+              <p className="info-note">※ 예정 수량 소진 시 판매가 종료됩니다.</p>
+              <p className="info-note">
+                ※ 회장 혼잡 상황에 따라 판매를 일시 중단하거나 종료할 수 있습니다.
+              </p>
+              <p className="info-note">
+                ※ 당일권 판매 시간 및 당일 입장 상황에 따라 입장 시간이 지연될 수
+                있습니다.
+              </p>
+              <p className="info-note br_t_s">
+                자세한 내용은 각 회장 티켓 정보 페이지에서 확인해 주십시오. 확정되는
+                대로 순차 발표합니다.
+              </p>
+              <p>
+                <a
+                  href="https://magicalmirai.com/2025/sendai_ticket.html#ticket_ex"
+                  className="notice-link"
+                >
+                  SENDAI 기획전 티켓 상세
+                </a>
+              </p>
+              <p>
+                <a
+                  href="https://magicalmirai.com/2025/osaka_ticket.html#ticket_ex"
+                  className="notice-link"
+                >
+                  OSAKA 기획전 티켓 상세
+                </a>
+              </p>
+              <p>
+                <a
+                  href="https://magicalmirai.com/2025/tokyo_ticket.html#ticket_ex"
+                  className="notice-link"
+                >
+                  TOKYO 기획전 티켓 상세
+                </a>
+              </p>
+            </li>
+          </ul>
+
+          <h3 className="info-subtitle">입장 안내 (SENDAI)</h3>
+          <ul className="notice-list">
+            <li>
+              <p>
+                SENDAI 기획전는 여러 장소에서 개최되며, 유료 구역과 무료 구역으로
+                나뉩니다.
+                <br />구역 상세는{' '}
+                <a href="sendai_map.html" className="notice-link">
+                  SENDAI 회장 MAP
+                </a>
+                에서 확인해 주십시오.
+              </p>
+            </li>
+            <li>
+              유료 구역 입장에는 리스트 밴드가 필요합니다. “기획전 티켓 확인소”에서
+              티켓 확인 시 수령하실 수 있으니, 먼저 교환을 완료해 주십시오.
+            </li>
+            <li>티켓만으로는 입장할 수 없습니다.</li>
+            <li>
+              <p>“기획전 티켓 확인소” 접수 시간은 회장별로 다릅니다.</p>
+              <p className="info-note txt_back txts_s txt_em br_t_s">
+                기획전 티켓 확인소
+              </p>
+              <p>AER 2F 아트리움</p>
+              <ul className="info-list">
+                <li>8월 1일(금), 8월 2일(토) <span>9:00～19:00</span></li>
+                <li>8월 3일(일) <span>9:00～18:00</span></li>
+              </ul>
+              <p className="br_t_ss">仙台駅前イービーンズ 2F</p>
+              <ul className="info-list">
+                <li>8월 1일(금), 8월 2일(토) <span>13:00～19:00</span></li>
+                <li>8월 3일(일) <span>13:00～18:00</span></li>
+              </ul>
+              <p className="br_t_ss">仙台サンプラザホール</p>
+              <ul className="info-list">
+                <li>8월 1일(금)～8월 3일(일) <span>13:00～18:00</span></li>
+              </ul>
+              <p className="info-note br_t_s">
+                ※ 13:00 이전에 유료 구역 입장을 원하시는 분은 반드시 먼저 “AER 2F
+                아트리움”으로 와 주십시오.
+              </p>
+            </li>
+            <li className="br_t_s">
+              “기획전 티켓 확인소”에서는 티켓 확인 후 리스트 밴드, 입장 특전,
+              스탬프 랠리 대지를 수령할 수 있습니다(소진 시 종료).
+            </li>
+            <li>
+              유료 구역은 당일 리스트 밴드 소지 시 몇 번이든 입장 가능합니다.
+              <br />반드시 “기획전 티켓 확인소”에서 밴드를 수령하신 후 입장해 주십시오.
+            </li>
+            <li>리스트 밴드를 분실하시면 다른 유료 구역 입장이 불가하니 주의해 주십시오.</li>
+            <li>각 회장에서는 혼잡 상황에 따라 입장 제한을 실시할 수 있으니 협조 부탁드립니다.</li>
+          </ul>
+
+          <h3 className="info-subtitle">입장·재입장 안내 (OSAKA·TOKYO)</h3>
+          <ul className="notice-list">
+            <li>
+              “기획전 티켓 확인소”에서 티켓 확인 후 리스트 밴드와 입장 특전을
+              수령하실 수 있습니다(입장 특전 소진 시 종료).
+            </li>
+            <li>리스트 밴드를 분실하시면 재입장이 불가하니 주의해 주십시오.</li>
+            <li>재입장 시 재입장구를 이용하시고, 리스트 밴드를 스태프에게 제시해 주십시오.</li>
+            <li>입장구 및 재입장구에서는 혼잡 상황에 따라 입장 제한이 있을 수 있으니 협조 부탁드립니다.</li>
+          </ul>
+
+          <h3 className="info-subtitle">퇴장 안내 (SENDAI·OSAKA·TOKYO)</h3>
+          <ul className="notice-list">
+            <li>퇴장 시에는 지정된 퇴장구 또는 스태프 안내·유도 퇴장구를 이용해 주십시오.</li>
+          </ul>
         </div>
       </section>
 
@@ -284,9 +425,39 @@ export default function ImportantNoticesPage() {
       </section>
 
       <section id="flowers" className="container notice-section">
-        <div className="notice-box">
+        <div className="notice-box info-box">
           <h2 className="section-title">축하 화환</h2>
-          <p>축하 화환은 공식 업체를 통해서만 접수하며, 현장 반입은 불가합니다.</p>
+
+          <h3 className="info-subtitle">축하 화환에 대하여</h3>
+          <ul className="notice-list">
+            <li>
+              <p>
+                하츠네 미쿠 「매지컬 미라이 2025」 공연장 앞의 축하 화환은,
+                “Start Flowers”에서 취급하는 공식 플라워 스탠드만 접수합니다.
+              </p>
+              <p>자세한 내용은 “Start Flowers” 특설 사이트를 확인해 주십시오.</p>
+              <p className="info-note br_t_ss">
+                <a
+                  href="https://startflowers.com/miku/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="notice-link"
+                >
+                  “Start Flowers” 특설 사이트
+                </a>
+              </p>
+              <ul className="info-sublist">
+                <li className="info-note">
+                  “Start Flowers” 신청 접수는 일본어로만 대응합니다.
+                </li>
+                <li className="info-note">
+                  설치 공간이 한정되어 있어, 수량 한정 선착순 예약 판매를
+                  예정하고 있습니다.
+                </li>
+                <li className="info-note">기업 고객은 별도 상담해 주십시오.</li>
+              </ul>
+            </li>
+          </ul>
         </div>
       </section>
 
@@ -297,7 +468,7 @@ export default function ImportantNoticesPage() {
           <h3 className="info-subtitle">라이브 티켓 안내</h3>
           <ul className="notice-list">
             <li>
-              각 공연마다 「라이브 티켓(전 석 지정)」이 필요합니다. 티켓에 기재된
+              각 공연마다 「라이브 티켓(전석 지정)」이 필요합니다. 티켓에 기재된
               주의사항을 잘 읽고, 회장 내 스태프의 지시에 따라 주십시오.
             </li>
             <li>
@@ -432,9 +603,54 @@ export default function ImportantNoticesPage() {
       </section>
 
       <section id="photo" className="container notice-section">
-        <div className="notice-box">
+        <div className="notice-box info-box">
           <h2 className="section-title">촬영</h2>
-          <p>라이브 공연장은 촬영 및 녹음이 금지됩니다. 기획전에서도 촬영 금지 표기가 있는 구역은 촬영할 수 없습니다.</p>
+
+          <h3 className="info-subtitle">촬영 안내</h3>
+          <ul className="notice-list">
+            <li>라이브 공연장 내에서의 촬영·녹음은 금지됩니다(공연 전·후 포함).</li>
+            <li>
+              기획전은 기본적으로 촬영 가능하지만, 일부 콘텐츠에 따라 촬영·녹음이
+              금지될 수 있습니다. 촬영·녹음 금지 표시나 스태프의 지시에 따라
+              주십시오.
+            </li>
+            <li>스캐너 등(스캐너 앱 포함)을 이용한 촬영은 금지됩니다.</li>
+            <li>
+              <p>
+                셀카봉, 짐벌, 모노포드, 삼각대, 사다리 등 장비 사용은 금지됩니다(촬영
+                이외 용도로 사용하는 경우 포함). 또한, 망원 렌즈 등 대형 장비의
+                반입도 불가합니다.
+              </p>
+              <p className="info-note">※ 일부 등록 취재 매체를 제외</p>
+            </li>
+            <li>이동 중 촬영은 위험하므로 삼가해 주십시오.</li>
+            <li>
+              출입 금지 구역(파티션·패널 등으로 구분된 구역)에 카메라 등을 삽입하는
+              행위는 위험하므로 삼가해 주십시오.
+            </li>
+            <li>
+              <p>실시간 방송(라이브 스트리밍·생중계)은 금지됩니다.</p>
+              <p className="info-note">※ 일부 등록 취재 매체를 제외</p>
+            </li>
+            <li>
+              특정 인물을 촬영하거나 촬영한 사진·영상을 게시·게재할 경우 사전에
+              본인의 허가를 받아 주십시오.
+            </li>
+            <li>불법 촬영은 엄격히 금지합니다.</li>
+            <li>
+              본 이벤트 출전·협력사 이외의 법인·개인 사업자가 자사 홍보를 위해
+              촬영·공개하는 행위는 삼가해 주십시오.
+            </li>
+            <li>
+              <a
+                href="https://magicalmirai.com/2025/info_guidelines.html"
+                className="notice-link"
+              >
+                응원 규칙
+              </a>
+              도 함께 확인해 주십시오.
+            </li>
+          </ul>
         </div>
       </section>
       <footer className="container notice-source">
