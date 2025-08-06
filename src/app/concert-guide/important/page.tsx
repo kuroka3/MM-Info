@@ -103,6 +103,18 @@ export default function ImportantNoticesPage() {
           <p>라이브 공연장은 촬영 및 녹음이 금지됩니다. 기획전에서도 촬영 금지 표기가 있는 구역은 촬영할 수 없습니다.</p>
         </div>
       </section>
+      <footer className="container notice-source">
+        <p>
+          출처:{' '}
+          <a
+            href="https://magicalmirai.com/2025/info_important.html"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            매지컬 미라이 2025 공식 웹사이트
+          </a>
+        </p>
+      </footer>
       <ScrollTopButton />
     </main>
   );
