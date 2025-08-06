@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Fragment, useRef } from 'react';
+import { useState, useEffect, useLayoutEffect, Fragment, useRef } from 'react';
 import Image from 'next/image';
 import { ROWS, COLS, rowClasses, BOOTHS, Booth } from './boothData';
 import ScrollTopButton from '@/components/ScrollTopButton';
@@ -20,7 +20,21 @@ const findBooth = (row: string, col: number, day: string) => {
 
 export default function CreatorsMarketClient() {
   const [selectedDay, setSelectedDay] = useState<(typeof DAYS)[number]>(DAYS[0]);
+  const [gutter, setGutter] = useState(0);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
   const listRefs = useRef<Record<string, HTMLLIElement | null>>({});
+
+  useLayoutEffect(() => {
+    function updateGutter() {
+      if (wrapperRef.current) {
+        const { width, height } = wrapperRef.current.getBoundingClientRect();
+        setGutter(Math.min(width, height) * 0.1);
+      }
+    }
+    updateGutter();
+    window.addEventListener('resize', updateGutter);
+    return () => window.removeEventListener('resize', updateGutter);
+  }, []);
 
   const scrollTo = (id: string) => {
     const el = listRefs.current[id];
@@ -54,7 +68,7 @@ export default function CreatorsMarketClient() {
         </nav>
 
         <section className="cm-section">
-          <div className="cm-map-wrapper">
+          <div className="cm-map-wrapper" ref={wrapperRef}>
             <svg className="map-arrow exit" viewBox="0 0 32 32">
               <path d="M30 16H4M16 4l-12 12 12 12" />
             </svg>
@@ -70,13 +84,8 @@ export default function CreatorsMarketClient() {
                     const prevSpan =
                       col > 1 && findBooth(row, col - 1, selectedDay)?.span;
                     if (!booth && prevSpan) return null;
-                    if (!booth)
-                      return (
-                        <div key={`x-${row}-${col}`} className="booth-empty">
-                          ✕
-                        </div>
-                      );
-                    if (booth.hidden)
+                    if (!booth) return <div key={`x-${row}-${col}`} className="booth-empty">✕</div>;
+                    if (booth.hidden) {
                       return (
                         <div
                           key={booth.id}
@@ -84,6 +93,7 @@ export default function CreatorsMarketClient() {
                           style={booth.span ? { gridColumn: `span ${booth.span}` } : {}}
                         />
                       );
+                    }
                     if (booth.span && col !== booth.col) return null;
 
                     return (
@@ -110,12 +120,18 @@ export default function CreatorsMarketClient() {
                       </button>
                     );
                   })}
-                  {row === 'A' || row === 'C' || row === 'E' ? (
-                    <div className="walk-gap" />
-                  ) : null}
+                  {(row === 'A' || row === 'C' || row === 'E') && <div className="walk-gap" />}
                 </Fragment>
               ))}
             </div>
+
+            <div
+              className="bottom-left-mask-box"
+              style={{
+                width: `calc(100% - ${gutter}px)`,
+                height: `calc(100% - ${gutter}px)`
+              }}
+            />
           </div>
         </section>
 
@@ -159,12 +175,7 @@ export default function CreatorsMarketClient() {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                   >
-                                    <Image
-                                      src="/images/link.svg"
-                                      alt=""
-                                      width={12}
-                                      height={12}
-                                    />
+                                    <Image src="/images/link.svg" alt="" width={12} height={12} />
                                     {link.label}
                                   </a>
                                 ))}

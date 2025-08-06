@@ -38,6 +38,26 @@
   border-bottom-color:transparent;
   border-radius:12px;
 }
+.bottom-left-mask-box {
+  position: absolute;
+  bottom: 0;
+  left:   0;
+  width:  calc(100% - var(--gutter));
+  height: calc(100% - var(--gutter));
+  pointer-events: none;
+  background: transparent;
+}
+
+.bottom-left-mask-box::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-left:   2px solid rgba(255,255,255,0.6);
+  border-bottom: 2px solid rgba(255,255,255,0.6);
+  border-radius: 0 12px 0 12px;
+  pointer-events: none;
+}
+
 .map-arrow{
   position:absolute;
   fill:none;
