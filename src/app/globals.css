@@ -2052,36 +2052,53 @@ body {
 }
 
 .row-A {
-  background: rgba(255,71,133,0.8);
-  border-color: rgba(255,140,162,1);
+  --row-color: 255,71,133;
+  background: rgba(var(--row-color),0.4);
+  border-color: rgba(var(--row-color),0.8);
 }
 
 .row-B {
-  background: rgba(0,122,255,0.8);
-  border-color: rgba(155,197,255,1);
+  --row-color: 0,122,255;
+  background: rgba(var(--row-color),0.4);
+  border-color: rgba(var(--row-color),0.8);
 }
 
 .row-C {
-  background: rgba(255,149,0,0.8);
-  border-color: rgba(255,191,110,1);
+  --row-color: 255,149,0;
+  background: rgba(var(--row-color),0.4);
+  border-color: rgba(var(--row-color),0.8);
 }
 
 .row-D {
-  background: rgba(48,209,88,0.8);
-  border-color: rgba(168,239,188,1);
+  --row-color: 48,209,88;
+  background: rgba(var(--row-color),0.4);
+  border-color: rgba(var(--row-color),0.8);
 }
 
 .row-E {
-  background: rgba(175,82,222,0.8);
-  border-color: rgba(209,146,236,1);
+  --row-color: 175,82,222;
+  background: rgba(var(--row-color),0.4);
+  border-color: rgba(var(--row-color),0.8);
 }
 
 .row-F {
-  background: rgba(94,92,230,0.8);
-  border-color: rgba(167,165,240,1);
+  --row-color: 94,92,230;
+  background: rgba(var(--row-color),0.4);
+  border-color: rgba(var(--row-color),0.8);
 }
 
 .row-G {
-  background: rgba(255,45,85,0.8);
-  border-color: rgba(255,160,190,1);
+  --row-color: 255,45,85;
+  background: rgba(var(--row-color),0.4);
+  border-color: rgba(var(--row-color),0.8);
+}
+
+.row-A:hover,
+.row-B:hover,
+.row-C:hover,
+.row-D:hover,
+.row-E:hover,
+.row-F:hover,
+.row-G:hover {
+  background: rgba(var(--row-color),0.7);
 }

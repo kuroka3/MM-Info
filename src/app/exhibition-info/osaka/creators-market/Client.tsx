@@ -156,8 +156,12 @@ export default function CreatorsMarketClient() {
 
         <nav className="row-nav">
           {ROWS.map(r => (
-            <button key={r} className={`row-nav-btn ${rowClasses[r]}`} onClick={() => scrollToRow(r)}>
-              {r}
+            <button
+              key={r}
+              className={`row-nav-btn ${rowClasses[r]}`}
+              onClick={() => scrollToRow(r)}
+            >
+              {r}열
             </button>
           ))}
         </nav>
