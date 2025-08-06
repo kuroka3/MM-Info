@@ -57,6 +57,26 @@
   border-radius: 0 12px 0 12px;
   pointer-events: none;
 }
+.exit-label-cell {
+  align-self: start;
+  justify-self: start;
+  margin: 0;
+  padding: 0;
+  font-size: clamp(1rem, 6vw, 1.75rem);
+  font-weight: bold;
+  color: white;
+}
+
+.entrance-label {
+  position: absolute;
+  bottom: -4.5rem;
+  right: 1.2rem;
+  pointer-events: none;
+  z-index: 10000;
+  font-size: clamp(1rem, 6vw, 1.75rem);
+  font-weight: bold;
+  color: white;
+}
 
 .map-arrow{
   position:absolute;
@@ -67,12 +87,12 @@
   height:32px;
 }
 .map-arrow.exit{
-  top:0.4rem;
-  left:-18px;
+  top:2rem;
+  left:-1rem;
 }
 .map-arrow.entrance{
-  bottom:-18px;
-  right:0.4rem;
+  bottom:-1rem;
+  right:2rem;
 }
 
 .cm-grid{

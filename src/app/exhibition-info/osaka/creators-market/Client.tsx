@@ -28,7 +28,7 @@ export default function CreatorsMarketClient() {
     function updateGutter() {
       if (wrapperRef.current) {
         const { width, height } = wrapperRef.current.getBoundingClientRect();
-        setGutter(Math.min(width, height) * 0.1);
+        setGutter(Math.min(width, height) * 0.12);
       }
     }
     updateGutter();
@@ -67,20 +67,29 @@ export default function CreatorsMarketClient() {
           ))}
         </nav>
 
-        <section className="cm-section">
-          <div className="cm-map-wrapper" ref={wrapperRef}>
-            <svg className="map-arrow exit" viewBox="0 0 32 32">
-              <path d="M30 16H4M16 4l-12 12 12 12" />
-            </svg>
-            <svg className="map-arrow entrance" viewBox="0 0 32 32">
-              <path d="M16 30V4M4 16l12-12 12 12" />
-            </svg>
+      <section className="cm-section">
+        <div className="cm-map-wrapper" ref={wrapperRef}>
+          <svg className="map-arrow exit" viewBox="0 0 32 32">
+            <path d="M30 16H4M16 4l-12 12 12 12" />
+          </svg>
 
-            <div className="cm-grid">
-              {ROWS.map(row => (
-                <Fragment key={row}>
-                  {COLS_REVERSED.map(col => {
-                    const booth = findBooth(row, col, selectedDay);
+          <svg className="map-arrow entrance" viewBox="0 0 32 32">
+            <path d="M16 30V4M4 16l12-12 12 12" />
+          </svg>
+          <div className="entrance-label">입구</div>
+
+          <div className="cm-grid">
+            {ROWS.map(row => (
+              <Fragment key={row}>
+                {COLS_REVERSED.map(col => {
+                  if (row === 'A' && col === 12) {
+                    return (
+                      <div key="exit-cell" className="exit-label-cell">
+                        출구
+                      </div>
+                    );
+                  }
+                  const booth = findBooth(row, col, selectedDay);
                     const prevSpan =
                       col > 1 && findBooth(row, col - 1, selectedDay)?.span;
                     if (!booth && prevSpan) return null;
@@ -120,20 +129,20 @@ export default function CreatorsMarketClient() {
                       </button>
                     );
                   })}
-                  {(row === 'A' || row === 'C' || row === 'E') && <div className="walk-gap" />}
-                </Fragment>
-              ))}
-            </div>
-
-            <div
-              className="bottom-left-mask-box"
-              style={{
-                width: `calc(100% - ${gutter}px)`,
-                height: `calc(100% - ${gutter}px)`
-              }}
-            />
+                {(row === 'A' || row === 'C' || row === 'E') && <div className="walk-gap" />}
+              </Fragment>
+            ))}
           </div>
-        </section>
+
+          <div
+            className="bottom-left-mask-box"
+            style={{
+              width: `calc(100% - ${gutter}px)`,
+              height: `calc(100% - ${gutter}px)`,
+            }}
+          />
+        </div>
+      </section>
 
         <section className="cm-section booth-list-section">
           <h2 className="booth-list-title">Booth List – {selectedDay}</h2>
