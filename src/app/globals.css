@@ -1553,7 +1553,7 @@ body {
   backdrop-filter: blur(10px);
   text-decoration: none;
   color: var(--text-primary);
-  font-size: 0.9rem;
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
   transition: background 0.2s, border-color 0.2s;
 }
 .notice-nav a:hover {
