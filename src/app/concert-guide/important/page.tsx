@@ -33,33 +33,374 @@ export default function ImportantNoticesPage() {
       </nav>
 
       <section id="id-check" className="container notice-section">
-        <div className="notice-box">
+        <div className="notice-box info-box">
           <p className="notice-caution">반드시 읽어 주세요</p>
-          <h2 className="section-title">라이브 티켓의 &lt;본인확인&gt; 실시에 대해서</h2>
+          <h2 className="section-title">
+            라이브 티켓의 <span>‘본인 확인’ 실시에 대하여</span>
+          </h2>
           <p>
-            모든 회장에서 입장 시 무작위로 본인 확인을 진행합니다. 티켓 구매 시
-            개인정보 등록이 필요하며, 여러 장을 구매할 경우 동행자 정보도 함께
-            입력해야 합니다.
+            모든 회장에서 라이브 입장 시 무작위로 ‘본인 확인’을 실시합니다.
+            <br />티켓 구매 시 개인정보를 등록해야 하며, 티켓을 여러 장 구매하시는
+            경우 동행자의 개인정보도 함께 등록하셔야 합니다.<br />여러분의 양해와
+            이해 부탁드립니다.
           </p>
+          <p className="br_t_s">
+            ‘본인 확인’은 신분증과 티켓에 기재된 이름을 대조하여 진행합니다.
+            <br />공연 당일에 본인 확인이 이루어지지 않을 경우 입장이 거절될 수
+            있습니다.<br />이 경우 티켓 요금 및 구매 수수료 등은 환불되지 않으니
+            미리 양해해 주시기 바랍니다.
+          </p>
+          <ul className="notice-list br_t_s">
+            <li>본인 확인에 사용되는 ‘신분증’은 아래와 같습니다.</li>
+            <li>
+              U-18석을 구매하신 분은 입장 시 학생증·보험증 또는 연령 확인이
+              가능한 서류를 제시해 주시기 바랍니다. 해당 확인은 무작위로
+              진행되지 않습니다.
+            </li>
+          </ul>
+
+          <h3 className="info-subtitle br_t">‘신분증’에 대하여</h3>
+          <p>사본이나 이미지(사진)는 무효 처리되니 유의해 주시기 바랍니다.</p>
+          <p className="info-note txts_s txt_em br_t">
+            【사진 있는 신분증 (1종류만으로 가능)】
+          </p>
+          <div className="br_t_ss">
+            <ul className="info-list">
+              <li>운전면허증</li>
+              <li>사진 부착 면허증</li>
+              <li>여권</li>
+              <li>마이넘버 카드</li>
+              <li>주민 기본 대장 카드</li>
+              <li>신체장애인 수첩</li>
+              <li>정신장애인 보건복지 수첩</li>
+              <li>치료 수첩</li>
+              <li>재류 카드</li>
+              <li>외국인 등록 증명서</li>
+              <li>특별 영주자 증명서</li>
+              <li>
+                <p>사원증·학생증·생도 수첩</p>
+                <p className="info-note">
+                  (※사진 없는 경우 아래 항목과 함께 2종류 필요)
+                </p>
+              </li>
+            </ul>
+            <ul className="info-list br_t_ss">
+              <li>
+                위의 신분증 이외에 성명, 현주소, 생년월일이 확인 가능한 공적 증명서
+              </li>
+            </ul>
+          </div>
+          <p className="info-note txts_s txt_em br_t_s">
+            【사진 없는 신분증 (2종류)】
+          </p>
+          <div className="br_t_ss">
+            <ul className="info-list">
+              <li>건강보험 피보험자증</li>
+              <li>의료비 수급자 자격증</li>
+              <li>요양보험증</li>
+              <li>생활보호 수급자증</li>
+              <li>주민등록 등본</li>
+              <li>호적 등본</li>
+              <li>호적 초본</li>
+              <li>인감 등록 증명서</li>
+              <li>연금 수첩</li>
+              <li>마이넘버 통지 카드</li>
+            </ul>
+            <ul className="info-list br_t_ss">
+              <li>
+                위의 신분증 이외에 성명, 현주소, 생년월일이 확인 가능한 공적 증명서
+              </li>
+            </ul>
+          </div>
+          <ul className="notice-list txt_sml br_t_s">
+            <li>
+              초등학생 이하 고객 중 사진 있는 신분증이 없는 경우,
+              <strong>건강보험증</strong> 1종류로 확인합니다.
+            </li>
+            <li>
+              숙박 플랜 옵션 티켓을 구매하신 분은 숙박 플랜 안내를 확인해 주시기
+              바랍니다.
+            </li>
+          </ul>
+
+          <h3 className="info-subtitle br_t">
+            분배에 대하여 (티켓 2매 이상 구매하신 분)
+          </h3>
           <p>
-            본인 확인은 신분증과 티켓의 이름을 대조하여 진행하며, 확인이 되지 않을
-            경우 입장이 제한되고 환불은 불가합니다.
+            ‘본인 확인’은 티켓 구매자와 동행자 모두 대상으로 무작위로 실시됩니다.
+            <br />티켓을 2매 이상 구매하신 경우 동행자에게 티켓을 분배해야 합니다.
+            <br />반드시 회장 방문 전에 티켓 분배를 완료해 주십시오.
+            <br />티켓 분배 및 발권 방법은 구매하신 예매처의 안내를 확인해 주시기
+            바랍니다.
           </p>
-          <ul className="notice-list">
-            <li>사용 가능한 신분증 종류를 미리 확인해 주세요.</li>
-            <li>U-18석은 학생증·보험증 등 연령 확인 서류를 지참해야 합니다.</li>
+          <ul className="info-list bar br_t_s" style={{ marginBottom: '1em' }}>
+            <li>
+              <p className="txt_em">티켓피아</p>
+              <p className="inline-block px-2 border border-white">분배 방법</p>
+              <p>
+                【전자 티켓】【종이 티켓】
+                <span>
+                  <a
+                    href="https://t.pia.jp/guide/share.jsp"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="notice-link"
+                  >
+                    https://t.pia.jp/guide/share.jsp
+                  </a>
+                </span>
+              </p>
+              <p className="inline-block px-2 border border-white">문의</p>
+              <p>
+                <a
+                  href="https://t.pia.jp/help/index.jsp"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="notice-link"
+                >
+                  https://t.pia.jp/help/index.jsp
+                </a>
+              </p>
+            </li>
+            <li className="br_t_s">
+              <p className="txt_em">로손 티켓</p>
+              <p className="inline-block px-2 border border-white">분배 방법</p>
+              <p>
+                【전자 티켓】
+                <span>
+                  <a
+                    href="https://l-tike.com/guide/share.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="notice-link"
+                  >
+                    https://l-tike.com/guide/share.html
+                  </a>
+                </span>
+              </p>
+              <p className="inline-block px-2 border border-white">문의</p>
+              <p>
+                <a
+                  href="https://faq.l-tike.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="notice-link"
+                >
+                  https://faq.l-tike.com/
+                </a>
+              </p>
+            </li>
+            <li className="br_t_s">
+              <p className="txt_em">e+</p>
+              <p className="inline-block px-2 border border-white">분배 방법</p>
+              <p>
+                【전자 티켓】
+                <span>
+                  <a
+                    href="https://eplus.jp/sf/guide/friends"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="notice-link"
+                  >
+                    https://eplus.jp/sf/guide/friends
+                  </a>
+                </span>
+              </p>
+              <p className="inline-block px-2 border border-white">문의</p>
+              <p>
+                <a
+                  href="https://eplus.jp/qa/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="notice-link"
+                >
+                  https://eplus.jp/qa/
+                </a>
+              </p>
+            </li>
           </ul>
         </div>
       </section>
 
       <section id="common" className="container notice-section">
-        <div className="notice-box">
+        <div className="notice-box info-box">
           <h2 className="section-title">공통 항목</h2>
+          <h3 className="info-subtitle">기본 사항</h3>
           <ul className="notice-list">
-            <li>라이브 입장에는 라이브 티켓, 기획전 입장에는 기획전 티켓이 필요합니다.</li>
-            <li>구매한 티켓은 개인 사정으로 환불되지 않습니다.</li>
-            <li>날씨나 기타 사유로 일정이 변경되거나 취소될 수 있습니다.</li>
+            <li>
+              라이브 입장에는 “라이브 티켓”, 기획전 입장에는 “기획전 티켓”이 필요합니다.
+              “라이브 티켓”으로 기획전에 입장하거나, “기획전 티켓”으로 라이브에 입장할
+              수 없습니다.
+            </li>
+            <li>
+              고객 사정에 의한 환불은 불가하니 양해해 주시기 바랍니다. 기상 등 불가항력
+              사유로 공연이나 이벤트가 취소될 경우 환불 안내를 드릴 수 있습니다.
+            </li>
+            <li>회장까지의 교통비·숙박비는 각자 부담입니다.</li>
+            <li>사정에 따라 중지, 연기, 일부 내용 또는 장소가 변경될 수 있습니다.</li>
+            <li>
+              회장 내·외부 공간은 본 이벤트 개최를 위해 대여된 것이므로, 고객 자체
+              기획 시행이나 홍보는 삼가해 주십시오. 또한 회장 주변(부지 외) 및 인접
+              역까지의 경로는 통행에 방해되지 않도록 관리하고 있으니 협조 부탁드립니다.
+            </li>
+            <li>
+              사고·혼란 방지 및 원활한 운영을 위해 스태프 지시사항과 주의사항을 반드시
+              준수해 주십시오. 미준수 시 입장 거부, 퇴장 조치, 이벤트 중단 등이 있을 수
+              있으며, 이 경우 환불되지 않으니 양해해 주십시오.
+            </li>
+            <li>
+              회장 내외에서 뛰지 마시고, 줄 서기나 입·퇴장 시에는 걸어서 차례대로
+              이동해 주십시오.
+            </li>
+            <li>
+              줄에서 물건으로 자리 차지나 새치기는 금지됩니다. 부득이 화장실 이용 등으로
+              줄을 벗어날 경우 주변에 알려 주십시오.
+            </li>
+            <li>
+              어린 자녀를 동반하실 때는 떨어지지 않도록 주의해 주십시오. 회장 내에서는
+              방송을 통한 개인 호출이 불가합니다.
+            </li>
+            <li>컨디션 불량 시에는 회장으로 오시기 전 의료기관을 방문해 주십시오.</li>
+            <li>
+              건강 관리에 유의하시고, 회장 내에서 이상을 느끼면 즉시 주변 스태프에게
+              알려 주십시오.
+            </li>
+            <li>귀중품을 포함한 소지품은 본인 스스로 관리해 주십시오.</li>
+            <li>
+              이벤트 중 절도, 분실, 부상, 체조 불량 등 문제가 발생하면 즉시 회장 내
+              스태프에게 알려 주십시오.
+            </li>
+            <li>분실물을 발견한 경우 즉시 회장 종합 안내소에 제출해 주십시오.</li>
+            <li>
+              예상치 못한 사고로 이어질 수 있으니 이동 중 스마트폰 사용(걷는 중 스크린
+              조작 등)은 삼가해 주십시오.
+            </li>
+            <li>주변 관객에게 불편을 줄 수 있는 대형 수하물 반입은 삼가해 주십시오.</li>
+            <li>
+              회장 내 음주는 금지되며, 음주 후 입장도 불가합니다. 음식물·흡연은 지정된
+              장소에서만 가능하며, 수분 섭취는 문제 없습니다.
+            </li>
+            <li>흡연 장소 이용 현황은 개최 시설 공식 웹사이트 등을 참고해 주십시오.</li>
+            <li>회장 내에서 지정된 좌석 이외 장소에 앉는 행위는 삼가해 주십시오.</li>
+            <li>장시간 공간 점유 및 수하물 펼치기는 삼가해 주십시오.</li>
+            <li>회장 부지 외에서 설문조사나 영업 활동은 공식 기획이 아니므로 주의해 주십시오.</li>
+            <li>회장 부지 외에서 무허가 판매품이나 리셀 제품을 구매하지 않도록 주의해 주십시오.</li>
+            <li>전시물, 게시물 반출은 금지됩니다.</li>
+            <li>생파(생대파)의 반입은 삼가해 주십시오.</li>
+            <li>
+              개인·법인 구분 없이 출연자에게 선물·증정물을 전달할 수 없습니다. 사전 양해
+              후 반입을 자제해 주십시오.
+            </li>
+            <li>
+              개인·법인 구분 없이 회장 내 출전사, 출연자, 관계자에 대한 영업·권유 행위는
+              삼가해 주십시오.
+            </li>
+            <li>
+              각 회장에서는 기록 사진·영상 촬영, 미디어 취재가 진행됩니다. 참가자가 촬영에
+              포함될 수 있으니 양해해 주십시오.
+            </li>
+            <li>참가자 간 분쟁에 대해서는 책임지지 않으니 당사자 간 협의해 주십시오.</li>
+            <li>사정에 따라 중지, 연기, 일부 내용 또는 장소가 변경될 수 있습니다.</li>
+            <li>본 웹사이트의 이미지·영상 복제, 전용, 배포 등의 행위를 금지합니다.</li>
+            <li>
+              예상치 못한 혼란 및 트러블 방지를 위해 이벤트 당일 같은 시설 내에서 본 이벤트
+              및 ‘하츠네 미쿠’ 관련 팬 이벤트(집회·기획 등 포함)를 실시하지 말아 주십시오.
+            </li>
+            <li>회장 시설 문의는 삼가해 주십시오.</li>
+            <li>
+              본 ‘주의사항’에 기재된 내용을 이벤트 규칙으로 합니다. 기재되지 않은 행위가
+              직원에게 부적절하다고 판단될 경우 주의를 드릴 수 있으니 양해해 주십시오.
+            </li>
+            <li>
+              참여 전 ‘하츠네 미쿠 「매지컬 미라이 2025」’ 공식 웹사이트를 확인해
+              주십시오.
+              <br />
+              <a href="../2025/" className="notice-link">
+                https://magicalmirai.com/2025/
+              </a>
+            </li>
           </ul>
+
+          <p className="info-location br_t text-left">SENDAI</p>
+          <p className="text-left">
+            AER：개최일 오전 8:00 이전에 줄 서는 것은 삼가해 주십시오.
+          </p>
+          <p className="text-left">
+            센다이역 앞 이비언즈 9F·10F, 이벤트홀 쇼에이, 센다이 선플라자 호텔, 센다이
+            선플라자 홀：개최일 오전 9:00 이전에 줄 서는 것은 삼가해 주십시오.
+          </p>
+          <ul className="info-list kome br_t_s text-left">
+            <li>
+              센다이역 앞 이비언즈 2F·3F·4F·5F：오전 10:00 이전에 줄 서는 것은
+              삼가해 주십시오.
+            </li>
+            <li>각 회장의 직원 안내·유도에 따라 주십시오.</li>
+          </ul>
+
+          <p className="info-location br_t_s text-left">TOKYO</p>
+          <p className="text-left">개최일 오전 6:00 이전에 줄 서는 것은 삼가해 주십시오.</p>
+
+          <p className="info-location br_t_s text-left">OSAKA</p>
+          <p className="text-left">개최일 오전 7:00 이전에 줄 서는 것은 삼가해 주십시오.</p>
+
+          <h3 className="info-subtitle">휠체어로 오시는 분 안내</h3>
+          <p className="text-left">
+            휠체어 이용 고객은 휠체어 전용 공간으로 안내해 드립니다(동반자분도 티켓이
+            필요합니다). 관람 공간 확보를 위해 티켓 구매 후 공연 1주일 전까지 아래로
+            연락해 주십시오.
+          </p>
+          <p className="info-location br_t text-left">SENDAI 회장</p>
+          <p className="text-left">GIP</p>
+          <p className="text-left">
+            <a
+              href="https://www.gip-web.co.jp/t/info"
+              target="_blank"
+              className="notice-link"
+            >
+              https://www.gip-web.co.jp/t/info<i className="icon_link" />
+            </a>
+            <span>（평일 10:00～18:30 대응）</span>
+          </p>
+          <p className="text-left">
+            <a
+              href="https://www.gip-web.co.jp/"
+              target="_blank"
+              className="notice-link"
+            >
+              GIP 공식 웹사이트<i className="icon_link" />
+            </a>
+          </p>
+          <p className="info-location br_t_s text-left">OSAKA 회장</p>
+          <p className="txts_s text-left">YUMEBANCHI</p>
+          <p className="text-left">
+            <i className="icon_phone i_l" /> 06-6341-3525
+            <span>（평일 12:00～17:00, 토일·공휴일 휴무）</span>
+          </p>
+          <p className="kome txt_sml text-left">※ 문의 대응 시간이 단축될 수 있습니다.</p>
+          <p className="text-left">
+            <a
+              href="https://www.yumebanchi.jp/"
+              target="_blank"
+              className="notice-link"
+            >
+              YUMEBANCHI 공식 웹사이트<i className="icon_link" />
+            </a>
+          </p>
+          <p className="info-location br_t_s text-left">TOKYO 회장</p>
+          <p className="txts_s text-left">SOGO TOKYO</p>
+          <p className="text-left">
+            <i className="icon_phone i_l" /> 03-3405-9999
+            <span>（운영 시간：월～토 12:00～13:00／16:00～19:00 ※일·공휴일 제외）</span>
+          </p>
+          <p className="text-left">
+            <a
+              href="https://sogotokyo.com/"
+              target="_blank"
+              className="notice-link"
+            >
+              SOGO TOKYO 공식 웹사이트<i className="icon_link" />
+            </a>
+          </p>
         </div>
       </section>
 
@@ -164,17 +505,17 @@ export default function ImportantNoticesPage() {
               </p>
               <p>AER 2F 아트리움</p>
               <ul className="info-list">
-                <li>8월 1일(금), 8월 2일(토) <span>9:00～19:00</span></li>
-                <li>8월 3일(일) <span>9:00～18:00</span></li>
+                <li>8월 1일(금), 8월 2일(토) <span>9:00~19:00</span></li>
+                <li>8월 3일(일) <span>9:00~18:00</span></li>
               </ul>
               <p className="br_t_ss">仙台駅前イービーンズ 2F</p>
               <ul className="info-list">
-                <li>8월 1일(금), 8월 2일(토) <span>13:00～19:00</span></li>
-                <li>8월 3일(일) <span>13:00～18:00</span></li>
+                <li>8월 1일(금), 8월 2일(토) <span>13:00~19:00</span></li>
+                <li>8월 3일(일) <span>13:00~18:00</span></li>
               </ul>
               <p className="br_t_ss">仙台サンプラザホール</p>
               <ul className="info-list">
-                <li>8월 1일(금)～8월 3일(일) <span>13:00～18:00</span></li>
+                <li>8월 1일(금)~8월 3일(일) <span>13:00~18:00</span></li>
               </ul>
               <p className="info-note br_t_s">
                 ※ 13:00 이전에 유료 구역 입장을 원하시는 분은 반드시 먼저 “AER 2F
@@ -418,9 +759,241 @@ export default function ImportantNoticesPage() {
       </section>
 
       <section id="cosplay" className="container notice-section">
-        <div className="notice-box">
+        <div className="notice-box info-box">
           <h2 className="section-title">코스프레</h2>
-          <p>코스프레는 지정된 장소와 시간에서만 가능하며, 탈의실 이용 후 이동해주세요.</p>
+
+          <p className="info-location">SENDAI (센다이역 앞 이빈즈)</p>
+          <h3 className="info-subtitle">코스프레 탈의실</h3>
+          <ul className="info-list">
+            <li>
+              8월 1일 (금) <span>10:00~19:00</span>
+            </li>
+            <li>
+              8월 2일 (<span className="week-sat">토</span>) <span>10:00~19:00</span>
+            </li>
+            <li>
+              8월 3일 (<span className="week-sun">일</span>) <span>10:00~18:00</span>
+            </li>
+          </ul>
+          <ul className="notice-list br_t_s">
+            <li>
+              코스프레 의상, 코스프레용 가발을 착용한 채로의 입장은 금지됩니다. 규정을
+              준수하지 않을 경우 티켓 소지 여부와 관계없이 입장이 거부될 수 있으니
+              주의해 주십시오.
+            </li>
+            <li>
+              코스프레가 가능한 장소는 센다이역 앞 이빈즈 내 코스프레 이동 가능 구역에
+              한정됩니다. 명시되지 않은 장소나 다른 회장에서의 코스프레는 삼가 주십시오.
+            </li>
+            <li>
+              ＜센다이역 앞 이빈즈 내 코스프레 안내＞
+              <ul className="info-sublist">
+                <li>
+                  코스프레 복장으로 이동할 수 있는 구역은 3F~10F(4F ‘모리의 가든 테라스’
+                  제외)에 한정됩니다.
+                </li>
+                <li>
+                  코스프레 복장으로 촬영할 수 있는 장소는 9F·10F ‘마지컬 미라이 2025’ 회장
+                  내에 한정됩니다. 그 외 통로 및 매장 등에서의 촬영은 금지됩니다. 단, 4F
+                  ‘프리치치’ 내 프린트 씰 기계에서의 촬영은 예외적으로 가능합니다.
+                </li>
+                <li>
+                  3F ‘겐키도 정골원’, ‘Hair by PROVE’, ‘소라〜추〜’ 세 점포는 코스프레
+                  복장으로 입장할 수 없습니다.
+                </li>
+                <li>
+                  코스프레 의상 및 가발을 착용한 채로의 퇴관, 코스프레 가능 구역 외 이동은
+                  금지됩니다.
+                </li>
+              </ul>
+            </li>
+            <li>코스프레 의상 및 가발을 착용한 채로 라이브에 참여하는 것은 금지됩니다.</li>
+            <li>공공 시설 및 회장 내 화장실에서의 갈아입기는 삼가 주십시오.</li>
+            <li>
+              탈의실은 기획전 회장 내에 설치되나, 공간이 한정되어 있으니 미리 양해 바랍니다.
+              코스프레 등록비·탈의실 사용료·카메라 등록비 등은 모두 무료입니다.
+            </li>
+            <li>
+              탈의실 이용자 전용 입장구는 없으므로 다른 방문객과 동일하게 기획전 입장구 앞에
+              줄을 서 주십시오.
+            </li>
+            <li>
+              탈의실이 야외에 설치되어 있어 우천·악천 시에는 폐장될 수 있으니 양해 바랍니다.
+            </li>
+            <li>다른 사람에게 폐나 불쾌감을 주는 의상이나 행동은 일체 금지합니다.</li>
+            <li>
+              코스프레는 본인 책임 하에 진행해 주십시오. 코스프레 내용·종류로 인한 사고·문제에
+              대해 주최 측 및 회장 측은 책임을 지지 않습니다.
+            </li>
+            <li>
+              얼굴이 완전히 가려져 시야가 극도로 나빠지는 의상(풀 마스크, 가면, 헬멧, 머리
+              장식 등)은 금지됩니다.
+            </li>
+            <li>
+              타인에게 상해를 입힐 수 있는 아이템(금속제 긴 장비 등)의 반입은 금지됩니다.
+            </li>
+            <li>
+              노출이 심해 공공음란에 해당할 수 있는 의상(성기나 속옷이 보이거나 비치는 것)은
+              금지됩니다.
+            </li>
+            <li>장시간 촬영이나 주변에 불편을 주는 촬영은 삼가 주십시오.</li>
+            <li>
+              촬영 시에는 촬영자와 촬영 대상자가 반드시 상호 확인 후 진행해 주시기 바랍니다.
+            </li>
+            <li>
+              회장 내(센다이역 앞 이빈즈)에는 팬 팬 에어리어를 마련하고 있으니, 혼잡 시 이용해
+              주십시오.
+            </li>
+            <li>
+              팬 팬 에어리어는 준비 및 청소 등으로 인해 이용할 수 없는 시간이 발생할 수 있으니
+              양해 바랍니다.
+            </li>
+            <li>
+              규칙이 지켜지지 않는다고 판단될 경우 코스프레 금지나 강제 퇴장 등의 조치를 취할
+              수 있습니다.
+            </li>
+            <li>
+              기획전 회장 폐장 시 모든 고객이 퇴장할 수 있도록 협조 부탁드립니다.
+            </li>
+          </ul>
+
+          <hr className="my-12 border-t border-white/20" />
+
+          <p className="info-location">OSAKA</p>
+          <h3 className="info-subtitle">코스프레 탈의실</h3>
+          <ul className="info-list">
+            <li>
+              8월 9일 (<span className="week-sat">토</span>) <span>9:00~17:30</span>
+            </li>
+            <li>
+              8월 10일 (<span className="week-sun">일</span>) <span>9:00~17:30</span>
+            </li>
+            <li>
+              8월 11일 (<span className="week-sun">월·공휴</span>) <span>9:00~17:30</span>
+            </li>
+          </ul>
+          <ul className="notice-list br_t_s">
+            <li>
+              코스프레 의상, 코스프레용 가발을 착용한 채로의 입장은 금지됩니다. 규정을
+              준수하지 않을 경우 티켓 소지 여부와 관계없이 입장이 거부될 수 있으니
+              주의해 주십시오.
+            </li>
+            <li>
+              코스프레가 가능한 장소는 인텍스 오사카 3호관 기획전 회장 내에 한정됩니다.
+              코스프레 복장으로 기획전 회장 밖으로 퇴장하는 것은 금지됩니다.
+            </li>
+            <li>
+              코스프레 복장으로 인텍스 오사카 4호관·5호관A에서 열리는 라이브·기획전에
+              참여하는 것은 금지됩니다.
+            </li>
+            <li>공공 시설 및 회장 내 화장실에서의 갈아입기는 삼가 주십시오.</li>
+            <li>
+              탈의실은 기획전 회장 내에 설치되나, 공간이 한정되어 있으니 미리 양해 바랍니다.
+              코스프레 등록비·탈의실 사용료·카메라 등록비 등은 모두 무료입니다.
+            </li>
+            <li>
+              탈의실 이용자 전용 입장구는 없으므로 다른 방문객과 동일하게 기획전 입장구 앞에
+              줄을 서 주십시오.
+            </li>
+            <li>다른 사람에게 폐나 불쾌감을 주는 의상이나 행동은 일체 금지합니다.</li>
+            <li>
+              코스프레는 본인 책임 하에 진행해 주십시오. 코스프레 내용·종류로 인한 사고·문제에
+              대해 주최 측 및 회장 측은 책임을 지지 않습니다.
+            </li>
+            <li>
+              얼굴이 완전히 가려져 시야가 극도로 나빠지는 의상(풀 마스크, 가면, 헬멧 등)은
+              금지됩니다.
+            </li>
+            <li>
+              타인에게 상해를 입힐 수 있는 아이템(금속제 긴 장비 등)의 반입은 금지됩니다.
+            </li>
+            <li>노출이 심해 공공음란에 해당할 수 있는 의상은 금지됩니다.</li>
+            <li>장시간 촬영이나 주변에 불편을 주는 촬영은 삼가 주십시오.</li>
+            <li>
+              촬영 시에는 촬영자와 촬영 대상자가 반드시 상호 확인 후 진행해 주시기 바랍니다.
+            </li>
+            <li>회장 내에는 팬 팬 에어리어를 마련하고 있으니, 혼잡 시 이용해 주십시오.</li>
+            <li>
+              팬 팬 에어리어는 줄 정리 및 청소 등의 이유로 이용할 수 없는 시간이 발생할 수
+              있으니 양해 바랍니다.
+            </li>
+            <li>
+              규칙이 지켜지지 않는다고 판단될 경우 코스프레 금지나 강제 퇴장 등의 조치를 취할
+              수 있습니다.
+            </li>
+            <li>
+              기획전 회장 폐장 시 모든 고객이 퇴장할 수 있도록 협조 부탁드립니다.
+            </li>
+          </ul>
+
+          <hr className="my-12 border-t border-white/20" />
+
+          <p className="info-location">TOKYO</p>
+          <h3 className="info-subtitle">코스프레 탈의실</h3>
+          <ul className="info-list">
+            <li>
+              8월 29일 (금) <span>9:00~17:30</span>
+            </li>
+            <li>
+              8월 30일 (<span className="week-sat">토</span>) <span>9:00~17:30</span>
+            </li>
+            <li>
+              8월 31일 (<span className="week-sun">일</span>) <span>9:00~17:30</span>
+            </li>
+          </ul>
+          <ul className="notice-list br_t_s">
+            <li>
+              코스프레 의상, 코스프레용 가발을 착용한 채로의 입장은 금지됩니다. 규정을
+              준수하지 않을 경우 티켓 소지 여부와 관계없이 입장이 거부될 수 있으니
+              주의해 주십시오.
+            </li>
+            <li>
+              코스프레가 가능한 장소는 기획전 회장(에스프라나도 포함)에 한정됩니다. 코스프레
+              복장으로 기획전 회장 밖으로 퇴장하는 것은 금지됩니다.
+            </li>
+            <li>코스프레 복장으로 라이브에 참여하는 것은 금지됩니다.</li>
+            <li>공공 시설 및 회장 내 화장실에서의 갈아입기는 삼가 주십시오.</li>
+            <li>
+              탈의실은 기획전 회장 내에 설치되나, 공간이 한정되어 있으니 미리 양해 바랍니다.
+              코스프레 등록비·탈의실 사용료·카메라 등록비 등은 모두 무료입니다.
+            </li>
+            <li>
+              탈의실 이용자 전용 입장구는 없으므로 다른 방문객과 동일하게 기획전 입장구 앞에
+              줄을 서 주십시오.
+            </li>
+            <li>다른 사람에게 폐나 불쾌감을 주는 의상이나 행동은 일체 금지합니다.</li>
+            <li>
+              코스프레는 본인 책임 하에 진행해 주십시오. 코스프레 내용·종류로 인한 사고·문제에
+              대해 주최 측 및 회장 측은 책임을 지지 않습니다.
+            </li>
+            <li>
+              얼굴이 완전히 가려져 시야가 극도로 나빠지는 의상(풀 마스크, 가면, 헬멧 등)은
+              금지됩니다.
+            </li>
+            <li>
+              타인에게 상해를 입힐 수 있는 아이템(금속제 긴 장비 등)의 반입은 금지됩니다.
+            </li>
+            <li>노출이 심해 공공음란에 해당할 수 있는 의상은 금지됩니다.</li>
+            <li>장시간 촬영이나 주변에 불편을 주는 촬영은 삼가 주십시오.</li>
+            <li>
+              촬영 시에는 촬영자와 촬영 대상자가 반드시 상호 확인 후 진행해 주시기 바랍니다.
+            </li>
+            <li>회장 내에는 팬 팬 에어리어를 마련하고 있으니, 혼잡 시 이용해 주십시오.</li>
+            <li>
+              팬 팬 에어리어는 11:00 이후에 에스프라나도(관내 통로/기획전 회장 일부)에
+              설치됩니다.
+            </li>
+            <li>
+              팬 팬 에어리어 이용에는 입장용 리스트 밴드(기획전 티켓)가 필요합니다.
+            </li>
+            <li>
+              규칙이 지켜지지 않는다고 판단될 경우 코스프레 금지나 강제 퇴장 등의 조치를 취할
+              수 있습니다.
+            </li>
+            <li>
+              기획전 회장 폐장 시 모든 고객이 퇴장할 수 있도록 협조 부탁드립니다.
+            </li>
+          </ul>
         </div>
       </section>
 
