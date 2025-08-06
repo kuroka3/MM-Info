@@ -747,7 +747,7 @@ export default function ImportantNoticesPage() {
               매지컬 미라이 2025 머플러타월 미쿠 ver. / 린 ver. / 렌 ver. / 루카
               ver. / MEIKO ver. / KAITO ver.
             </li>
-            <li>매지컬 미라이 2025 핫피 (법피) 메인 비주얼 ver.</li>
+            <li>매지컬 미라이 2025 핫피 메인 비주얼 ver.</li>
             <li>매지컬 미라이 2025 미니 깃발</li>
             <li>매지컬 미라이 2025 캡모자</li>
           </ul>
