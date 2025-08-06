@@ -61,7 +61,7 @@ export default function ImportantNoticesPage() {
 
           <h3 className="info-subtitle br_t">‘신분증’에 대하여</h3>
           <p>사본이나 이미지(사진)는 무효 처리되니 유의해 주시기 바랍니다.</p>
-          <p className="info-note txts_s txt_em br_t">
+          <p className="info-limit-title br_t">
             【사진 있는 신분증 (1종류만으로 가능)】
           </p>
           <div className="br_t_ss">
@@ -90,7 +90,7 @@ export default function ImportantNoticesPage() {
               </li>
             </ul>
           </div>
-          <p className="info-note txts_s txt_em br_t_s">
+          <p className="info-limit-title br_t_s">
             【사진 없는 신분증 (2종류)】
           </p>
           <div className="br_t_ss">
@@ -500,7 +500,7 @@ export default function ImportantNoticesPage() {
             <li>티켓만으로는 입장할 수 없습니다.</li>
             <li>
               <p>“기획전 티켓 확인소” 접수 시간은 회장별로 다릅니다.</p>
-              <p className="info-note txt_back txts_s txt_em br_t_s">
+              <p className="info-note txt_back br_t_s">
                 기획전 티켓 확인소
               </p>
               <p>AER 2F 아트리움</p>
@@ -857,7 +857,7 @@ export default function ImportantNoticesPage() {
             </li>
           </ul>
 
-          <hr className="my-12 border-t border-white/20" />
+          <hr className="section-divider" />
 
           <p className="info-location">OSAKA</p>
           <h3 className="info-subtitle">코스프레 탈의실</h3>
@@ -926,7 +926,7 @@ export default function ImportantNoticesPage() {
             </li>
           </ul>
 
-          <hr className="my-12 border-t border-white/20" />
+          <hr className="section-divider" />
 
           <p className="info-location">TOKYO</p>
           <h3 className="info-subtitle">코스프레 탈의실</h3>
