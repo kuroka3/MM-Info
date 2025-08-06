@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import ScrollTopButton from './scroll-top-button';
+import ScrollTopButton from '@/components/ScrollTopButton';
 
 export const metadata: Metadata = {
   title: '주의 사항',

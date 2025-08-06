@@ -9,7 +9,7 @@ export default function ConcertGuidePage() {
       <header className="header">
         <div className="container header-content">
           <h1 className="header-title">공연 가이드</h1>
-          <p className="header-subtitle">공연 정보를 확인하세요</p>
+          <p className="header-subtitle">하츠네 미쿠 &lt;매지컬 미라이 2025&gt; 공연 정보</p>
         </div>
       </header>
 

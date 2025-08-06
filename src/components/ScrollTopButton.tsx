@@ -14,6 +14,7 @@ export default function ScrollTopButton() {
   return (
     <button
       aria-label="맨 위로"
+      title="맨 위로"
       className={`scroll-top ${visible ? 'show' : ''}`}
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
     >
