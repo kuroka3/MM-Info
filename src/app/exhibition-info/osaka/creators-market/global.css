@@ -69,7 +69,7 @@
 
 .entrance-label {
   position: absolute;
-  bottom: -4.5rem;
+  bottom: -4.2rem;
   right: 1.2rem;
   pointer-events: none;
   z-index: 10000;
@@ -114,9 +114,13 @@
   padding:.55rem .2rem;
   border-radius:8px;
   text-align:center;
-  background:rgba(255,255,255,.12);
   color:#fff;
   cursor:pointer;
+  transition:filter .2s, box-shadow .2s;
+}
+.booth:hover{
+  box-shadow:0 0 6px currentColor;
+  filter:brightness(1.1);
 }
 .booth:hover .booth-tooltip{
   opacity:1;
@@ -141,6 +145,7 @@
   z-index:10;
   left:50%;
   top:104%;
+  bottom:auto;
   transform:translateX(-50%);
   padding:.7rem;
   border-radius:12px;
@@ -151,12 +156,14 @@
   transition:.2s ease;
   display:flex;
   flex-direction:column;
-  width:max-content;
+  align-items:center;
+  gap:.25rem;
+  min-width:auto;
 }
 .tooltip-img-wrapper{
+  position:relative;
   width:120px;
   height:120px;
-  margin-bottom:.25rem;
   border-radius:8px;
   overflow:hidden;
 }
@@ -164,7 +171,6 @@
   width:100%;
   height:100%;
   object-fit:cover;
-  position:static;
 }
 .tooltip-title{
   font-size:.9rem;
@@ -180,6 +186,24 @@
   gap:1.25rem;
   margin-top:2rem;
 }
+.booth-row-header{
+  width:64px;
+  height:64px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.25rem;
+  font-weight:700;
+  margin:2rem auto 0.5rem;
+  backdrop-filter:blur(10px);
+  border-width:2px;
+  border-style:solid;
+}
+.booth-row-header.highlight{
+  animation:notice-highlight 3s ease-out;
+}
+
 .booth-item{
   display:flex;
   gap:1rem;
@@ -189,7 +213,7 @@
   backdrop-filter:blur(10px);
 }
 .booth-item.highlight{
-  animation:notice-highlight 1.5s ease-out;
+  animation:notice-highlight 3s ease-out;
 }
 .booth-item-img{
   border-radius:12px;
@@ -228,4 +252,27 @@
   font-size:.78rem;
   color:#fff;
   text-decoration:none;
+}
+
+.row-nav{
+  display:flex;
+  justify-content:center;
+  gap:.5rem;
+  margin-top:1.5rem;
+}
+.row-nav-btn{
+  width:40px;
+  height:40px;
+  border-radius:8px;
+  border-width:1px;
+  border-style:solid;
+  font-weight:700;
+  color:#fff;
+  backdrop-filter:blur(6px);
+  cursor:pointer;
+  transition:filter .2s, box-shadow .2s;
+}
+.row-nav-btn:hover{
+  box-shadow:0 0 6px currentColor;
+  filter:brightness(1.1);
 }

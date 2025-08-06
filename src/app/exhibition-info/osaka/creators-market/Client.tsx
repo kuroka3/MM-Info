@@ -20,9 +20,10 @@ const findBooth = (row: string, col: number, day: string) => {
 
 export default function CreatorsMarketClient() {
   const [selectedDay, setSelectedDay] = useState<(typeof DAYS)[number]>(DAYS[0]);
+  const listRefs = useRef<Record<string, HTMLLIElement | null>>({});
+  const rowRefs = useRef<Record<string, HTMLLIElement | null>>({});
   const [gutter, setGutter] = useState(0);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const listRefs = useRef<Record<string, HTMLLIElement | null>>({});
 
   useLayoutEffect(() => {
     function updateGutter() {
@@ -36,14 +37,24 @@ export default function CreatorsMarketClient() {
     return () => window.removeEventListener('resize', updateGutter);
   }, []);
 
-  const scrollTo = (id: string) => {
+  const scrollToBooth = (id: string) => {
     const el = listRefs.current[id];
     if (!el) return;
     const offset = 80;
     const top = el.getBoundingClientRect().top + window.scrollY - offset;
     scrollToPosition(top, 400);
     el.classList.add('highlight');
-    setTimeout(() => el.classList.remove('highlight'), 2000);
+    setTimeout(() => el.classList.remove('highlight'), 3000);
+  };
+
+  const scrollToRow = (row: string) => {
+    const el = rowRefs.current[row];
+    if (!el) return;
+    const offset = 80;
+    const top = el.getBoundingClientRect().top + window.scrollY - offset;
+    scrollToPosition(top, 400);
+    el.classList.add('highlight');
+    setTimeout(() => el.classList.remove('highlight'), 3000);
   };
 
   return (
@@ -67,29 +78,29 @@ export default function CreatorsMarketClient() {
           ))}
         </nav>
 
-      <section className="cm-section">
-        <div className="cm-map-wrapper" ref={wrapperRef}>
-          <svg className="map-arrow exit" viewBox="0 0 32 32">
-            <path d="M30 16H4M16 4l-12 12 12 12" />
-          </svg>
+        <section className="cm-section">
+          <div className="cm-map-wrapper" ref={wrapperRef}>
+            <svg className="map-arrow exit" viewBox="0 0 32 32">
+              <path d="M30 16H4M16 4l-12 12 12 12" />
+            </svg>
 
-          <svg className="map-arrow entrance" viewBox="0 0 32 32">
-            <path d="M16 30V4M4 16l12-12 12 12" />
-          </svg>
-          <div className="entrance-label">입구</div>
+            <svg className="map-arrow entrance" viewBox="0 0 32 32">
+              <path d="M16 30V4M4 16l12-12 12 12" />
+            </svg>
+            <div className="entrance-label">입구</div>
 
-          <div className="cm-grid">
-            {ROWS.map(row => (
-              <Fragment key={row}>
-                {COLS_REVERSED.map(col => {
-                  if (row === 'A' && col === 12) {
-                    return (
-                      <div key="exit-cell" className="exit-label-cell">
-                        출구
-                      </div>
-                    );
-                  }
-                  const booth = findBooth(row, col, selectedDay);
+            <div className="cm-grid">
+              {ROWS.map(row => (
+                <Fragment key={row}>
+                  {COLS_REVERSED.map(col => {
+                    if (row === 'A' && col === 12) {
+                      return (
+                        <div key="exit-cell" className="exit-label-cell">
+                          출구
+                        </div>
+                      );
+                    }
+                    const booth = findBooth(row, col, selectedDay);
                     const prevSpan =
                       col > 1 && findBooth(row, col - 1, selectedDay)?.span;
                     if (!booth && prevSpan) return null;
@@ -110,7 +121,7 @@ export default function CreatorsMarketClient() {
                         key={booth.id}
                         className={`booth ${rowClasses[row]}`}
                         style={booth.span ? { gridColumn: `span ${booth.span}` } : {}}
-                        onClick={() => scrollTo(booth.id)}
+                        onClick={() => scrollToBooth(booth.id)}
                       >
                         {booth.id}
                         <div className="booth-tooltip">
@@ -121,7 +132,6 @@ export default function CreatorsMarketClient() {
                               width={120}
                               height={120}
                               className="tooltip-img"
-                              style={{ position: 'relative', width: '100%', height: '100%' }}
                             />
                           </div>
                           <p className="tooltip-title">{booth.name}</p>
@@ -129,74 +139,103 @@ export default function CreatorsMarketClient() {
                       </button>
                     );
                   })}
-                {(row === 'A' || row === 'C' || row === 'E') && <div className="walk-gap" />}
-              </Fragment>
-            ))}
-          </div>
+                  {(row === 'A' || row === 'C' || row === 'E') && <div className="walk-gap" />}
+                </Fragment>
+              ))}
+            </div>
 
-          <div
-            className="bottom-left-mask-box"
-            style={{
-              width: `calc(100% - ${gutter}px)`,
-              height: `calc(100% - ${gutter}px)`,
-            }}
-          />
-        </div>
-      </section>
+            <div
+              className="bottom-left-mask-box"
+              style={{
+                width: `calc(100% - ${gutter}px)`,
+                height: `calc(100% - ${gutter}px)`,
+              }}
+            />
+          </div>
+        </section>
+
+        <nav className="row-nav">
+          {ROWS.map(r => (
+            <button key={r} className={`row-nav-btn ${rowClasses[r]}`} onClick={() => scrollToRow(r)}>
+              {r}
+            </button>
+          ))}
+        </nav>
 
         <section className="cm-section booth-list-section">
           <h2 className="booth-list-title">Booth List – {selectedDay}</h2>
           <ul className="booth-list">
-            {BOOTHS.filter(b => !b.hidden && b.dates.includes(selectedDay))
-              .sort((a, b) => a.id.localeCompare(b.id))
-              .map(booth => (
-                <li
-                  key={booth.id}
-                  ref={el => {
-                    listRefs.current[booth.id] = el;
-                  }}
-                  className="booth-item"
-                >
-                  <Image
-                    src={jacketSrc(booth.id)}
-                    alt={booth.name}
-                    width={96}
-                    height={96}
-                    className="booth-item-img"
-                  />
-                  <div>
-                    <h3 className="booth-item-title">
-                      {booth.name}
-                      {booth.koPNames && <> ({booth.koPNames})</>}
-                    </h3>
-                    <p className="booth-item-meta">{booth.id}</p>
-                    {booth.members.length > 0 && (
-                      <ul className="member-list">
-                        {booth.members.map(m => (
-                          <li key={m.name} className="member-item">
-                            <span className="member-name">{m.name}</span>
-                            {m.links?.length && (
-                              <span className="member-links">
-                                {m.links.map((link, i) => (
-                                  <a
-                                    key={i}
-                                    href={link.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                  >
-                                    <Image src="/images/link.svg" alt="" width={12} height={12} />
-                                    {link.label}
-                                  </a>
-                                ))}
-                              </span>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                </li>
-              ))}
+            {ROWS.map(row => {
+              const booths = BOOTHS.filter(
+                b => !b.hidden && b.dates.includes(selectedDay) && b.row === row,
+              ).sort((a, b) => a.id.localeCompare(b.id));
+              if (booths.length === 0) return null;
+              return (
+                <Fragment key={row}>
+                  <li
+                    className={`booth-row-header ${rowClasses[row]}`}
+                    ref={el => {
+                      rowRefs.current[row] = el;
+                    }}
+                  >
+                    {row}
+                  </li>
+                  {booths.map(booth => (
+                    <li
+                      key={booth.id}
+                      ref={el => {
+                        listRefs.current[booth.id] = el;
+                      }}
+                      className="booth-item"
+                    >
+                      <Image
+                        src={jacketSrc(booth.id)}
+                        alt={booth.name}
+                        width={96}
+                        height={96}
+                        className="booth-item-img"
+                      />
+                      <div>
+                        <h3 className="booth-item-title">
+                          {booth.name}
+                          {booth.koPNames && <> ({booth.koPNames})</>}
+                        </h3>
+                        <p className="booth-item-meta">{booth.id}</p>
+                        {booth.members.length > 0 && (
+                          <ul className="member-list">
+                            {booth.members.map(m => (
+                              <li key={m.name} className="member-item">
+                                <span className="member-name">{m.name}</span>
+                                {m.links?.length && (
+                                  <span className="member-links">
+                                    {m.links.map((link, i) => (
+                                      <a
+                                        key={i}
+                                        href={link.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                      >
+                                        <Image
+                                          src="/images/link.svg"
+                                          alt=""
+                                          width={12}
+                                          height={12}
+                                        />
+                                        {link.label}
+                                      </a>
+                                    ))}
+                                  </span>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </Fragment>
+              );
+            })}
           </ul>
         </section>
       </div>
