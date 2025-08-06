@@ -27,11 +27,12 @@ const boothsA: Booth[] = [
     row: 'A',
     col: 1,
     name: 'BASYAUMA RECORDS',
-    koPNames: '',
+    koPNames: '*Luna',
     dates: ['8/9(토)', '8/10(일)'],
     members: [
       {
         name: '*Luna',
+        koName: '*Luna',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000797' },
           { label: 'WEB', url: 'https://www.ast-luna.com/' }
@@ -44,11 +45,12 @@ const boothsA: Booth[] = [
     row: 'A',
     col: 2,
     name: 'ムラサメ',
-    koPNames: '',
+    koPNames: '무라타시유우',
     dates: ['8/9(토)', '8/10(일)'],
     members: [
       {
         name: 'ムラタシユウ',
+        koName: '무라타시유우',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp001090' },
           { label: 'X(Twitter)', url: 'https://x.com/muratashiyuu' },
@@ -69,18 +71,23 @@ const boothsA: Booth[] = [
     row: 'A',
     col: 3,
     name: 'JHT STUDIO',
-    koPNames: '',
+    koPNames: '"네코무라 코타츠 / 나나 / 카와무라 시키"',
     dates: ['8/9(토)', '8/10(일)'],
     members: [
       {
         name: '猫舘 こたつ',
+        koName: '',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp001079' },
           { label: 'X(Twitter)', url: 'https://x.com/NKTC_KTT' }
         ]
       },
-      { name: 'ナナ', links: [{ label: 'X(Twitter)', url: 'https://x.com/nana_00ii' }] },
-      { name: 'カワムラシキ', links: [{ label: 'X(Twitter)', url: 'https://x.com/ShikiKawamura' }] }
+      { name: 'ナナ',
+        koName: '나나',
+        links: [{ label: 'X(Twitter)', url: 'https://x.com/nana_00ii' }] },
+      { name: 'カワムラシキ',
+        koName: '카와무라 시키',
+        links: [{ label: 'X(Twitter)', url: 'https://x.com/ShikiKawamura' }] }
     ]
   },
   {
@@ -88,11 +95,12 @@ const boothsA: Booth[] = [
     row: 'A',
     col: 4,
     name: '札幌市吉田区夜世一丁目',
-    koPNames: '',
+    koPNames: '요시다 야세이',
     dates: ['8/9(토)', '8/10(일)'],
     members: [
       {
         name: '吉田夜世',
+        koName: '요시다 야세이',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp001039' },
           { label: 'X(Twitter)', url: 'https://x.com/otgys' },
@@ -106,11 +114,12 @@ const boothsA: Booth[] = [
     row: 'A',
     col: 5,
     name: 'BIGHEAD',
-    koPNames: '',
+    koPNames: '빅헤드',
     dates: ['8/9(토)', '8/10(일)'],
     members: [
       {
         name: 'BIGHEAD',
+        koName: '빅헤드',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000685' },
           { label: 'X(Twitter)', url: 'https://x.com/bighead11111' },
@@ -124,11 +133,12 @@ const boothsA: Booth[] = [
     row: 'A',
     col: 6,
     name: 'ペンギンの島',
-    koPNames: '',
+    koPNames: '아델리',
     dates: ['8/9(토)', '8/10(일)'],
     members: [
       {
         name: 'Adeliae',
+        koName: '아델리',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000975' },
           { label: 'X(Twitter)', url: 'https://x.com/del_conoe' }
@@ -141,11 +151,12 @@ const boothsA: Booth[] = [
     row: 'A',
     col: 7,
     name: '忘却書店',
-    koPNames: '',
+    koPNames: '코우',
     dates: ['8/9(토)', '8/10(일)'],
     members: [
       {
         name: 'コウ',
+        koName: '코우',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000747' },
           { label: 'X(Twitter)', url: 'https://x.com/kou_shimizu_' },
@@ -162,11 +173,12 @@ const boothsA: Booth[] = [
     row: 'A',
     col: 8,
     name: 'UtopiaLyric',
-    koPNames: '',
+    koPNames: 'UtopiaLyric',
     dates: ['8/9(토)', '8/10(일)'],
     members: [
       {
         name: 'UtopiaLyric',
+        koName: 'UtopiaLyric',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000073' },
           { label: 'X(Twitter)', url: 'https://x.com/UtopiaLyric' },
@@ -180,11 +192,12 @@ const boothsA: Booth[] = [
     row: 'A',
     col: 9,
     name: '音戯噺屋',
-    koPNames: '',
+    koPNames: 'koushirou（卑屈P）',
     dates: ['8/9(토)', '8/10(일)'],
     members: [
       {
         name: 'koushirou（卑屈P）',
+        koName: 'koushirou（卑屈P）',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000013' },
           { label: 'X(Twitter)', url: 'https://x.com/kou46' },
@@ -198,7 +211,7 @@ const boothsA: Booth[] = [
     row: 'A',
     col: 10,
     name: 'WONDERFUL OPPORTUNITY',
-    koPNames: '',
+    koPNames: '원더풀 오퍼튜니티',
     dates: ['8/9(토)', '8/10(일)'],
     members: [
       { name: 'じーざす', links: [] },
@@ -218,11 +231,12 @@ const boothsA: Booth[] = [
     row: 'A',
     col: 11,
     name: 'ピノキオ定食',
-    koPNames: '',
+    koPNames: '피노키오피',
     dates: ['8/9(토)', '8/10(일)'],
     members: [
       {
         name: 'ピノキオピー',
+        koName: '피노키오피',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000236' },
           { label: 'X(Twitter)', url: 'https://x.com/pinocchiop' },
