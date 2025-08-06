@@ -33,13 +33,13 @@ export default function ImportantNoticesPage() {
       </nav>
 
       <section id="id-check" className="container notice-section">
-        <details open>
-          <summary className="info-subtitle cursor-pointer">외국인표</summary>
-          <div className="notice-box info-box">
-            <p className="notice-caution">반드시 읽어 주세요</p>
-            <h2 className="section-title">
-              라이브 티켓의<span>‘본인 확인’ 실시에 대하여</span>
-            </h2>
+        <div className="notice-box info-box">
+          <p className="notice-caution">반드시 읽어 주세요</p>
+          <h2 className="section-title">
+            라이브 티켓의<span>‘본인 확인’ 실시에 대하여</span>
+          </h2>
+          <details open>
+            <summary className="info-subtitle cursor-pointer">외국인표</summary>
             <section>
               <p>
                 모든 회장에서 라이브 입장 시 입장 시 무작위로 ‘본인 확인’을 실시합니다.<br />
@@ -58,7 +58,7 @@ export default function ImportantNoticesPage() {
             <section>
               <h3 className="info-subtitle">신분증 안내</h3>
               <ul className="info-list">
-                <li>여권</li>
+                <li className="text-center">여권</li>
               </ul>
               <p className="txt_sml">*사본 및 사진은 인정되지 않습니다.</p>
               <p className="txt_sml">
@@ -89,22 +89,25 @@ export default function ImportantNoticesPage() {
                   className="inquiry_mail"
                   alt=""
                 />
+                <a
+                  href="mailto:event@linkst.jp"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  event@linkst.jp
+                </a>
                 <span className="txt_sml">(영어 문의만)</span>
               </p>
-              <ul className="txt_sml br_t_ss">
-                <li>*티켓 문의 답변까지 다소 시간이 소요될 수 있습니다.</li>
-                <li>*공연 내용에 관한 문의는 자제해 주십시오.</li>
-              </ul>
+              <p className="info-note br_t_ss">
+                *티켓 문의 답변까지 다소 시간이 소요될 수 있습니다.
+              </p>
+              <p className="info-note">
+                *공연 내용에 관한 문의는 자제해 주십시오.
+              </p>
             </section>
-          </div>
-        </details>
-        <details>
-          <summary className="info-subtitle cursor-pointer">내국인표</summary>
-          <div className="notice-box info-box">
-            <p className="notice-caution">반드시 읽어 주세요</p>
-            <h2 className="section-title">
-              라이브 티켓의 <span>‘본인 확인’ 실시에 대하여</span>
-            </h2>
+          </details>
+          <details>
+            <summary className="info-subtitle cursor-pointer">내국인표</summary>
             <p>
               모든 회장에서 라이브 입장 시 무작위로 ‘본인 확인’을 실시합니다.
               <br />티켓 구매 시 개인정보를 등록해야 하며, 티켓을 여러 장 구매하시는
@@ -286,8 +289,8 @@ export default function ImportantNoticesPage() {
                 </p>
               </li>
             </ul>
-          </div>
-        </details>
+          </details>
+        </div>
       </section>
 
       <section id="common" className="container notice-section">
@@ -568,10 +571,9 @@ export default function ImportantNoticesPage() {
             <li>티켓만으로는 입장할 수 없습니다.</li>
             <li>
               <p>“기획전 티켓 확인소” 접수 시간은 회장별로 다릅니다.</p>
-              <p className="info-note txt_back br_t_s">
-                기획전 티켓 확인소
-              </p>
-              <p>AER 2F 아트리움</p>
+              <br />
+              <p className="inline-block px-2 border border-white">기획전 티켓 확인소</p>
+              <p className="br_t_ss">AER 2F 아트리움</p>
               <ul className="info-list">
                 <li>8월 1일(금), 8월 2일(토) <span>9:00~19:00</span></li>
                 <li>8월 3일(일) <span>9:00~18:00</span></li>
