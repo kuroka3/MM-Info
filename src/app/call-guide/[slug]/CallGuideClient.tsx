@@ -12,6 +12,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import SpoilerGate from '@/components/SpoilerGate';
+import ScrollTopButton from '@/components/ScrollTopButton';
 import type { Song } from '@prisma/client';
 import type { Call, LyricLine } from '@/types/call-guide';
 
@@ -489,17 +490,7 @@ export default function CallGuideClient({ song, prevSong, nextSong }: CallGuideC
           </div>
         </div>
 
-        <button
-          className="scroll-top control-button"
-          onClick={() => {
-            autoScrollRef.current = false;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-          }}
-        >
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <polyline points="6,15 12,9 18,15" stroke="currentColor" strokeWidth="2" fill="none" />
-          </svg>
-        </button>
+        <ScrollTopButton />
       </main>
     </SpoilerGate>
   );
