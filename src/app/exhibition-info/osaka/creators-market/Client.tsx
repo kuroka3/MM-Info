@@ -4,6 +4,7 @@ import { useState, Fragment, useRef } from 'react';
 import Image from 'next/image';
 import { ROWS, COLS, rowClasses, BOOTHS, Booth } from './boothData';
 import ScrollTopButton from '@/components/ScrollTopButton';
+import { scrollToPosition } from '@/lib/scroll';
 
 const DAYS = ['8/9(토)', '8/10(일)', '8/11(월)'] as const;
 const COLS_REVERSED = [...COLS].reverse();
@@ -21,8 +22,15 @@ export default function CreatorsMarketClient() {
   const [selectedDay, setSelectedDay] = useState<(typeof DAYS)[number]>(DAYS[0]);
   const listRefs = useRef<Record<string, HTMLLIElement | null>>({});
 
-  const scrollTo = (id: string) =>
-    listRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const scrollTo = (id: string) => {
+    const el = listRefs.current[id];
+    if (!el) return;
+    const offset = 80;
+    const top = el.getBoundingClientRect().top + window.scrollY - offset;
+    scrollToPosition(top, 400);
+    el.classList.add('highlight');
+    setTimeout(() => el.classList.remove('highlight'), 2000);
+  };
 
   return (
     <main>
@@ -87,13 +95,16 @@ export default function CreatorsMarketClient() {
                       >
                         {booth.id}
                         <div className="booth-tooltip">
-                          <Image
-                            src={jacketSrc(booth.id)}
-                            alt={booth.name}
-                            width={120}
-                            height={120}
-                            className="tooltip-img"
-                          />
+                          <div className="tooltip-img-wrapper">
+                            <Image
+                              src={jacketSrc(booth.id)}
+                              alt={booth.name}
+                              width={120}
+                              height={120}
+                              className="tooltip-img"
+                              style={{ position: 'relative', width: '100%', height: '100%' }}
+                            />
+                          </div>
                           <p className="tooltip-title">{booth.name}</p>
                         </div>
                       </button>
