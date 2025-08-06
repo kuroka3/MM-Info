@@ -41,48 +41,46 @@ export default function ImportantNoticesPage() {
           <details open>
             <summary className="info-subtitle cursor-pointer">외국인표</summary>
             <section>
-              <p>
+              <p className="text-left">
                 모든 회장에서 라이브 입장 시 입장 시 무작위로 ‘본인 확인’을 실시합니다.<br />
                 티켓 구매 시 개인정보를 등록해야 하며,<br />
                 티켓을 여러 장 구매하시는 경우 동행자의 개인정보도 함께 등록하셔야 합니다.<br />
                 티켓 신청 및 공연장 방문 전 반드시 확인해 주시기 바랍니다.
               </p>
-              <p className="br_t_s">
+              <p className="text-left">
                 ‘본인 확인’은 신분증과 티켓에 기재된 이름을 대조하여 진행합니다.<br />
                 공연 당일에 본인 확인이 이루어지지 않을 경우 입장이 거절될 수 있습니다.
               </p>
-              <p className="txt_sml br_t_s">
+              <p className="info-note br_t_s">
                 *본인 확인에 사용되는 ‘신분증’은 아래와 같습니다.
               </p>
             </section>
             <section>
               <h3 className="info-subtitle">신분증 안내</h3>
-              <ul className="info-list">
-                <li className="text-center">여권</li>
-              </ul>
-              <p className="txt_sml">*사본 및 사진은 인정되지 않습니다.</p>
-              <p className="txt_sml">
+              <h3 className="passport">◆ 여권</h3>
+              <p className="info-note">*사본 및 사진은 인정되지 않습니다.<br />
                 *숙박 패키지 옵션을 구매하신 분은 패키지 안내를 반드시 확인해 주시기 바랍니다.
               </p>
+              <p className="info-note">
+
+              </p>
               <h3 className="info-subtitle">입장 안내</h3>
-              <p>
+              <p className="text-left">
                 공연장 방문 전 티켓이 반드시 발권되었는지 확인해 주시기 바랍니다.
               </p>
-              <p className="txt_sml br_t_s">
-                *티켓 발권 방법은 신청 결과 안내 이메일을 참고해 주십시오.
+              <p className="info-note br_t_s">
+                *티켓 발권 방법은 신청 결과 안내 이메일을 참고해 주십시오.<br />
+                *공연장 인근 발권 가능 매장이 혼잡할 수 있으니 시간에 여유를 두고 방문하시기 바랍니다.<br /><br />
               </p>
-              <p className="txt_sml">
-                *공연장 인근 발권 가능 매장이 혼잡할 수 있으니 시간에 여유를 두고 방문하시기 바랍니다.
-              </p>
-              <p className="br_t_s">
+              <p className="text-left">
                 두 장 이상의 티켓을 구매하신 분은 구매자와 동행자 모두 함께 방문해 주시기 바랍니다.<br />
                 지정된 ‘신분증’을 반드시 지참해 주시고,<br />
                 시간에 여유를 두고 오시기 바랍니다.
               </p>
             </section>
             <section>
-              <p className="txt_em br_t">티켓 문의 안내</p>
-              <p>
+              <h3 className="info-subtitle">신분증 안내</h3>
+              <p className="text-left">
                 <i className="ico_mail i_l" />
                 <img
                   src="images/mail_linkst.svg"
@@ -93,15 +91,14 @@ export default function ImportantNoticesPage() {
                   href="mailto:event@linkst.jp"
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="notice-link"
                 >
                   event@linkst.jp
                 </a>
-                <span className="txt_sml">(영어 문의만)</span>
-              </p>
-              <p className="info-note br_t_ss">
-                *티켓 문의 답변까지 다소 시간이 소요될 수 있습니다.
+                <span> (영어 문의만)</span>
               </p>
               <p className="info-note">
+                *티켓 문의 답변까지 다소 시간이 소요될 수 있습니다. <br />
                 *공연 내용에 관한 문의는 자제해 주십시오.
               </p>
             </section>
@@ -182,7 +179,7 @@ export default function ImportantNoticesPage() {
                 </li>
               </ul>
             </div>
-            <ul className="notice-list txt_sml br_t_s">
+            <ul className="notice-list br_t_s">
               <li>
                 초등학생 이하 고객 중 사진 있는 신분증이 없는 경우,
                 <strong>건강보험증</strong> 1종류로 확인합니다.
@@ -447,7 +444,7 @@ export default function ImportantNoticesPage() {
             <i className="icon_phone i_l" /> 06-6341-3525
             <span>（평일 12:00～17:00, 토일·공휴일 휴무）</span>
           </p>
-          <p className="kome txt_sml text-left">※ 문의 대응 시간이 단축될 수 있습니다.</p>
+          <p className="kome text-left">※ 문의 대응 시간이 단축될 수 있습니다.</p>
           <p className="text-left">
             <a
               href="https://www.yumebanchi.jp/"
@@ -677,7 +674,7 @@ export default function ImportantNoticesPage() {
               <span>9:00~18:00 (최종 입장 17:30)</span>
             </li>
             <li>
-              8월 11일 (<span className="week-sun">월・공휴일</span>){' '}
+              8월 11일 (<span className="week-sun">월·공휴일</span>){' '}
               <span>9:00~18:00 (최종 입장 17:30)</span>
             </li>
           </ul>
@@ -939,7 +936,7 @@ export default function ImportantNoticesPage() {
               8월 10일 (<span className="week-sun">일</span>) <span>9:00~17:30</span>
             </li>
             <li>
-              8월 11일 (<span className="week-sun">월·공휴</span>) <span>9:00~17:30</span>
+              8월 11일 (<span className="week-sun">월·공휴일</span>) <span>9:00~17:30</span>
             </li>
           </ul>
           <ul className="notice-list br_t_s">
@@ -1132,7 +1129,7 @@ export default function ImportantNoticesPage() {
             </li>
           </ul>
 
-          <h3 className="info-subtitle">입장・재입장 안내</h3>
+          <h3 className="info-subtitle">입장·재입장 안내</h3>
           <ul className="notice-list">
             <li>
               <p>전 회장에서 라이브 입장 시 무작위로 「본인 확인」을 실시합니다.</p>
@@ -1144,7 +1141,7 @@ export default function ImportantNoticesPage() {
             </li>
             <li>좌석 번호별로 시차 입장을 요청드릴 수 있습니다. 협조 부탁드립니다.</li>
             <li>
-              당일 준비 사정 등으로 개장・개연 시간이 변경될 경우 회장 내
+              당일 준비 사정 등으로 개장·개연 시간이 변경될 경우 회장 내
               스태프나 안내 방송을 통해 알려드리지만, 여유 있게 도착해 주시기
               바랍니다.
             </li>
@@ -1163,7 +1160,7 @@ export default function ImportantNoticesPage() {
             </li>
           </ul>
 
-          <h3 className="info-subtitle">대기・관람 안내</h3>
+          <h3 className="info-subtitle">대기·관람 안내</h3>
           <ul className="notice-list">
             <li>
               주변 관객의 시야를 가릴 수 있는 모자나 장식물 착용, 응원용 소품
@@ -1204,7 +1201,7 @@ export default function ImportantNoticesPage() {
             <li>라이브 중 흔들 수 있는 펜라이트는 1인당 손당 1개씩, 총 2개까지입니다.</li>
             <li>
               <p>
-                특수 펜라이트(길이 25cm 이상, 발광량이 많은 것, 자작・개조된 것)나
+                특수 펜라이트(길이 25cm 이상, 발광량이 많은 것, 자작·개조된 것)나
                 유도등 등 배터리, 전구, LED를 사용한 발광 장치는 주변 관객에게
                 불편 및 부상 등의 문제를 야기하거나 라이브 연출 효과·운영에
                 지장을 줄 수 있으므로 회장 내 사용 시 크기·사양의 규제를
@@ -1221,7 +1218,7 @@ export default function ImportantNoticesPage() {
             </li>
           </ul>
 
-          <h3 className="info-subtitle">사용 불가 펜라이트・링라이트</h3>
+          <h3 className="info-subtitle">사용 불가 펜라이트·링라이트</h3>
           <ul className="notice-list">
             <li>배터리식·비배터리식 구분 없이 25cm 이상인 것.</li>
             <li>버튼 전지를 제외한 모든 전원을 사용하는 배터리식(25cm 미만 포함)인 것.</li>
