@@ -1818,3 +1818,44 @@ body {
 .week-sun {
   color: var(--accent-red);
 }
+
+/* Utility classes */
+.text-left {
+  text-align: left;
+}
+
+.inline-block {
+  display: inline-block;
+}
+
+.px-2 {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.border {
+  border-width: 1px;
+  border-style: solid;
+}
+
+.border-white {
+  border-color: #fff;
+}
+
+.br_t {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--glass-border);
+}
+
+.br_t_s {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--glass-border);
+}
+
+.br_t_ss {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--glass-border);
+}

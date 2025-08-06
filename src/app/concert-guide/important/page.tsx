@@ -321,7 +321,7 @@ export default function ImportantNoticesPage() {
             </li>
           </ul>
 
-          <p className="info-location br_t text-left">SENDAI</p>
+          <p className="info-location text-left">SENDAI</p>
           <p className="text-left">
             AER：개최일 오전 8:00 이전에 줄 서는 것은 삼가해 주십시오.
           </p>
@@ -337,10 +337,10 @@ export default function ImportantNoticesPage() {
             <li>각 회장의 직원 안내·유도에 따라 주십시오.</li>
           </ul>
 
-          <p className="info-location br_t_s text-left">TOKYO</p>
+          <p className="info-location text-left">TOKYO</p>
           <p className="text-left">개최일 오전 6:00 이전에 줄 서는 것은 삼가해 주십시오.</p>
 
-          <p className="info-location br_t_s text-left">OSAKA</p>
+          <p className="info-location text-left">OSAKA</p>
           <p className="text-left">개최일 오전 7:00 이전에 줄 서는 것은 삼가해 주십시오.</p>
 
           <h3 className="info-subtitle">휠체어로 오시는 분 안내</h3>
@@ -349,7 +349,7 @@ export default function ImportantNoticesPage() {
             필요합니다). 관람 공간 확보를 위해 티켓 구매 후 공연 1주일 전까지 아래로
             연락해 주십시오.
           </p>
-          <p className="info-location br_t text-left">SENDAI 회장</p>
+          <p className="info-location text-left">SENDAI 회장</p>
           <p className="text-left">GIP</p>
           <p className="text-left">
             <a
@@ -370,7 +370,7 @@ export default function ImportantNoticesPage() {
               GIP 공식 웹사이트<i className="icon_link" />
             </a>
           </p>
-          <p className="info-location br_t_s text-left">OSAKA 회장</p>
+          <p className="info-location text-left">OSAKA 회장</p>
           <p className="txts_s text-left">YUMEBANCHI</p>
           <p className="text-left">
             <i className="icon_phone i_l" /> 06-6341-3525
@@ -386,7 +386,7 @@ export default function ImportantNoticesPage() {
               YUMEBANCHI 공식 웹사이트<i className="icon_link" />
             </a>
           </p>
-          <p className="info-location br_t_s text-left">TOKYO 회장</p>
+          <p className="info-location text-left">TOKYO 회장</p>
           <p className="txts_s text-left">SOGO TOKYO</p>
           <p className="text-left">
             <i className="icon_phone i_l" /> 03-3405-9999
