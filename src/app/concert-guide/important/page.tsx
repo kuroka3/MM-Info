@@ -33,193 +33,261 @@ export default function ImportantNoticesPage() {
       </nav>
 
       <section id="id-check" className="container notice-section">
-        <div className="notice-box info-box">
-          <p className="notice-caution">반드시 읽어 주세요</p>
-          <h2 className="section-title">
-            라이브 티켓의 <span>‘본인 확인’ 실시에 대하여</span>
-          </h2>
-          <p>
-            모든 회장에서 라이브 입장 시 무작위로 ‘본인 확인’을 실시합니다.
-            <br />티켓 구매 시 개인정보를 등록해야 하며, 티켓을 여러 장 구매하시는
-            경우 동행자의 개인정보도 함께 등록하셔야 합니다.<br />여러분의 양해와
-            이해 부탁드립니다.
-          </p>
-          <p className="br_t_s">
-            ‘본인 확인’은 신분증과 티켓에 기재된 이름을 대조하여 진행합니다.
-            <br />공연 당일에 본인 확인이 이루어지지 않을 경우 입장이 거절될 수
-            있습니다.<br />이 경우 티켓 요금 및 구매 수수료 등은 환불되지 않으니
-            미리 양해해 주시기 바랍니다.
-          </p>
-          <ul className="notice-list br_t_s">
-            <li>본인 확인에 사용되는 ‘신분증’은 아래와 같습니다.</li>
-            <li>
-              U-18석을 구매하신 분은 입장 시 학생증·보험증 또는 연령 확인이
-              가능한 서류를 제시해 주시기 바랍니다. 해당 확인은 무작위로
-              진행되지 않습니다.
-            </li>
-          </ul>
-
-          <h3 className="info-subtitle br_t">‘신분증’에 대하여</h3>
-          <p>사본이나 이미지(사진)는 무효 처리되니 유의해 주시기 바랍니다.</p>
-          <p className="info-limit-title br_t">
-            【사진 있는 신분증 (1종류만으로 가능)】
-          </p>
-          <div className="br_t_ss">
-            <ul className="info-list">
-              <li>운전면허증</li>
-              <li>사진 부착 면허증</li>
-              <li>여권</li>
-              <li>마이넘버 카드</li>
-              <li>주민 기본 대장 카드</li>
-              <li>신체장애인 수첩</li>
-              <li>정신장애인 보건복지 수첩</li>
-              <li>치료 수첩</li>
-              <li>재류 카드</li>
-              <li>외국인 등록 증명서</li>
-              <li>특별 영주자 증명서</li>
+        <details open>
+          <summary className="info-subtitle cursor-pointer">외국인표</summary>
+          <div className="notice-box info-box">
+            <p className="notice-caution">반드시 읽어 주세요</p>
+            <h2 className="section-title">
+              라이브 티켓의<span>‘본인 확인’ 실시에 대하여</span>
+            </h2>
+            <section>
+              <p>
+                모든 회장에서 라이브 입장 시 입장 시 무작위로 ‘본인 확인’을 실시합니다.<br />
+                티켓 구매 시 개인정보를 등록해야 하며,<br />
+                티켓을 여러 장 구매하시는 경우 동행자의 개인정보도 함께 등록하셔야 합니다.<br />
+                티켓 신청 및 공연장 방문 전 반드시 확인해 주시기 바랍니다.
+              </p>
+              <p className="br_t_s">
+                ‘본인 확인’은 신분증과 티켓에 기재된 이름을 대조하여 진행합니다.<br />
+                공연 당일에 본인 확인이 이루어지지 않을 경우 입장이 거절될 수 있습니다.
+              </p>
+              <p className="txt_sml br_t_s">
+                *본인 확인에 사용되는 ‘신분증’은 아래와 같습니다.
+              </p>
+            </section>
+            <section>
+              <h3 className="info-subtitle">신분증 안내</h3>
+              <ul className="info-list">
+                <li>여권</li>
+              </ul>
+              <p className="txt_sml">*사본 및 사진은 인정되지 않습니다.</p>
+              <p className="txt_sml">
+                *숙박 패키지 옵션을 구매하신 분은 패키지 안내를 반드시 확인해 주시기 바랍니다.
+              </p>
+              <h3 className="info-subtitle">입장 안내</h3>
+              <p>
+                공연장 방문 전 티켓이 반드시 발권되었는지 확인해 주시기 바랍니다.
+              </p>
+              <p className="txt_sml br_t_s">
+                *티켓 발권 방법은 신청 결과 안내 이메일을 참고해 주십시오.
+              </p>
+              <p className="txt_sml">
+                *공연장 인근 발권 가능 매장이 혼잡할 수 있으니 시간에 여유를 두고 방문하시기 바랍니다.
+              </p>
+              <p className="br_t_s">
+                두 장 이상의 티켓을 구매하신 분은 구매자와 동행자 모두 함께 방문해 주시기 바랍니다.<br />
+                지정된 ‘신분증’을 반드시 지참해 주시고,<br />
+                시간에 여유를 두고 오시기 바랍니다.
+              </p>
+            </section>
+            <section>
+              <p className="txt_em br_t">티켓 문의 안내</p>
+              <p>
+                <i className="ico_mail i_l" />
+                <img
+                  src="images/mail_linkst.svg"
+                  className="inquiry_mail"
+                  alt=""
+                />
+                <span className="txt_sml">(영어 문의만)</span>
+              </p>
+              <ul className="txt_sml br_t_ss">
+                <li>*티켓 문의 답변까지 다소 시간이 소요될 수 있습니다.</li>
+                <li>*공연 내용에 관한 문의는 자제해 주십시오.</li>
+              </ul>
+            </section>
+          </div>
+        </details>
+        <details>
+          <summary className="info-subtitle cursor-pointer">내국인표</summary>
+          <div className="notice-box info-box">
+            <p className="notice-caution">반드시 읽어 주세요</p>
+            <h2 className="section-title">
+              라이브 티켓의 <span>‘본인 확인’ 실시에 대하여</span>
+            </h2>
+            <p>
+              모든 회장에서 라이브 입장 시 무작위로 ‘본인 확인’을 실시합니다.
+              <br />티켓 구매 시 개인정보를 등록해야 하며, 티켓을 여러 장 구매하시는
+              경우 동행자의 개인정보도 함께 등록하셔야 합니다.<br />여러분의 양해와
+              이해 부탁드립니다.
+            </p>
+            <p className="br_t_s">
+              ‘본인 확인’은 신분증과 티켓에 기재된 이름을 대조하여 진행합니다.
+              <br />공연 당일에 본인 확인이 이루어지지 않을 경우 입장이 거절될 수
+              있습니다.<br />이 경우 티켓 요금 및 구매 수수료 등은 환불되지 않으니
+              미리 양해해 주시기 바랍니다.
+            </p>
+            <ul className="notice-list br_t_s">
+              <li>본인 확인에 사용되는 ‘신분증’은 아래와 같습니다.</li>
               <li>
-                <p>사원증·학생증·생도 수첩</p>
-                <p className="info-note">
-                  (※사진 없는 경우 아래 항목과 함께 2종류 필요)
+                U-18석을 구매하신 분은 입장 시 학생증·보험증 또는 연령 확인이
+                가능한 서류를 제시해 주시기 바랍니다. 해당 확인은 무작위로
+                진행되지 않습니다.
+              </li>
+            </ul>
+
+            <h3 className="info-subtitle br_t">‘신분증’에 대하여</h3>
+            <p>사본이나 이미지(사진)는 무효 처리되니 유의해 주시기 바랍니다.</p>
+            <p className="info-limit-title br_t">
+              【사진 있는 신분증 (1종류만으로 가능)】
+            </p>
+            <div className="br_t_ss">
+              <ul className="info-list">
+                <li>운전면허증</li>
+                <li>사진 부착 면허증</li>
+                <li>여권</li>
+                <li>마이넘버 카드</li>
+                <li>주민 기본 대장 카드</li>
+                <li>신체장애인 수첩</li>
+                <li>정신장애인 보건복지 수첩</li>
+                <li>치료 수첩</li>
+                <li>재류 카드</li>
+                <li>외국인 등록 증명서</li>
+                <li>특별 영주자 증명서</li>
+                <li>
+                  <p>사원증·학생증·생도 수첩</p>
+                  <p className="info-note">
+                    (※사진 없는 경우 아래 항목과 함께 2종류 필요)
+                  </p>
+                </li>
+              </ul>
+              <ul className="info-list br_t_ss">
+                <li>
+                  위의 신분증 이외에 성명, 현주소, 생년월일이 확인 가능한 공적 증명서
+                </li>
+              </ul>
+            </div>
+            <p className="info-limit-title br_t_s">
+              【사진 없는 신분증 (2종류)】
+            </p>
+            <div className="br_t_ss">
+              <ul className="info-list">
+                <li>건강보험 피보험자증</li>
+                <li>의료비 수급자 자격증</li>
+                <li>요양보험증</li>
+                <li>생활보호 수급자증</li>
+                <li>주민등록 등본</li>
+                <li>호적 등본</li>
+                <li>호적 초본</li>
+                <li>인감 등록 증명서</li>
+                <li>연금 수첩</li>
+                <li>마이넘버 통지 카드</li>
+              </ul>
+              <ul className="info-list br_t_ss">
+                <li>
+                  위의 신분증 이외에 성명, 현주소, 생년월일이 확인 가능한 공적 증명서
+                </li>
+              </ul>
+            </div>
+            <ul className="notice-list txt_sml br_t_s">
+              <li>
+                초등학생 이하 고객 중 사진 있는 신분증이 없는 경우,
+                <strong>건강보험증</strong> 1종류로 확인합니다.
+              </li>
+              <li>
+                숙박 플랜 옵션 티켓을 구매하신 분은 숙박 플랜 안내를 확인해 주시기
+                바랍니다.
+              </li>
+            </ul>
+
+            <h3 className="info-subtitle br_t">
+              분배에 대하여 (티켓 2매 이상 구매하신 분)
+            </h3>
+            <p>
+              ‘본인 확인’은 티켓 구매자와 동행자 모두 대상으로 무작위로 실시됩니다.
+              <br />티켓을 2매 이상 구매하신 경우 동행자에게 티켓을 분배해야 합니다.
+              <br />반드시 회장 방문 전에 티켓 분배를 완료해 주십시오.
+              <br />티켓 분배 및 발권 방법은 구매하신 예매처의 안내를 확인해 주시기
+              바랍니다.
+            </p>
+            <ul className="info-list bar br_t_s" style={{ marginBottom: '1em' }}>
+              <li>
+                <p className="txt_em">티켓피아</p>
+                <p className="inline-block px-2 border border-white">분배 방법</p>
+                <p>
+                  【전자 티켓】【종이 티켓】
+                  <span>
+                    <a
+                      href="https://t.pia.jp/guide/share.jsp"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="notice-link"
+                    >
+                      https://t.pia.jp/guide/share.jsp
+                    </a>
+                  </span>
+                </p>
+                <p className="inline-block px-2 border border-white">문의</p>
+                <p>
+                  <a
+                    href="https://t.pia.jp/help/index.jsp"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="notice-link"
+                  >
+                    https://t.pia.jp/help/index.jsp
+                  </a>
+                </p>
+              </li>
+              <li className="br_t_s">
+                <p className="txt_em">로손 티켓</p>
+                <p className="inline-block px-2 border border-white">분배 방법</p>
+                <p>
+                  【전자 티켓】
+                  <span>
+                    <a
+                      href="https://l-tike.com/guide/share.html"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="notice-link"
+                    >
+                      https://l-tike.com/guide/share.html
+                    </a>
+                  </span>
+                </p>
+                <p className="inline-block px-2 border border-white">문의</p>
+                <p>
+                  <a
+                    href="https://faq.l-tike.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="notice-link"
+                  >
+                    https://faq.l-tike.com/
+                  </a>
+                </p>
+              </li>
+              <li className="br_t_s">
+                <p className="txt_em">e+</p>
+                <p className="inline-block px-2 border border-white">분배 방법</p>
+                <p>
+                  【전자 티켓】
+                  <span>
+                    <a
+                      href="https://eplus.jp/sf/guide/friends"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="notice-link"
+                    >
+                      https://eplus.jp/sf/guide/friends
+                    </a>
+                  </span>
+                </p>
+                <p className="inline-block px-2 border border-white">문의</p>
+                <p>
+                  <a
+                    href="https://eplus.jp/qa/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="notice-link"
+                  >
+                    https://eplus.jp/qa/
+                  </a>
                 </p>
               </li>
             </ul>
-            <ul className="info-list br_t_ss">
-              <li>
-                위의 신분증 이외에 성명, 현주소, 생년월일이 확인 가능한 공적 증명서
-              </li>
-            </ul>
           </div>
-          <p className="info-limit-title br_t_s">
-            【사진 없는 신분증 (2종류)】
-          </p>
-          <div className="br_t_ss">
-            <ul className="info-list">
-              <li>건강보험 피보험자증</li>
-              <li>의료비 수급자 자격증</li>
-              <li>요양보험증</li>
-              <li>생활보호 수급자증</li>
-              <li>주민등록 등본</li>
-              <li>호적 등본</li>
-              <li>호적 초본</li>
-              <li>인감 등록 증명서</li>
-              <li>연금 수첩</li>
-              <li>마이넘버 통지 카드</li>
-            </ul>
-            <ul className="info-list br_t_ss">
-              <li>
-                위의 신분증 이외에 성명, 현주소, 생년월일이 확인 가능한 공적 증명서
-              </li>
-            </ul>
-          </div>
-          <ul className="notice-list txt_sml br_t_s">
-            <li>
-              초등학생 이하 고객 중 사진 있는 신분증이 없는 경우,
-              <strong>건강보험증</strong> 1종류로 확인합니다.
-            </li>
-            <li>
-              숙박 플랜 옵션 티켓을 구매하신 분은 숙박 플랜 안내를 확인해 주시기
-              바랍니다.
-            </li>
-          </ul>
-
-          <h3 className="info-subtitle br_t">
-            분배에 대하여 (티켓 2매 이상 구매하신 분)
-          </h3>
-          <p>
-            ‘본인 확인’은 티켓 구매자와 동행자 모두 대상으로 무작위로 실시됩니다.
-            <br />티켓을 2매 이상 구매하신 경우 동행자에게 티켓을 분배해야 합니다.
-            <br />반드시 회장 방문 전에 티켓 분배를 완료해 주십시오.
-            <br />티켓 분배 및 발권 방법은 구매하신 예매처의 안내를 확인해 주시기
-            바랍니다.
-          </p>
-          <ul className="info-list bar br_t_s" style={{ marginBottom: '1em' }}>
-            <li>
-              <p className="txt_em">티켓피아</p>
-              <p className="inline-block px-2 border border-white">분배 방법</p>
-              <p>
-                【전자 티켓】【종이 티켓】
-                <span>
-                  <a
-                    href="https://t.pia.jp/guide/share.jsp"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="notice-link"
-                  >
-                    https://t.pia.jp/guide/share.jsp
-                  </a>
-                </span>
-              </p>
-              <p className="inline-block px-2 border border-white">문의</p>
-              <p>
-                <a
-                  href="https://t.pia.jp/help/index.jsp"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="notice-link"
-                >
-                  https://t.pia.jp/help/index.jsp
-                </a>
-              </p>
-            </li>
-            <li className="br_t_s">
-              <p className="txt_em">로손 티켓</p>
-              <p className="inline-block px-2 border border-white">분배 방법</p>
-              <p>
-                【전자 티켓】
-                <span>
-                  <a
-                    href="https://l-tike.com/guide/share.html"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="notice-link"
-                  >
-                    https://l-tike.com/guide/share.html
-                  </a>
-                </span>
-              </p>
-              <p className="inline-block px-2 border border-white">문의</p>
-              <p>
-                <a
-                  href="https://faq.l-tike.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="notice-link"
-                >
-                  https://faq.l-tike.com/
-                </a>
-              </p>
-            </li>
-            <li className="br_t_s">
-              <p className="txt_em">e+</p>
-              <p className="inline-block px-2 border border-white">분배 방법</p>
-              <p>
-                【전자 티켓】
-                <span>
-                  <a
-                    href="https://eplus.jp/sf/guide/friends"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="notice-link"
-                  >
-                    https://eplus.jp/sf/guide/friends
-                  </a>
-                </span>
-              </p>
-              <p className="inline-block px-2 border border-white">문의</p>
-              <p>
-                <a
-                  href="https://eplus.jp/qa/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="notice-link"
-                >
-                  https://eplus.jp/qa/
-                </a>
-              </p>
-            </li>
-          </ul>
-        </div>
+        </details>
       </section>
 
       <section id="common" className="container notice-section">

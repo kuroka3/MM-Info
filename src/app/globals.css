@@ -1874,12 +1874,10 @@ body {
 .br_t {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 1px solid var(--glass-border);
 }
 
 .br_t_s {
   margin-top: 1rem;
-  border-top: 1px solid var(--glass-border);
 }
 
 .br_t_ss {
