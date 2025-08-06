@@ -1892,3 +1892,18 @@ body {
   margin-bottom: 3rem;
   border-top: 1px solid rgba(255,255,255,0.2);
 }
+
+.animated-details__content {
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease;
+}
+
+.animated-details[open] .animated-details__content {
+  grid-template-rows: 1fr;
+}
+
+.animated-details__content > * {
+  min-height: 0;
+}
