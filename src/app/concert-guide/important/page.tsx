@@ -751,7 +751,6 @@ export default function ImportantNoticesPage() {
             <li>매지컬 미라이 2025 미니 깃발</li>
             <li>매지컬 미라이 2025 캡모자</li>
           </ul>
-
           <p className="info-limit-title">
             1인 1회 결제 당 각 상품【2개】까지
           </p>
