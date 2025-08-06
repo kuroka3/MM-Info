@@ -43,7 +43,7 @@ const PlaylistPopup: React.FC<PlaylistPopupProps> = ({
         aria-label={open ? 'Close playlist' : 'Open playlist'}
       >
         {open ? '✕' : (
-          <Image src="/list.svg" alt="playlist" width={24} height={24} />
+          <Image src="/images/list.svg" alt="playlist" width={24} height={24} />
         )}
       </button>
       {visible && (
@@ -68,12 +68,12 @@ const PlaylistPopup: React.FC<PlaylistPopupProps> = ({
             <div className="song-links playlist-links">
               {spotifyUrl && (
                 <a href={spotifyUrl} target="_blank" rel="noopener noreferrer">
-                  <Image src="/spotify.svg" alt="Spotify" width={24} height={24} />
+                  <Image src="/images/spotify.svg" alt="Spotify" width={24} height={24} />
                 </a>
               )}
               {youtubeUrl && (
                 <a href={youtubeUrl} target="_blank" rel="noopener noreferrer">
-                  <Image src="/youtube.svg" alt="YouTube" width={24} height={24} />
+                  <Image src="/images/youtube.svg" alt="YouTube" width={24} height={24} />
                 </a>
               )}
             </div>

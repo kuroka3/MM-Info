@@ -1,0 +1,1727 @@
+interface MemberLink {
+  label: string;
+  url: string;
+}
+
+interface Member {
+  name: string;
+  koName?: string;
+  links?: MemberLink[];
+}
+
+export interface Booth {
+  id: string;
+  row: string;
+  col: number;
+  span?: number;
+  name: string;
+  koPNames?: string;
+  dates: string[];
+  members: Member[];
+  hidden?: boolean;
+}
+
+const boothsA: Booth[] = [
+  {
+    id: 'A-1',
+    row: 'A',
+    col: 1,
+    name: 'BASYAUMA RECORDS',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)'],
+    members: [
+      {
+        name: '*Luna',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000797' },
+          { label: 'WEB', url: 'https://www.ast-luna.com/' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A-2',
+    row: 'A',
+    col: 2,
+    name: 'ムラサメ',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)'],
+    members: [
+      {
+        name: 'ムラタシユウ',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp001090' },
+          { label: 'X(Twitter)', url: 'https://x.com/muratashiyuu' },
+          { label: 'WEB', url: 'https://muratashiyuu.studio.site/' }
+        ]
+      },
+      {
+        name: '彩雨るい',
+        links: [
+          { label: 'X(Twitter)', url: 'https://x.com/saiudrop' },
+          { label: 'Instagram', url: 'https://www.instagram.com/saiudrop/' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A-3',
+    row: 'A',
+    col: 3,
+    name: 'JHT STUDIO',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)'],
+    members: [
+      {
+        name: '猫舘 こたつ',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp001079' },
+          { label: 'X(Twitter)', url: 'https://x.com/NKTC_KTT' }
+        ]
+      },
+      { name: 'ナナ', links: [{ label: 'X(Twitter)', url: 'https://x.com/nana_00ii' }] },
+      { name: 'カワムラシキ', links: [{ label: 'X(Twitter)', url: 'https://x.com/ShikiKawamura' }] }
+    ]
+  },
+  {
+    id: 'A-4',
+    row: 'A',
+    col: 4,
+    name: '札幌市吉田区夜世一丁目',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)'],
+    members: [
+      {
+        name: '吉田夜世',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp001039' },
+          { label: 'X(Twitter)', url: 'https://x.com/otgys' },
+          { label: 'YouTube', url: 'https://www.youtube.com/@YaseiMusic' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A-5',
+    row: 'A',
+    col: 5,
+    name: 'BIGHEAD',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)'],
+    members: [
+      {
+        name: 'BIGHEAD',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000685' },
+          { label: 'X(Twitter)', url: 'https://x.com/bighead11111' },
+          { label: 'YouTube', url: 'https://www.youtube.com/@BIGHEADJP' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A-6',
+    row: 'A',
+    col: 6,
+    name: 'ペンギンの島',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)'],
+    members: [
+      {
+        name: 'Adeliae',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000975' },
+          { label: 'X(Twitter)', url: 'https://x.com/del_conoe' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A-7',
+    row: 'A',
+    col: 7,
+    name: '忘却書店',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)'],
+    members: [
+      {
+        name: 'コウ',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000747' },
+          { label: 'X(Twitter)', url: 'https://x.com/kou_shimizu_' },
+          { label: 'YouTube', url: 'https://www.youtube.com/@kou_shimizu_' }
+        ]
+      },
+      { name: 'Kakeru', links: [] },
+      { name: 'りんす', links: [] },
+      { name: 'ショウ', links: [] }
+    ]
+  },
+  {
+    id: 'A-8',
+    row: 'A',
+    col: 8,
+    name: 'UtopiaLyric',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)'],
+    members: [
+      {
+        name: 'UtopiaLyric',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000073' },
+          { label: 'X(Twitter)', url: 'https://x.com/UtopiaLyric' },
+          { label: 'WEB', url: 'https://utopialyric.xyz/' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A-9',
+    row: 'A',
+    col: 9,
+    name: '音戯噺屋',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)'],
+    members: [
+      {
+        name: 'koushirou（卑屈P）',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000013' },
+          { label: 'X(Twitter)', url: 'https://x.com/kou46' },
+          { label: 'WEB', url: 'http://jirai8.web.fc2.com/gateway.html' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A-10',
+    row: 'A',
+    col: 10,
+    name: 'WONDERFUL OPPORTUNITY',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)'],
+    members: [
+      { name: 'じーざす', links: [] },
+      {
+        name: 'マイナス',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000124' },
+          { label: 'X(Twitter)', url: 'https://x.com/WAN_OPO' },
+          { label: 'YouTube', url: 'https://www.youtube.com/@WANOPOch' },
+          { label: 'WEB', url: 'http://www.wan-opo.com' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A-11',
+    row: 'A',
+    col: 11,
+    name: 'ピノキオ定食',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)'],
+    members: [
+      {
+        name: 'ピノキオピー',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000236' },
+          { label: 'X(Twitter)', url: 'https://x.com/pinocchiop' },
+          { label: 'WEB', url: 'https://pinocchiop.com/' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'A-12',
+    row: 'A',
+    col: 12,
+    name: '',
+    koPNames: '',
+    dates: [],
+    members: [],
+    hidden: true
+  }
+];
+
+const boothsB: Booth[] = [
+  {
+    id: 'B-1',
+    row: 'B',
+    col: 1,
+    name: '雄之助/Yunosuke',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: '雄之助',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000760' },
+          { label: 'X(Twitter)', url: 'https://x.com/bass_ynk' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'B-2',
+    row: 'B',
+    col: 2,
+    name: '歩く人のお店',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: '歩く人',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000792' },
+          { label: 'X(Twitter)', url: 'https://x.com/tri_angl_e' },
+          { label: 'YouTube', url: 'https://www.youtube.com/c/pedestrianJPN' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'B-3',
+    row: 'B',
+    col: 3,
+    span: 2,
+    name: 'On Prism Records',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'いるかアイス',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000894' },
+          { label: 'X(Twitter)', url: 'https://x.com/irucaice' },
+          { label: 'YouTube', url: 'http://youtube.com/irucaice' }
+        ]
+      },
+      {
+        name: '市瀬るぽ',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000811' },
+          { label: 'X(Twitter)', url: 'https://x.com/LUPO_Reportage' },
+          { label: 'YouTube', url: 'https://www.youtube.com/c/ichinoselupo' }
+        ]
+      },
+      {
+        name: 'Ponchi♪',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000952' },
+          { label: 'X(Twitter)', url: 'https://x.com/ponchi_pop' },
+          { label: 'YouTube', url: 'https://youtube.com/@ponchi_pop' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'B-4',
+    row: 'B',
+    col: 5,
+    name: 'ただただだいず',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: '打打だいず',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp001107' },
+          { label: 'X(Twitter)', url: 'https://x.com/DICE__game' },
+          { label: 'YouTube', url: 'https://www.youtube.com/@d-d-diceofficial5259' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'B-5',
+    row: 'B',
+    col: 6,
+    name: 'SPACELECTRO',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'SPACELECTRO',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000800' },
+          { label: 'WEB', url: 'https://spacelectro.jp' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'B-6',
+    row: 'B',
+    col: 7,
+    name: 'Twinfield',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'Twinfield',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000912' },
+          { label: 'X(Twitter)', url: 'https://x.com/twinfieldnex' },
+          { label: 'YouTube', url: 'https://youtube.com/@twinfieldnex' }
+        ]
+      },
+      {
+        name: 'めるのめる',
+        links: [{ label: 'X(Twitter)', url: 'https://x.com/merunomeru88' }]
+      }
+    ]
+  },
+  {
+    id: 'B-7',
+    row: 'B',
+    col: 8,
+    name: 'Wakuwaku Miwaku',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'Mwk',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000820' },
+          { label: 'X(Twitter)', url: 'https://x.com/Mwk_094' },
+          { label: 'YouTube', url: 'https://www.youtube.com/@Mwk' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'B-8',
+    row: 'B',
+    col: 9,
+    name: 'NEXTLIGHT',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'picco',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000893' },
+          { label: 'X(Twitter)', url: 'https://x.com/picco_xxx' }
+        ]
+      },
+      {
+        name: 'purini',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp001111' },
+          { label: 'X(Twitter)', url: 'https://x.com/purini_v' }
+        ]
+      },
+      {
+        name: 'Mi7s3',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp001110' },
+          { label: 'X(Twitter)', url: 'https://x.com/minase0402' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'B-9',
+    row: 'B',
+    col: 10,
+    name: 'Capchii',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'Capchii',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000931' },
+          { label: 'X(Twitter)', url: 'https://x.com/capchii' },
+          { label: 'WEB', url: 'https://capchii.work' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'B-10',
+    row: 'B',
+    col: 11,
+    name: '子牛',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: '子牛',
+        links: [
+          { label: 'X(Twitter)', url: 'https://x.com/COWshi504' },
+          { label: 'ニコニコ動画', url: 'https://www.nicovideo.jp/user/87549428/video?sortKey=viewCount&sortOrder=desc' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'B-11',
+    row: 'B',
+    col: 12,
+    name: 'Omoi',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'Sakurai',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000832' },
+          { label: 'X(Twitter)', url: 'https://x.com/Omoi3965' }
+        ]
+      }
+    ]
+  }
+];
+
+const boothsC: Booth[] = [
+  {
+    id: 'C-1',
+    row: 'C',
+    col: 1,
+    name: 'the heavenly yard',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'mothy_悪ノP',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000037' },
+          { label: 'blog', url: 'http://mothy.blog39.fc2.com/' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'C-2',
+    row: 'C',
+    col: 2,
+    name: '錦市場withワイファイSPOT',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: '錦',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000890' },
+          { label: 'X(Twitter)', url: 'https://x.com/nishikikn' }
+        ]
+      },
+      {
+        name: 'アオワイファイ',
+        links: [{ label: 'X(Twitter)', url: 'https://x.com/ao_WiFi' }]
+      }
+    ]
+  },
+  {
+    id: 'C-3',
+    row: 'C',
+    col: 3,
+    name: 'クリキッド',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'クリスタルP',
+        links: [{ label: 'KARENT', url: 'https://karent.jp/artist/pp000017' }]
+      },
+      {
+        name: 'キッド',
+        links: [{ label: 'KARENT', url: 'https://karent.jp/artist/pp000272' }]
+      }
+    ]
+  },
+  {
+    id: 'C-4',
+    row: 'C',
+    col: 4,
+    name: 'がるなん.com',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'ガルナ(オワタP)',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000049' },
+          { label: 'X(Twitter)', url: 'https://x.com/tomatowt' },
+          { label: 'WEB', url: 'https://garunan.com/' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'C-5',
+    row: 'C',
+    col: 5,
+    name: 'くくく計画',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'えいち(eighch)',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000991' },
+          { label: 'X(Twitter)', url: 'https://x.com/donkakusense' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'C-6',
+    row: 'C',
+    col: 6,
+    name: 'L3Project',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'れれれP',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000327' },
+          { label: 'X(Twitter)', url: 'https://x.com/lelelep' },
+          { label: 'WEB', url: 'https://l3project.com/' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'C-7',
+    row: 'C',
+    col: 7,
+    name: 'G.C.M Records',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'gcmstyle（アンメルツP）',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000454' },
+          { label: 'X(Twitter)', url: 'https://x.com/gcmstyle' },
+          { label: 'WEB', url: 'https://www.gcmstyle.com/' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'C-8',
+    row: 'C',
+    col: 8,
+    name: 'twinkledisc',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'Dios/シグナルP',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000007' },
+          { label: 'X(Twitter)', url: 'https://x.com/Hiroaki_Arai_' },
+          { label: 'WEB', url: 'https://twinkledisc.net/event/' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'C-9',
+    row: 'C',
+    col: 9,
+    name: 'solidbeats(Re:nG)',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'Re:nG',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000041' },
+          { label: 'X(Twitter)', url: 'https://x.com/_reng' },
+          { label: 'WEB', url: 'https://reng.jp/' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'C-10',
+    row: 'C',
+    col: 10,
+    name: 'たけねこれこーず',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'タケノコ少年',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000910' },
+          { label: 'X(Twitter)', url: 'https://x.com/TA_MOR_I' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'C-11',
+    row: 'C',
+    col: 11,
+    name: 'ケチャップ販売員',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'オゾン',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000870' },
+          { label: 'X(Twitter)', url: 'https://x.com/ozon_541' },
+          { label: 'Instagram', url: 'https://www.instagram.com/ozon_541/' }
+        ]
+      },
+      { name: 'れいろう' }
+    ]
+  },
+  {
+    id: 'C-12',
+    row: 'C',
+    col: 12,
+    name: 'halyosy',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'halyosy',
+        links: [
+          { label: 'X(Twitter)', url: 'https://x.com/halyosy' },
+          { label: 'WEB', url: 'https://halyosy.com/' }
+        ]
+      }
+    ]
+  }
+];
+
+const boothsD: Booth[] = [
+  {
+    id: 'D-1',
+    row: 'D',
+    col: 1,
+    name: 'シシドサウンドとぐちりずむ',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'ぐちり',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000924' },
+          { label: 'X(Twitter)', url: 'https://x.com/bomless_race' },
+          { label: 'WEB', url: 'https://bomless-race.theblog.me/' }
+        ]
+      },
+      {
+        name: 'シシド',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000963' },
+          { label: 'X(Twitter)', url: 'https://x.com/shishido_4410' },
+          { label: 'Linktree', url: 'https://linktr.ee/shishido_4410' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'D-2',
+    row: 'D',
+    col: 2,
+    name: '宮守文学',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: '宮守文学',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000976' },
+          { label: 'X(Twitter)', url: 'https://x.com/miyamoribungaku' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'D-3',
+    row: 'D',
+    col: 3,
+    name: 'ど夏ue',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'ど〜ぱみん',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000957' },
+          { label: 'X(Twitter)', url: 'https://x.com/DTM_dopamine' },
+          { label: 'YouTube', url: 'https://youtube.com/channel/UCz-IailvAsZZK9_By6ZAnfA?si=29Wz-AkP2lvWOs_U' }
+        ]
+      },
+      {
+        name: '夏山よつぎ',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000961' },
+          { label: 'X(Twitter)', url: 'https://x.com/seckarium' },
+          { label: 'YouTube', url: 'https://youtube.com/@seckarium?si=kaFbe_2ZEJjhRK3f' }
+        ]
+      },
+      {
+        name: 'Glue',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000918' },
+          { label: 'X(Twitter)', url: 'https://x.com/_Glu_E_' },
+          { label: 'YouTube', url: 'https://youtube.com/@glu_e?si=Htk1sVBRAKtepdpD' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'D-4',
+    row: 'D',
+    col: 4,
+    name: 'あ子',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'あ子',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000838' },
+          { label: 'X(Twitter)', url: 'https://x.com/ako_okko' },
+          { label: 'YouTube', url: 'https://www.youtube.com/@ako_okko' }
+        ]
+      },
+      {
+        name: '葵山わさび',
+        links: [{ label: 'X(Twitter)', url: 'https://x.com/ahowasa86' }]
+      }
+    ]
+  },
+  {
+    id: 'D-5',
+    row: 'D',
+    col: 5,
+    name: 'まにそらマーケット',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'manika',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp001087' },
+          { label: 'X(Twitter)', url: 'https://x.com/ma_ni_ka_' }
+        ]
+      },
+      {
+        name: 'Iceky',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp001122' },
+          { label: 'X(Twitter)', url: 'https://x.com/flogsing' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'D-6',
+    row: 'D',
+    col: 6,
+    name: '浮幽会',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: '由末イリ',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp001019' },
+          { label: 'WEB', url: 'https://ghostomeiris.wixsite.com/iriyule' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'D-7',
+    row: 'D',
+    col: 7,
+    name: 'しゃいとれこーず',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'しゃいと',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000947' },
+          { label: 'X(Twitter)', url: 'https://x.com/shaito_otiahs' },
+          { label: 'YouTube', url: 'https://www.youtube.com/channel/UC-6CnJA6jkZdv_yfv5KIcDA' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'D-8',
+    row: 'D',
+    col: 8,
+    name: 'はかめ',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'はかめ',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp001095' }
+        ]
+      },
+      {
+        name: '高宮 憂',
+        links: [
+          { label: 'X(Twitter)', url: 'https://x.com/__TKMYY' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'D-9',
+    row: 'D',
+    col: 9,
+    name: 'EOとナサガシ',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'EO',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000955' },
+          { label: 'X(Twitter)', url: 'https://x.com/eo_aui7740' },
+          { label: 'YouTube', url: 'https://www.youtube.com/@eo_aui7740' }
+        ]
+      },
+      {
+        name: 'ナサガシ',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000996' },
+          { label: 'X(Twitter)', url: 'https://x.com/nasagashi' },
+          { label: 'YouTube', url: 'https://www.youtube.com/@nasagashi' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'D-10',
+    row: 'D',
+    col: 10,
+    name: 'ろいどる！',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'shino',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000816' },
+          { label: 'X(Twitter)', url: 'https://x.com/shi_no_music' },
+          { label: 'YouTube', url: 'https://www.youtube.com/@shi_no_music' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'D-11',
+    row: 'D',
+    col: 11,
+    name: 'きさらんどりー',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'きさら',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000908' },
+          { label: 'X(Twitter)', url: 'https://x.com/kisalaundry' },
+          { label: 'YouTube', url: 'https://www.youtube.com/@kisalaundry' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'D-12',
+    row: 'D',
+    col: 12,
+    name: '南ノ店',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: '南ノ南',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp001016' },
+          { label: 'X(Twitter)', url: 'https://x.com/mnmno373' }
+        ]
+      }
+    ]
+  }
+];
+
+const boothsE: Booth[] = [
+  {
+    id: 'E-1',
+    row: 'E',
+    col: 1,
+    name: 'おだいば',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: '大漠波新',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp001091' },
+          { label: 'X(Twitter)', url: 'https://x.com/Daibakuhasin' }
+        ]
+      },
+      {
+        name: 'Oda Kogane',
+        links: [
+          { label: 'X(Twitter)', url: 'https://x.com/oda_koden' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'E-2',
+    row: 'E',
+    col: 2,
+    name: 'やめろ！来るな！',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'SLAVE.V-V-R',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000905' },
+          { label: 'YouTube', url: 'https://www.youtube.com/c/SLAVEVVR_wa_dance_dekirukara' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'E-3',
+    row: 'E',
+    col: 3,
+    name: '家の裏でマンボウが死んでるP',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: '家の裏でマンボウが死んでるP',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000321' },
+          { label: 'WEB', url: 'https://manbo-p.com' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'E-4',
+    row: 'E',
+    col: 4,
+    name: 'あいのて',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'appy',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp001036' },
+          { label: 'X(Twitter)', url: 'https://x.com/appy_7' },
+          { label: 'lit.link', url: 'https://lit.link/appy' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'E-5',
+    row: 'E',
+    col: 5,
+    name: 'Shu&VocaGaku',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'Shu',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp001040' },
+          { label: 'X(Twitter)', url: 'https://x.com/shu_horiike' }
+        ]
+      },
+      {
+        name: '音無あふ',
+        links: [
+          { label: 'X(Twitter)', url: 'https://x.com/Voca_Gaku' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'E-6',
+    row: 'E',
+    col: 6,
+    name: 'Blatantly Emotional Records',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: '書店太郎',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000857' },
+          { label: 'X(Twitter)', url: 'https://x.com/shotenteki_ore' },
+          { label: 'YouTube', url: 'https://youtube.com/c/BlatantlyEmotionalRecords' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'E-7',
+    row: 'E',
+    col: 7,
+    name: 'studio MURASAKI',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'MURASAKI',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000892' },
+          { label: 'X(Twitter)', url: 'https://x.com/yukarinmurasaki' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'E-8',
+    row: 'E',
+    col: 8,
+    name: '幽霊ず',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: '幽霊一文字',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000649' },
+          { label: 'X(Twitter)', url: 'https://x.com/YureiIchimonji' }
+        ]
+      },
+      {
+        name: 'やみくろ',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000656' },
+          { label: 'X(Twitter)', url: 'https://x.com/yamichrome' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'E-9',
+    row: 'E',
+    col: 9,
+    name: 'GTども',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'たかぴぃ',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000770' },
+          { label: 'X(Twitter)', url: 'https://x.com/niconico_takap' },
+          { label: 'WEB', url: 'https://www.gtcast.com/' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'E-10',
+    row: 'E',
+    col: 10,
+    name: 'imie',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'imie',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000841' },
+          { label: 'X(Twitter)', url: 'https://x.com/imieimieimi' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'E-11',
+    row: 'E',
+    col: 11,
+    name: 'らいちょーくらぶ',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'ごーぶす',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000825' },
+          { label: 'X(Twitter)', url: 'https://x.com/Chill_with_GoBS' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'E-12',
+    row: 'E',
+    col: 12,
+    name: 'マジカルミライの不可避なマジミラ性',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'Sohbana',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp001003' },
+          { label: 'YouTube', url: 'https://www.youtube.com/@Sohbanasick' },
+          { label: 'note', url: 'https://note.com/sohbanasick/n/n94107f9aa585' }
+        ]
+      }
+    ]
+  }
+];
+
+const boothsF: Booth[] = [
+  {
+    id: 'F-1',
+    row: 'F',
+    col: 1,
+    name: '迷いの森',
+    koPNames: '',
+    dates: ['8/10(일)'],
+    members: [
+      {
+        name: '長谷川迷子',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp001060' },
+          { label: 'X(Twitter)', url: 'https://x.com/hourouhekiheki' }
+        ]
+      },
+      {
+        name: '森永謹製',
+        links: [
+          { label: 'X(Twitter)', url: 'https://x.com/MorinagaKinse' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'F-2',
+    row: 'F',
+    col: 2,
+    name: 'ましまろ湯',
+    koPNames: '',
+    dates: ['8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: '真島ゆろ',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000903' },
+          { label: 'X(Twitter)', url: 'https://x.com/msm_yl' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'F-3',
+    row: 'F',
+    col: 3,
+    name: 'ATOLS',
+    koPNames: '',
+    dates: ['8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'ATOLS',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000497' },
+          { label: 'X(Twitter)', url: 'https://x.com/ATOLSX' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'F-4',
+    row: 'F',
+    col: 4,
+    name: 'Hylen Lab',
+    koPNames: '',
+    dates: ['8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'Hylen',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp001017' },
+          { label: 'X(Twitter)', url: 'https://x.com/Hylen_JP' },
+          { label: 'WEB', url: 'https://hylenlab.info/' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'F-5',
+    row: 'F',
+    col: 5,
+    name: 'いえぬ',
+    koPNames: '',
+    dates: ['8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'いえぬ',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp001005' },
+          { label: 'X(Twitter)', url: 'https://x.com/ienu0ienu' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'F-6a',
+    row: 'F',
+    col: 6,
+    name: 'Sasakama Studio',
+    koPNames: '',
+    dates: ['8/10(일)'],
+    members: [
+      {
+        name: 'Chiquewa',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000026' },
+          { label: 'X(Twitter)', url: 'https://x.com/chiquewa' }
+        ]
+      },
+      {
+        name: 'ぱんだっち',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000533' },
+          { label: 'X(Twitter)', url: 'https://x.com/panda_go_go' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'F-6b',
+    row: 'F',
+    col: 6,
+    name: 'ヤデュクシチャンネル',
+    koPNames: '',
+    dates: ['8/9(토)', '8/11(월)'],
+    members: [
+      {
+        name: 'ヤヅキ',
+        links: [
+          { label: 'X(Twitter)', url: 'https://x.com/yadukishinya' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'F-7',
+    row: 'F',
+    col: 7,
+    name: 'CielP / Le Ciel Bleu',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'CielP',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000163' },
+          { label: 'WEB', url: 'https://sound.jp/ciel/' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'F-8',
+    row: 'F',
+    col: 8,
+    name: 'ぽりふぉ / PolyphonicBranch',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'ぽりふぉ',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000377' },
+          { label: 'X(Twitter)', url: 'https://x.com/Tomoya_PB' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'F-9',
+    row: 'F',
+    col: 9,
+    name: 'studio ark attack',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'ぼーかりおどP（noa）',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000511' },
+          { label: 'X(Twitter)', url: 'https://x.com/vocaliod_P' },
+          { label: 'Linktree', url: 'https://linktr.ee/vocaliod_P' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'F-10',
+    row: 'F',
+    col: 10,
+    name: 'Evergreen Leland Studio',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      { name: 'Heavenz', links: [{ label: 'KARENT', url: 'https://karent.jp/artist/pp000071' }] },
+      { name: 'koyori(電ポルP)', links: [{ label: 'KARENT', url: 'https://karent.jp/artist/pp000235' }] },
+      { name: 'yukkedoluce', links: [{ label: 'KARENT', url: 'https://karent.jp/artist/pp000405' }] },
+      { name: '針原翼(はりーP)', links: [{ label: 'KARENT', url: 'https://karent.jp/artist/pp000583' }] },
+      {
+        name: 'nogumi',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000960' },
+          { label: 'WEB', url: 'https://www.studio-els.tokyo/' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'F-11',
+    row: 'F',
+    col: 11,
+    name: '海風太陽',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: '海風太陽',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp001114' },
+          { label: 'X(Twitter)', url: 'https://x.com/UmiKazeTaiyouP' },
+          { label: 'YouTube', url: 'https://www.youtube.com/@UmikazeTaiyoP' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'F-12',
+    row: 'F',
+    col: 12,
+    name: 'たきだしごはん',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'せきこみごはん',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000927' },
+          { label: 'X(Twitter)', url: 'https://x.com/p_akiaki' }
+        ]
+      },
+      {
+        name: '灰咲雨音',
+        links: [
+          { label: 'X(Twitter)', url: 'https://x.com/haisakiamane' }
+        ]
+      }
+    ]
+  }
+];
+
+const boothsG: Booth[] = [
+  {
+    id: 'G-1',
+    row: 'G',
+    col: 1,
+    name: '光収容の倉庫',
+    koPNames: '',
+    dates: ['8/10(일)'],
+    members: [
+      {
+        name: '光収容',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000034' },
+          { label: 'BOOTH', url: 'https://hikarisyuyo.booth.pm/' }
+        ]
+      },
+      { name: 'NEGI' }
+    ]
+  },
+  {
+    id: 'G-2a',
+    row: 'G',
+    col: 2,
+    name: 'ホシゾラ列車【三日月線】',
+    koPNames: '',
+    dates: ['8/10(일)'],
+    members: [
+      {
+        name: 'YASUHIRO(康寛)',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000678' },
+          { label: 'X(Twitter)', url: 'https://x.com/yasuhiro_vanq' }
+        ]
+      },
+      { name: 'Koudai' }
+    ]
+  },
+  {
+    id: 'G-2b',
+    row: 'G',
+    col: 2,
+    name: 'かおなしレコード',
+    koPNames: '',
+    dates: ['8/11(월)'],
+    members: [
+      {
+        name: '和田たけあき',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000812' },
+          { label: 'lit.link', url: 'https://lit.link/wadatakeaki' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'G-3a',
+    row: 'G',
+    col: 3,
+    name: '量産型西沢さん。',
+    koPNames: '',
+    dates: ['8/10(일)'],
+    members: [
+      {
+        name: 'TOKOTOKO（西沢さんP）',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000231' },
+          { label: 'X(Twitter)', url: 'https://x.com/NishizawasanP' },
+          { label: 'YouTube', url: 'https://www.youtube.com/c/ZawasoOfficial' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'G-3b',
+    row: 'G',
+    col: 3,
+    name: '森羅盤商会',
+    koPNames: '',
+    dates: ['8/11(월)'],
+    members: [
+      {
+        name: '森羅',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000827' },
+          { label: 'X(Twitter)', url: 'https://x.com/shinra_logic' },
+          { label: 'YouTube', url: 'https://www.youtube.com/@shinra_logic' }
+        ]
+      }
+    ]
+  },
+
+  {
+    id: 'G-4',
+    row: 'G',
+    col: 4,
+    name: 'REONAlD',
+    koPNames: '',
+    dates: ['8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'のぼる↑',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000129' },
+          { label: 'X(Twitter)', url: 'https://x.com/noboru_e' },
+          { label: 'YouTube', url: 'https://www.youtube.com/user/noborustudio' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'G-5',
+    row: 'G',
+    col: 5,
+    name: 'ウミノソコ。',
+    koPNames: '',
+    dates: ['8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: '雲丹',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000823' },
+          { label: 'X(Twitter)', url: 'https://x.com/sea_urchinP' },
+          { label: 'YouTube', url: 'https://www.youtube.com/@uni_kagamine' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'G-6',
+    row: 'G',
+    col: 6,
+    name: '青時計屋',
+    koPNames: '',
+    dates: ['8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'アオトケイ',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000703' },
+          { label: 'X(Twitter)', url: 'https://x.com/aoto_kei' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'G-7',
+    row: 'G',
+    col: 7,
+    name: 'MINO-U+β',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'MINO-U',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000743' },
+          { label: 'X(Twitter)', url: 'https://x.com/MINOU_0831' }
+        ]
+      },
+      { name: 'ラン猫', links: [{ label: 'X(Twitter)', url: 'https://x.com/ran_neko_me' }] },
+      { name: 'Nov4', links: [{ label: 'X(Twitter)', url: 'https://x.com/nova_sing' }] },
+      { name: 'きょん', links: [{ label: 'X(Twitter)', url: 'https://x.com/kyon__zzz' }] }
+    ]
+  },
+  {
+    id: 'G-8',
+    row: 'G',
+    col: 8,
+    name: 'ねじ式',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'ねじ式',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000646' },
+          { label: 'WEB', url: 'https://www.nejishiki.com/' }
+        ]
+      },
+      { name: '柏木カレキ', links: [{ label: 'X(Twitter)', url: 'https://x.com/kareki_music' }] }
+    ]
+  },
+  {
+    id: 'G-9',
+    row: 'G',
+    col: 9,
+    name: 'MY SONG IS SHIT',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: '鬱P',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000333' },
+          { label: 'X(Twitter)', url: 'https://x.com/utsupii' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'G-10',
+    row: 'G',
+    col: 10,
+    name: '薄塩指数',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: '薄塩指数',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000981' },
+          { label: 'Linktree', url: 'https://linktr.ee/usushioshisuu' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'G-11',
+    row: 'G',
+    col: 11,
+    name: 'Retriever Records / buzzG',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: 'buzzG',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000330' },
+          { label: 'X(Twitter)', url: 'https://x.com/buzz_g' }
+        ]
+      }
+    ]
+  },
+  {
+    id: 'G-12',
+    row: 'G',
+    col: 12,
+    name: 'ネギシャワーパーティ',
+    koPNames: '',
+    dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
+    members: [
+      {
+        name: '加賀(ネギシャワーP)',
+        links: [
+          { label: 'KARENT', url: 'https://karent.jp/artist/pp000909' },
+          { label: 'X(Twitter)', url: 'https://x.com/kaga_qwerty' },
+          { label: 'WEB', url: 'https://www.negishower.com/' }
+        ]
+      }
+    ]
+  }
+];
+
+export const ROWS = ['A', 'B', 'C', 'D', 'E', 'F', 'G'] as const;
+export const COLS = Array.from({ length: 12 }, (_, i) => i + 1);
+
+export const rowClasses: Record<string, string> = {
+  A: 'row-A',
+  B: 'row-B',
+  C: 'row-C',
+  D: 'row-D',
+  E: 'row-E',
+  F: 'row-F',
+  G: 'row-G',
+};
+
+export const BOOTHS: Booth[] = [
+  ...boothsA,
+  ...boothsB,
+  ...boothsC,
+  ...boothsD,
+  ...boothsE,
+  ...boothsF,
+  ...boothsG,
+];
+
+type BoothIndex = Record<string, Record<number, Booth>>;
+const boothIndex: BoothIndex = (() => {
+  const idx: BoothIndex = {};
+  for (const b of BOOTHS) {
+    if (b.hidden) continue;
+    (idx[b.row] ??= {})[b.col] = b;
+  }
+  return idx;
+})();
+
+export const findBooth = (r: string, c: number): Booth | undefined =>
+  boothIndex[r]?.[c];
+
+export const findBooths = (r: string, c: number): Booth[] =>
+  BOOTHS.filter((b) => b.row === r && b.col === c && !b.hidden);

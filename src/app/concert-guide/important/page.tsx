@@ -83,7 +83,7 @@ export default function ImportantNoticesPage() {
               <p className="text-left">
                 <i className="ico_mail i_l" />
                 <img
-                  src="images/mail_linkst.svg"
+                  src="images/images/mail_linkst.svg"
                   className="inquiry_mail"
                   alt=""
                 />
