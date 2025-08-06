@@ -1541,3 +1541,38 @@ body {
   height: 3rem;
   z-index: 1000;
 }
+
+/*exhibition-info page*/
+.info-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 32px;
+  margin-top: 4rem;
+  margin-bottom: 4rem;
+}
+
+.info-section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.image-map-container {
+  margin-top: 120px;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1500 / 639;
+}
+
+.image-map-link {
+  position: absolute;
+  transition: background-color 0.2s;
+}
+
+.image-map-link:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
