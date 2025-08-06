@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: '오사카 전체 지도 - 기획전 
 
 
 
-export default function ExhibitionInfoPage() {
+export default function OsakaAllMapExhibitionInfoPage() {
   return (
     <main>
       <header className='header'>

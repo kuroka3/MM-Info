@@ -275,7 +275,7 @@ const booths = [
     }
   ];
 
-export default function ExhibitionInfoPage() {
+export default function OsakaFourthFloorExhibitionInfoPage() {
   return (
     <main>
       <header className='header'>
