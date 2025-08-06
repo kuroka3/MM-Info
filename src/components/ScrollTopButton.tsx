@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { scrollToPosition } from '@/lib/scroll';
 
 export default function ScrollTopButton() {
   const [visible, setVisible] = useState(false);
@@ -16,7 +17,7 @@ export default function ScrollTopButton() {
       aria-label="맨 위로"
       title="맨 위로"
       className={`scroll-top ${visible ? 'show' : ''}`}
-      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      onClick={() => scrollToPosition(0, 400)}
     >
       ↑
     </button>

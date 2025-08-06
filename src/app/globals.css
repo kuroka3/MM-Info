@@ -1625,6 +1625,18 @@ body {
   backdrop-filter: blur(20px);
   padding: 2rem;
 }
+.notice-box.highlight {
+  animation: notice-highlight 1.5s ease-out;
+}
+
+@keyframes notice-highlight {
+  from {
+    box-shadow: 0 0 0 4px var(--accent-blue);
+  }
+  to {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
 .notice-list {
   list-style: none;
   margin-top: 1rem;

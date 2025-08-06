@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import ScrollTopButton from '@/components/ScrollTopButton';
+import NoticeScroll from '@/components/NoticeScroll';
 
 export const metadata: Metadata = {
   title: '주의 사항',
@@ -116,6 +117,7 @@ export default function ImportantNoticesPage() {
         </p>
       </footer>
       <ScrollTopButton />
+      <NoticeScroll />
     </main>
   );
 }
