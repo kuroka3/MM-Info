@@ -291,15 +291,22 @@ export default function CreatorsMarketClient() {
     };
   }, []);
 
-  const scrollToBooth = (id: string) => {
-    const el = listRefs.current[id];
-    if (!el) return;
-    const offset = 80;
-    const top = el.getBoundingClientRect().top + window.scrollY - offset;
-    scrollToPosition(top, 400);
-    el.classList.add('highlight');
-    setTimeout(() => el.classList.remove('highlight'), 3000);
-  };
+const scrollToBooth = (id: string) => {
+  const el = listRefs.current[id];
+  if (!el) return;
+
+  const rect = el.getBoundingClientRect();
+  const elementCenterY = rect.top + window.scrollY + rect.height / 2;
+  const targetScroll = elementCenterY - window.innerHeight / 2;
+
+  scrollToPosition(targetScroll, 400);
+
+  el.classList.add('highlight');
+  setTimeout(() => {
+    el.classList.remove('highlight');
+  }, 5000);
+};
+
 
   const scrollToMapBooth = (id: string) => {
     const el = boothRefs.current[id];
