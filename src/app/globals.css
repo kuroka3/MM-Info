@@ -234,6 +234,13 @@ body {
   z-index: 1;
 }
 
+.feature-message {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+}
+
 .section-title {
   font-size: clamp(2.5rem, 5vw, 3.5rem);
   font-weight: 800;
@@ -1095,6 +1102,12 @@ body {
 
 .block-link:hover {
   background: rgba(255, 255, 255, 0.1);
+}
+
+.map-link {
+  display: block;
+  width: 100%;
+  text-align: center;
 }
 
 .block-disabled {

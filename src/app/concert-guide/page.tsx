@@ -20,6 +20,36 @@ export default function ConcertGuidePage() {
           </li>
         </ul>
       </nav>
+
+      <section className="container">
+        <div className="features-grid">
+          <div className="feature-card">
+            <h3 className="feature-title">센다이</h3>
+            <div className="feature-list">
+              <p className="feature-message">공연이 종료되었습니다</p>
+            </div>
+          </div>
+          <div className="feature-card">
+            <h3 className="feature-title">오사카</h3>
+            <div className="feature-list">
+              <div className="date-row">
+                <Link
+                  href="/exhibition-info/osaka/creators-market"
+                  className="glass-effect block-link map-link"
+                >
+                  크리마켓 맵
+                </Link>
+              </div>
+            </div>
+          </div>
+          <div className="feature-card">
+            <h3 className="feature-title">도쿄</h3>
+            <div className="feature-list">
+              <p className="feature-message">추가 예정입니다</p>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
