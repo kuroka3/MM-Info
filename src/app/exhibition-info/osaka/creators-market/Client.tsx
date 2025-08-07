@@ -163,15 +163,7 @@ export default function CreatorsMarketClient() {
 
         <section className="cm-section">
           <div className="cm-map-wrapper" ref={wrapperRef}>
-            <svg className="map-arrow exit" viewBox="0 0 32 32">
-              <path d="M30 16H4M16 4l-12 12 12 12" />
-            </svg>
-
-            <svg className="map-arrow entrance" viewBox="0 0 32 32">
-              <path d="M16 30V4M4 16l12-12 12 12" />
-            </svg>
             <div className="entrance-label">입구</div>
-
             <div className="cm-grid">
               {ROWS.map(row => (
                 <Fragment key={row}>

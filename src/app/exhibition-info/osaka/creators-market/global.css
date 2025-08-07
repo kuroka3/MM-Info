@@ -70,30 +70,13 @@
 
 .entrance-label {
   position: absolute;
-  bottom: -4.2rem;
-  right: 1.2rem;
+  bottom: -3rem;
+  right: 2rem;
   pointer-events: none;
   z-index: 10000;
   font-size: clamp(1rem, 6vw, 1.75rem);
   font-weight: bold;
   color: white;
-}
-
-.map-arrow{
-  position:absolute;
-  fill:none;
-  stroke:#fff;
-  stroke-width:2;
-  width:32px;
-  height:32px;
-}
-.map-arrow.exit{
-  top:2rem;
-  left:-1rem;
-}
-.map-arrow.entrance{
-  bottom:-1rem;
-  right:2rem;
 }
 
 .cm-grid{
@@ -197,15 +180,16 @@
   margin:2rem 0 .5rem;
   font-size:1.25rem;
   font-weight:700;
-  border-radius:12px 0 0 0;
+  border-radius:12px 12px 0 0;
   backdrop-filter:blur(10px);
-  border-width:2px 0 0 2px;
+  border-width:2px 2px 0 2px;
   border-style:solid;
   position:relative;
   color:#fff;
   cursor:default;
   pointer-events:none;
   padding:.75rem 1rem;
+  overflow: visible;
 }
 .booth-row-header::after{
   content:"";
@@ -274,7 +258,7 @@
   display:flex;
   justify-content:center;
   gap:.5rem;
-  margin-top:3rem;
+  margin-top:6rem;
 }
 .row-nav-btn{
   width:80px;
@@ -293,8 +277,10 @@
   box-shadow:0 0 10px currentColor;
   filter:brightness(1.1);
 }
-
-@media (max-width:600px){
+button.booth {
+  opacity: 0.6;
+}
+@media (max-width:768px){
   .cm-map-wrapper{
     width:100vw;
   }
@@ -303,11 +289,16 @@
     justify-content:center;
     text-align:center;
   }
-  .map-arrow.exit{
-    top:4rem;
+  .cm-main {
+    width: 100vw;
+    max-width: none;
+    margin-left: calc(50% - 50vw);
+    padding: 0;
   }
-  .map-arrow.entrance{
-    right:4rem;
+  .cm-map-wrapper {
+    width: 120vw;
+    max-width: none;
+    margin-left: calc(50% - 60vw);
   }
 }
 
