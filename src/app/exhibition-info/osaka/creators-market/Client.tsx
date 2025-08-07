@@ -7,6 +7,7 @@ import {
   useRef,
   useEffect,
   CSSProperties,
+  type ReactNode,
   type TouchEvent as ReactTouchEvent,
 } from 'react';
 import Image from 'next/image';
@@ -50,6 +51,11 @@ export default function CreatorsMarketClient() {
   const [selectedDay, setSelectedDay] = useState<(typeof DAYS)[number]['value']>(
     DAYS[0].value,
   );
+  const [prevDay, setPrevDay] = useState<(typeof DAYS)[number]['value']>(
+    DAYS[0].value,
+  );
+  const [flippedCells, setFlippedCells] = useState<Set<string>>(new Set());
+  const flipTimer = useRef<number | undefined>(undefined);
   const listRefs = useRef<Record<string, HTMLLIElement | null>>({});
   const rowRefs = useRef<Record<string, HTMLLIElement | null>>({});
   const boothRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -279,6 +285,12 @@ export default function CreatorsMarketClient() {
     return () => window.removeEventListener('resize', updateGutter);
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (flipTimer.current) window.clearTimeout(flipTimer.current);
+    };
+  }, []);
+
   const scrollToBooth = (id: string) => {
     const el = listRefs.current[id];
     if (!el) return;
@@ -320,6 +332,98 @@ export default function CreatorsMarketClient() {
     setTimeout(() => el.classList.remove('highlight'), 3000);
   };
 
+  const handleDayChange = (value: (typeof DAYS)[number]['value']) => {
+    if (value === selectedDay) return;
+    const changed = new Set<string>();
+    ROWS.forEach(row => {
+      COLS_REVERSED.forEach(col => {
+        const prevBooth = findBooth(row, col, selectedDay);
+        const nextBooth = findBooth(row, col, value);
+        const prevActive = !!(prevBooth && !prevBooth.hidden);
+        const nextActive = !!(nextBooth && !nextBooth.hidden);
+        if (prevActive !== nextActive) {
+          changed.add(`${row}-${col}`);
+        }
+      });
+    });
+    setFlippedCells(changed);
+    setPrevDay(selectedDay);
+    setSelectedDay(value);
+    if (flipTimer.current) window.clearTimeout(flipTimer.current);
+    flipTimer.current = window.setTimeout(() => {
+      setFlippedCells(new Set());
+      setPrevDay(value);
+    }, 600);
+  };
+
+  const renderCell = (
+    row: string,
+    col: number,
+    day: (typeof DAYS)[number]['value'],
+    interactive: boolean,
+  ): { node: ReactNode; style?: CSSProperties } => {
+    const booth = findBooth(row, col, day);
+    const prevSpan = col > 1 && findBooth(row, col - 1, day)?.span;
+    if (!booth && prevSpan) return { node: null };
+    if (!booth) return { node: <div className="booth-empty">✕</div> };
+    if (booth.hidden) {
+      return {
+        node: <div className="booth-hidden" />,
+        style: booth.span ? { gridColumn: `span ${booth.span}` } : undefined,
+      };
+    }
+    if (booth.span && col !== booth.col) return { node: null };
+    const style = booth.span ? { gridColumn: `span ${booth.span}` } : undefined;
+    if (interactive) {
+      return {
+        node: (
+          <button
+            ref={el => {
+              boothRefs.current[booth.id] = el;
+            }}
+            className={`booth ${rowClasses[row]}`}
+            onClick={() => {
+              if (!touchInfo.current.longPress) scrollToBooth(booth.id);
+            }}
+            onMouseEnter={e => showTooltip(e.currentTarget)}
+            onMouseLeave={e => {
+              const el = e.currentTarget;
+              setTimeout(() => {
+                if (!el.matches(':hover')) hideTooltip(el);
+              }, 50);
+            }}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchEnd}
+          >
+            {displayBoothId(booth.id)}
+            <div className="booth-tooltip">
+              <div className="tooltip-img-wrapper">
+                <Image
+                  src={jacketSrc(booth.id)}
+                  alt={booth.name}
+                  width={120}
+                  height={120}
+                  className="tooltip-img"
+                />
+              </div>
+              <p className="tooltip-title">{booth.koPNames || booth.name}</p>
+            </div>
+          </button>
+        ),
+        style,
+      };
+    }
+    return {
+      node: (
+        <div className={`booth ${rowClasses[row]}`}>
+          {displayBoothId(booth.id)}
+        </div>
+      ),
+      style,
+    };
+  };
+
   return (
     <main>
       <header className="header">
@@ -334,7 +438,7 @@ export default function CreatorsMarketClient() {
           {DAYS.map(({ value, date, day, cls }) => (
             <button
               key={value}
-              onClick={() => setSelectedDay(value)}
+              onClick={() => handleDayChange(value)}
               className={value === selectedDay ? 'active' : ''}
             >
               <span className="date">{date}</span>
@@ -357,58 +461,28 @@ export default function CreatorsMarketClient() {
                         </div>
                       );
                     }
-                    const booth = findBooth(row, col, selectedDay);
-                    const prevSpan =
-                      col > 1 && findBooth(row, col - 1, selectedDay)?.span;
-                    if (!booth && prevSpan) return null;
-                    if (!booth) return <div key={`x-${row}-${col}`} className="booth-empty">✕</div>;
-                    if (booth.hidden) {
+                    const key = `${row}-${col}`;
+                    const flipping = flippedCells.has(key);
+                    const front = renderCell(row, col, prevDay, false);
+                    const back = renderCell(row, col, selectedDay, true);
+                    if (!front.node && !back.node) return null;
+                    const style = back.style || front.style;
+                    if (flipping && front.node && back.node) {
                       return (
-                        <div
-                          key={booth.id}
-                          className="booth-hidden"
-                          style={booth.span ? { gridColumn: `span ${booth.span}` } : {}}
-                        />
+                        <div key={key} className="flip-card flipping" style={style}>
+                          <div className="flip-inner">
+                            <div className="flip-front">{front.node}</div>
+                            <div className="flip-back">{back.node}</div>
+                          </div>
+                        </div>
                       );
                     }
-                    if (booth.span && col !== booth.col) return null;
-
+                    const content = back.node ?? front.node;
+                    if (!content) return null;
                     return (
-                      <button
-                        key={booth.id}
-                        ref={el => {
-                          boothRefs.current[booth.id] = el;
-                        }}
-                        className={`booth ${rowClasses[row]}`}
-                        style={booth.span ? { gridColumn: `span ${booth.span}` } : {}}
-                        onClick={() => {
-                          if (!touchInfo.current.longPress) scrollToBooth(booth.id);
-                        }}
-                        onMouseEnter={e => showTooltip(e.currentTarget)}
-                        onMouseLeave={e => {
-                          const el = e.currentTarget;
-                          setTimeout(() => {
-                            if (!el.matches(':hover')) hideTooltip(el);
-                          }, 50);
-                        }}
-                        onTouchStart={handleTouchStart}
-                        onTouchEnd={handleTouchEnd}
-                        onTouchCancel={handleTouchEnd}
-                      >
-                        {displayBoothId(booth.id)}
-                        <div className="booth-tooltip">
-                          <div className="tooltip-img-wrapper">
-                            <Image
-                              src={jacketSrc(booth.id)}
-                              alt={booth.name}
-                              width={120}
-                              height={120}
-                              className="tooltip-img"
-                            />
-                          </div>
-                          <p className="tooltip-title">{booth.koPNames || booth.name}</p>
-                        </div>
-                      </button>
+                      <div key={key} style={style}>
+                        {content}
+                      </div>
                     );
                   })}
                   {(row === 'A' || row === 'C' || row === 'E') && <div className="walk-gap" />}

@@ -182,6 +182,30 @@
 .booth-hidden{
   background:transparent;
 }
+
+.flip-card{
+  width:100%;
+  height:100%;
+  perspective:800px;
+}
+.flip-card.flipping .flip-inner{
+  animation:flipY .6s forwards;
+}
+.flip-inner{
+  width:100%;
+  height:100%;
+  position:relative;
+  transform-style:preserve-3d;
+}
+.flip-front,
+.flip-back{
+  position:absolute;
+  inset:0;
+  backface-visibility:hidden;
+}
+.flip-back{transform:rotateY(180deg);}
+@keyframes flipY{to{transform:rotateY(180deg);}}
+.flip-card.flipping{pointer-events:none;}
 .booth-tooltip{
   position:absolute;
   z-index:20000;
