@@ -14,7 +14,11 @@ import { ROWS, COLS, rowClasses, BOOTHS, Booth } from './boothData';
 import ScrollTopButton from '@/components/ScrollTopButton';
 import { scrollToPosition } from '@/lib/scroll';
 
-const DAYS = ['8/9(토)', '8/10(일)', '8/11(월)'] as const;
+const DAYS = [
+  { value: '8/9(토)', date: '8/9', day: '토', cls: 'sat' },
+  { value: '8/10(일)', date: '8/10', day: '일', cls: 'sun' },
+  { value: '8/11(월)', date: '8/11', day: '월', cls: 'mon' },
+] as const;
 const COLS_REVERSED = [...COLS].reverse();
 const jacketSrc = (id: string) => `/images/osaka/creators-market/cc_${id}.jpg`;
 const displayBoothId = (id: string) => id.replace(/[a-z]$/i, '');
@@ -43,7 +47,9 @@ const findBooth = (row: string, col: number, day: string) => {
 };
 
 export default function CreatorsMarketClient() {
-  const [selectedDay, setSelectedDay] = useState<(typeof DAYS)[number]>(DAYS[0]);
+  const [selectedDay, setSelectedDay] = useState<(typeof DAYS)[number]['value']>(
+    DAYS[0].value,
+  );
   const listRefs = useRef<Record<string, HTMLLIElement | null>>({});
   const rowRefs = useRef<Record<string, HTMLLIElement | null>>({});
   const boothRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -325,13 +331,14 @@ export default function CreatorsMarketClient() {
 
       <div className="container cm-main">
         <nav className="day-tabs">
-          {DAYS.map(d => (
+          {DAYS.map(({ value, date, day, cls }) => (
             <button
-              key={d}
-              onClick={() => setSelectedDay(d)}
-              className={d === selectedDay ? 'active' : ''}
+              key={value}
+              onClick={() => setSelectedDay(value)}
+              className={value === selectedDay ? 'active' : ''}
             >
-              {d}
+              <span className="date">{date}</span>
+              <span className={`booth-day ${cls}`}>{day}</span>
             </button>
           ))}
         </nav>

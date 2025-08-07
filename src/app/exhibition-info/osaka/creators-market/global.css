@@ -3,15 +3,25 @@
 }
 
 .day-tabs{
+  --day-tab-gap:.5rem;
+  --day-tab-width:min(8rem,calc((100% - (var(--day-tab-gap) * 2)) / 3));
   display:flex;
   justify-content:center;
-  gap:1rem;
-  margin:2rem 0;
+  gap:var(--day-tab-gap);
+  margin:2rem auto;
+  width:100%;
 }
 .day-tabs button{
-  font-size:1.15rem;
-  padding:.6rem 1.4rem;
-  border-radius:9999px;
+  flex:0 0 var(--day-tab-width);
+  width:var(--day-tab-width);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:.25rem;
+  padding:.5rem .75rem;
+  font-size:clamp(1rem,4vw,1.2rem);
+  border-radius:9999px !important;
   border:1px solid var(--glass-border);
   background:var(--glass-bg);
   color:#f0f0f0;
@@ -19,12 +29,32 @@
   cursor:pointer;
   transition:background .2s, box-shadow .2s;
 }
+.day-tabs button .booth-day{
+  width:clamp(1.4rem,4vw,1.8rem);
+  height:clamp(1.4rem,4vw,1.8rem);
+  font-size:clamp(.85rem,3vw,1rem);
+}
+.day-tabs button .date{
+  line-height:1;
+}
 .day-tabs button:hover{
   box-shadow:0 0 8px rgba(240,240,240,.6);
 }
 .day-tabs button.active{
   background:rgba(255,255,255,.25);
   font-weight:700;
+}
+
+@media (min-width: 480px) {
+  .day-tabs{
+    --day-tab-gap:1rem;
+    --day-tab-width:min(8rem,calc((100% - (var(--day-tab-gap) * 2)) / 3));
+  }
+  .day-tabs button{
+    flex-direction:row;
+    gap:.5rem;
+    padding:.6rem 1.4rem;
+  }
 }
 
 .cm-map-wrapper{
