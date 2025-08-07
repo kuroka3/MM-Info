@@ -57,6 +57,7 @@ export default function CreatorsMarketClient() {
     >()
   );
   const activeTooltip = useRef<HTMLButtonElement | null>(null);
+  const disableScrollHide = useRef(false);
   const touchInfo = useRef<{ target: HTMLButtonElement | null; longPress: boolean; timer: number | null }>({ target: null, longPress: false, timer: null });
 
   useLayoutEffect(() => {
@@ -104,6 +105,7 @@ export default function CreatorsMarketClient() {
     const entry = tooltipMap.current.get(el);
     if (!entry) return;
     const { tooltip, wrapper } = entry;
+    tooltip.style.pointerEvents = 'none';
     const rect = el.getBoundingClientRect();
     wrapper.style.left = `${rect.left}px`;
     wrapper.style.top = `${rect.top}px`;
@@ -135,6 +137,7 @@ export default function CreatorsMarketClient() {
       wrapper.style.pointerEvents = 'none';
       wrapper.style.overflow = 'hidden';
       const tooltip = found.cloneNode(true) as HTMLElement;
+      tooltip.style.pointerEvents = 'none';
       wrapper.appendChild(tooltip);
       entry = { tooltip, wrapper };
       tooltipMap.current.set(el, entry);
@@ -179,7 +182,6 @@ export default function CreatorsMarketClient() {
     setTimeout(finish, 350);
     tooltip.style.opacity = '0';
     tooltip.style.transform = 'translate(-50%, 8px)';
-    wrapper.style.overflow = 'hidden';
     if (activeTooltip.current === el) activeTooltip.current = null;
   };
 
@@ -187,7 +189,7 @@ export default function CreatorsMarketClient() {
     const handleScroll = () => {
       const active = activeTooltip.current;
       if (!active) return;
-      if (active.matches(':hover')) {
+      if (active.matches(':hover') || disableScrollHide.current) {
         updateTooltipPosition(active);
       } else {
         hideTooltip(active);
@@ -262,10 +264,21 @@ export default function CreatorsMarketClient() {
     const el = boothRefs.current[id];
     if (!el) return;
     const offset = 80;
-    const top = el.getBoundingClientRect().top + window.scrollY - offset;
-    scrollToPosition(top, 400);
+    const map = wrapperRef.current;
+    disableScrollHide.current = true;
+    if (map) {
+      const top = map.getBoundingClientRect().top + window.scrollY - offset;
+      scrollToPosition(top, 400);
+    }
+    showTooltip(el);
     el.classList.add('highlight');
-    setTimeout(() => el.classList.remove('highlight'), 5000);
+    setTimeout(() => {
+      disableScrollHide.current = false;
+      if (!el.matches(':hover')) hideTooltip(el);
+    }, 2000);
+    setTimeout(() => {
+      el.classList.remove('highlight');
+    }, 5000);
   };
 
   const scrollToRow = (row: string) => {

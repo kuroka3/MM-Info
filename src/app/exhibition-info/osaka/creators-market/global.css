@@ -360,6 +360,7 @@
 .cm-map-wrapper {
   margin-left: auto;
   margin-right: auto;
+  position: relative;
 }
 button.booth {
   opacity: 1;
