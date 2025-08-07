@@ -8,7 +8,7 @@ import { scrollToPosition } from '@/lib/scroll';
 
 const DAYS = ['8/9(토)', '8/10(일)', '8/11(월)'] as const;
 const COLS_REVERSED = [...COLS].reverse();
-const jacketSrc = (id: string) => `/images/osaka/creators-market/CC_${id}.jpg`;
+const jacketSrc = (id: string) => `/images/osaka/creators-market/cc_${id}.jpg`;
 
 const BOOTHS_MAP: Record<string, Record<number, Booth>> = {};
 for (const b of BOOTHS) (BOOTHS_MAP[b.row] ??= {})[b.col] = b;
@@ -25,7 +25,12 @@ export default function CreatorsMarketClient() {
   const [gutter, setGutter] = useState(0);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const tooltipRootRef = useRef<HTMLDivElement | null>(null);
-  const tooltipMap = useRef(new Map<HTMLButtonElement, HTMLElement>());
+  const tooltipMap = useRef(
+    new Map<
+      HTMLButtonElement,
+      { tooltip: HTMLElement; wrapper: HTMLDivElement }
+    >()
+  );
 
   useEffect(() => {
     const root = document.createElement('div');
@@ -43,44 +48,64 @@ export default function CreatorsMarketClient() {
   const showTooltip = (el: HTMLButtonElement) => {
     const root = tooltipRootRef.current;
     if (!root) return;
-    const existing = tooltipMap.current.get(el);
-    let tooltip: HTMLElement;
-    if (existing) {
-      tooltip = existing;
-    } else {
+    let entry = tooltipMap.current.get(el);
+    if (!entry) {
       const found = el.querySelector('.booth-tooltip');
       if (!found) return;
-      tooltip = found as HTMLElement;
-      tooltipMap.current.set(el, tooltip);
+      const wrapper = document.createElement('div');
+      wrapper.style.position = 'absolute';
+      wrapper.style.pointerEvents = 'none';
+      wrapper.style.overflow = 'hidden';
+      const tooltip = found as HTMLElement;
+      wrapper.appendChild(tooltip);
+      entry = { tooltip, wrapper };
+      tooltipMap.current.set(el, entry);
     }
-    root.appendChild(tooltip);
-    tooltip.style.position = 'absolute';
-    tooltip.style.opacity = '1';
-    tooltip.style.visibility = 'visible';
+    const { tooltip, wrapper } = entry;
     const rect = el.getBoundingClientRect();
-    let left = rect.left + rect.width / 2;
-    let top = rect.bottom + 4;
-    tooltip.style.left = `${left}px`;
-    tooltip.style.top = `${top}px`;
-    tooltip.style.transform = 'translateX(-50%)';
+    wrapper.style.left = `${rect.left}px`;
+    wrapper.style.top = `${rect.top}px`;
+    wrapper.style.width = `${rect.width}px`;
+    wrapper.style.height = `${rect.height}px`;
+    wrapper.style.overflow = 'hidden';
+    root.appendChild(wrapper);
+
+    tooltip.style.position = 'absolute';
+    tooltip.style.visibility = 'visible';
+    tooltip.style.opacity = '0';
+    tooltip.style.left = `${rect.width / 2}px`;
+    tooltip.style.top = `calc(100% + 4px)`;
     tooltip.style.bottom = 'auto';
-    tooltip.style.right = 'auto';
+    tooltip.style.transform = 'translate(-50%, 8px)';
+    tooltip.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
 
     requestAnimationFrame(() => {
       const r = tooltip.getBoundingClientRect();
-      if (r.right > window.innerWidth) left = window.innerWidth - r.width / 2 - 8;
-      if (r.left < 0) left = r.width / 2 + 8;
-      if (r.bottom > window.innerHeight) top = rect.top - r.height - 4;
-      tooltip.style.left = `${left}px`;
-      tooltip.style.top = `${top}px`;
+      let shift = 0;
+      if (r.right > window.innerWidth) shift = window.innerWidth - r.right - 8;
+      if (r.left < 0) shift = -r.left + 8;
+      tooltip.style.left = `${rect.width / 2 + shift}px`;
+      if (r.bottom > window.innerHeight) {
+        tooltip.style.top = 'auto';
+        tooltip.style.bottom = `calc(100% + 4px)`;
+      }
+      tooltip.style.transform = 'translate(-50%, 0)';
+      tooltip.style.opacity = '1';
+      wrapper.style.overflow = 'visible';
     });
   };
 
   const hideTooltip = (el: HTMLButtonElement) => {
-    const tooltip = tooltipMap.current.get(el);
-    if (!tooltip) return;
+    const entry = tooltipMap.current.get(el);
+    if (!entry) return;
+    const { tooltip, wrapper } = entry;
     tooltip.style.opacity = '0';
-    tooltip.style.visibility = 'hidden';
+    tooltip.style.transform = 'translate(-50%, 8px)';
+    wrapper.style.overflow = 'hidden';
+    setTimeout(() => {
+      tooltip.style.visibility = 'hidden';
+      if (wrapper.parentElement) wrapper.parentElement.removeChild(wrapper);
+    }, 200);
   };
 
   useLayoutEffect(() => {
