@@ -90,8 +90,9 @@ export default function CreatorsMarketClient() {
 
   useEffect(() => {
     const root = document.createElement('div');
-    root.style.position = 'fixed';
-    root.style.inset = '0';
+    root.style.position = 'absolute';
+    root.style.top = '0';
+    root.style.left = '0';
     root.style.pointerEvents = 'none';
     root.style.zIndex = '99999';
     document.body.appendChild(root);
@@ -107,8 +108,8 @@ export default function CreatorsMarketClient() {
     const { tooltip, wrapper } = entry;
     tooltip.style.pointerEvents = 'none';
     const rect = el.getBoundingClientRect();
-    wrapper.style.left = `${rect.left}px`;
-    wrapper.style.top = `${rect.top}px`;
+    wrapper.style.left = `${rect.left + window.scrollX}px`;
+    wrapper.style.top = `${rect.top + window.scrollY}px`;
     wrapper.style.width = `${rect.width}px`;
     wrapper.style.height = `${rect.height}px`;
     tooltip.style.left = `${rect.width / 2}px`;
@@ -145,8 +146,8 @@ export default function CreatorsMarketClient() {
     }
     const { tooltip, wrapper } = entry;
     const rect = el.getBoundingClientRect();
-    wrapper.style.left = `${rect.left}px`;
-    wrapper.style.top = `${rect.top}px`;
+    wrapper.style.left = `${rect.left + window.scrollX}px`;
+    wrapper.style.top = `${rect.top + window.scrollY}px`;
     wrapper.style.width = `${rect.width}px`;
     wrapper.style.height = `${rect.height}px`;
     wrapper.style.overflow = 'hidden';
