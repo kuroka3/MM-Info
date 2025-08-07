@@ -26,7 +26,9 @@ export default function ConcertGuidePage() {
           <div className="feature-card">
             <h3 className="feature-title">센다이</h3>
             <div className="feature-list">
-              <p className="feature-message">공연이 종료되었습니다</p>
+              <div className="date-row">
+                <span className="header-date">공연이 종료되었습니다.</span>
+              </div>
             </div>
           </div>
           <div className="feature-card">
@@ -35,7 +37,7 @@ export default function ConcertGuidePage() {
               <div className="date-row">
                 <Link
                   href="/exhibition-info/osaka/creators-market"
-                  className="glass-effect block-link map-link"
+                  className="header-date"
                 >
                   크리마켓 맵
                 </Link>
@@ -45,7 +47,9 @@ export default function ConcertGuidePage() {
           <div className="feature-card">
             <h3 className="feature-title">도쿄</h3>
             <div className="feature-list">
-              <p className="feature-message">추가 예정입니다</p>
+              <div className="date-row">
+                <span className="header-date">추가 예정입니다.</span>
+              </div>
             </div>
           </div>
         </div>

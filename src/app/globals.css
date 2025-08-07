@@ -1108,6 +1108,8 @@ body {
   display: block;
   width: 100%;
   text-align: center;
+  font-size: 1.125rem;
+  color: var(--text-primary);
 }
 
 .block-disabled {

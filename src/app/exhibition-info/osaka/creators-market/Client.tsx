@@ -190,6 +190,7 @@ export default function CreatorsMarketClient() {
       <header className="header">
         <div className="container header-content">
           <h1 className="header-title">Creators Market Map</h1>
+          <p className="header-subtitle">오사카 크리에이터즈 마켓 맵</p>
         </div>
       </header>
 
@@ -336,7 +337,7 @@ export default function CreatorsMarketClient() {
                               <li key={m.name} className="member-item">
                                 <span className="member-name">
                                   {m.name}
-                                  {m.koName && <> ({m.koName})</>}
+                                  {m.koName && m.koName !== m.name && <> ({m.koName})</>}
                                 </span>
                                 {!!m.links?.length && (
                                   <span className="member-links">
