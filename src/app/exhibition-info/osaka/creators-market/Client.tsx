@@ -7,13 +7,19 @@ import {
   useRef,
   useEffect,
   CSSProperties,
+  type ReactNode,
+  type TouchEvent as ReactTouchEvent,
 } from 'react';
 import Image from 'next/image';
 import { ROWS, COLS, rowClasses, BOOTHS, Booth } from './boothData';
 import ScrollTopButton from '@/components/ScrollTopButton';
 import { scrollToPosition } from '@/lib/scroll';
 
-const DAYS = ['8/9(토)', '8/10(일)', '8/11(월)'] as const;
+const DAYS = [
+  { value: '8/9(토)', date: '8/9', day: '토', cls: 'sat' },
+  { value: '8/10(일)', date: '8/10', day: '일', cls: 'sun' },
+  { value: '8/11(월)', date: '8/11', day: '월', cls: 'mon' },
+] as const;
 const COLS_REVERSED = [...COLS].reverse();
 const jacketSrc = (id: string) => `/images/osaka/creators-market/cc_${id}.jpg`;
 const displayBoothId = (id: string) => id.replace(/[a-z]$/i, '');
@@ -27,6 +33,12 @@ const rowColors: Record<string, string> = {
   G: '255,45,85',
 };
 
+const dayClass: Record<string, string> = {
+  토: 'sat',
+  일: 'sun',
+  월: 'mon',
+};
+
 const BOOTHS_MAP: Record<string, Record<number, Booth>> = {};
 for (const b of BOOTHS) (BOOTHS_MAP[b.row] ??= {})[b.col] = b;
 
@@ -36,18 +48,34 @@ const findBooth = (row: string, col: number, day: string) => {
 };
 
 export default function CreatorsMarketClient() {
-  const [selectedDay, setSelectedDay] = useState<(typeof DAYS)[number]>(DAYS[0]);
+  const [selectedDay, setSelectedDay] = useState<(typeof DAYS)[number]['value']>(
+    DAYS[0].value,
+  );
+  const [prevDay, setPrevDay] = useState<(typeof DAYS)[number]['value']>(
+    DAYS[0].value,
+  );
+  const [flippedCells, setFlippedCells] = useState<Set<string>>(new Set());
+  const flipTimer = useRef<number | undefined>(undefined);
   const listRefs = useRef<Record<string, HTMLLIElement | null>>({});
   const rowRefs = useRef<Record<string, HTMLLIElement | null>>({});
+  const boothRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [gutter, setGutter] = useState(0);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const tooltipRootRef = useRef<HTMLDivElement | null>(null);
   const tooltipMap = useRef(
     new Map<
       HTMLButtonElement,
-      { tooltip: HTMLElement; wrapper: HTMLDivElement }
+      {
+        tooltip: HTMLElement;
+        wrapper: HTMLDivElement;
+        hideTimer?: number;
+        finish?: () => void;
+      }
     >()
   );
+  const activeTooltip = useRef<HTMLButtonElement | null>(null);
+  const disableScrollHide = useRef(false);
+  const touchInfo = useRef<{ target: HTMLButtonElement | null; longPress: boolean; timer: number | null }>({ target: null, longPress: false, timer: null });
 
   useLayoutEffect(() => {
     const wrapper = wrapperRef.current;
@@ -79,8 +107,9 @@ export default function CreatorsMarketClient() {
 
   useEffect(() => {
     const root = document.createElement('div');
-    root.style.position = 'fixed';
-    root.style.inset = '0';
+    root.style.position = 'absolute';
+    root.style.top = '0';
+    root.style.left = '0';
     root.style.pointerEvents = 'none';
     root.style.zIndex = '99999';
     document.body.appendChild(root);
@@ -90,30 +119,65 @@ export default function CreatorsMarketClient() {
     };
   }, []);
 
+  const updateTooltipPosition = (el: HTMLButtonElement) => {
+    const entry = tooltipMap.current.get(el);
+    if (!entry) return;
+    const { tooltip, wrapper } = entry;
+    tooltip.style.pointerEvents = 'none';
+    const rect = el.getBoundingClientRect();
+    wrapper.style.left = `${rect.left + window.scrollX}px`;
+    wrapper.style.top = `${rect.top + window.scrollY}px`;
+    wrapper.style.width = `${rect.width}px`;
+    wrapper.style.height = `${rect.height}px`;
+    tooltip.style.left = `${rect.width / 2}px`;
+    tooltip.style.top = `calc(100% + 4px)`;
+    tooltip.style.bottom = 'auto';
+    const r = tooltip.getBoundingClientRect();
+    let shift = 0;
+    if (r.right > window.innerWidth) shift = window.innerWidth - r.right - 8;
+    if (r.left < 0) shift = -r.left + 8;
+    tooltip.style.left = `${rect.width / 2 + shift}px`;
+    if (r.bottom > window.innerHeight) {
+      tooltip.style.top = 'auto';
+      tooltip.style.bottom = `calc(100% + 4px)`;
+    }
+  };
+
   const showTooltip = (el: HTMLButtonElement) => {
     const root = tooltipRootRef.current;
     if (!root) return;
     let entry = tooltipMap.current.get(el);
     if (!entry) {
-      const found = el.querySelector('.booth-tooltip');
+      const found = el.querySelector('.booth-tooltip') as HTMLElement | null;
       if (!found) return;
       const wrapper = document.createElement('div');
       wrapper.style.position = 'absolute';
       wrapper.style.pointerEvents = 'none';
       wrapper.style.overflow = 'hidden';
-      const tooltip = found as HTMLElement;
+      const tooltip = found.cloneNode(true) as HTMLElement;
+      tooltip.style.pointerEvents = 'none';
       wrapper.appendChild(tooltip);
       entry = { tooltip, wrapper };
       tooltipMap.current.set(el, entry);
+      found.style.display = 'none';
     }
     const { tooltip, wrapper } = entry;
+    if (entry.finish) {
+      tooltip.removeEventListener('transitionend', entry.finish);
+      entry.finish = undefined;
+    }
+    if (entry.hideTimer) {
+      clearTimeout(entry.hideTimer);
+      entry.hideTimer = undefined;
+    }
     const rect = el.getBoundingClientRect();
-    wrapper.style.left = `${rect.left}px`;
-    wrapper.style.top = `${rect.top}px`;
+    wrapper.style.left = `${rect.left + window.scrollX}px`;
+    wrapper.style.top = `${rect.top + window.scrollY}px`;
     wrapper.style.width = `${rect.width}px`;
     wrapper.style.height = `${rect.height}px`;
     wrapper.style.overflow = 'hidden';
     root.appendChild(wrapper);
+    activeTooltip.current = el;
 
     tooltip.style.position = 'absolute';
     tooltip.style.visibility = 'visible';
@@ -122,18 +186,10 @@ export default function CreatorsMarketClient() {
     tooltip.style.top = `calc(100% + 4px)`;
     tooltip.style.bottom = 'auto';
     tooltip.style.transform = 'translate(-50%, 8px)';
-    tooltip.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+    tooltip.style.transition = 'opacity 0.3s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.4,0,0.2,1)';
 
     requestAnimationFrame(() => {
-      const r = tooltip.getBoundingClientRect();
-      let shift = 0;
-      if (r.right > window.innerWidth) shift = window.innerWidth - r.right - 8;
-      if (r.left < 0) shift = -r.left + 8;
-      tooltip.style.left = `${rect.width / 2 + shift}px`;
-      if (r.bottom > window.innerHeight) {
-        tooltip.style.top = 'auto';
-        tooltip.style.bottom = `calc(100% + 4px)`;
-      }
+      updateTooltipPosition(el);
       tooltip.style.transform = 'translate(-50%, 0)';
       tooltip.style.opacity = '1';
       wrapper.style.overflow = 'visible';
@@ -144,13 +200,77 @@ export default function CreatorsMarketClient() {
     const entry = tooltipMap.current.get(el);
     if (!entry) return;
     const { tooltip, wrapper } = entry;
-    tooltip.style.opacity = '0';
-    tooltip.style.transform = 'translate(-50%, 8px)';
-    wrapper.style.overflow = 'hidden';
-    setTimeout(() => {
+    if (entry.finish) {
+      tooltip.removeEventListener('transitionend', entry.finish);
+    }
+    if (entry.hideTimer) {
+      clearTimeout(entry.hideTimer);
+    }
+    const finish = () => {
       tooltip.style.visibility = 'hidden';
       if (wrapper.parentElement) wrapper.parentElement.removeChild(wrapper);
+      entry.finish = undefined;
+      entry.hideTimer = undefined;
+    };
+    tooltip.addEventListener('transitionend', finish, { once: true });
+    entry.finish = finish;
+    entry.hideTimer = window.setTimeout(finish, 350);
+    tooltip.style.opacity = '0';
+    tooltip.style.transform = 'translate(-50%, 8px)';
+    if (activeTooltip.current === el) activeTooltip.current = null;
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const active = activeTooltip.current;
+      if (!active) return;
+      if (active.matches(':hover') || disableScrollHide.current) {
+        updateTooltipPosition(active);
+      } else {
+        hideTooltip(active);
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  function handleTouchMove(e: TouchEvent) {
+    const info = touchInfo.current;
+    if (!info.longPress) return;
+    const touch = e.touches[0];
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    const booth = el?.closest('button.booth') as HTMLButtonElement | null;
+    if (booth !== info.target) {
+      if (info.target) hideTooltip(info.target);
+      info.target = booth;
+      if (booth) showTooltip(booth);
+    }
+    e.preventDefault();
+  }
+
+  const handleTouchStart = (e: ReactTouchEvent<HTMLButtonElement>) => {
+    const info = touchInfo.current;
+    const target = e.currentTarget;
+    info.target = target;
+    info.longPress = false;
+    if (info.timer) window.clearTimeout(info.timer);
+    info.timer = window.setTimeout(() => {
+      info.longPress = true;
+      showTooltip(target);
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
     }, 200);
+  };
+
+  const handleTouchEnd = () => {
+    const info = touchInfo.current;
+    if (info.timer) window.clearTimeout(info.timer);
+    if (info.longPress && info.target) {
+      hideTooltip(info.target);
+    }
+    document.removeEventListener('touchmove', handleTouchMove);
+    info.target = null;
+    info.longPress = false;
+    info.timer = null;
   };
 
   useLayoutEffect(() => {
@@ -165,14 +285,48 @@ export default function CreatorsMarketClient() {
     return () => window.removeEventListener('resize', updateGutter);
   }, []);
 
-  const scrollToBooth = (id: string) => {
-    const el = listRefs.current[id];
+  useEffect(() => {
+    return () => {
+      if (flipTimer.current) window.clearTimeout(flipTimer.current);
+    };
+  }, []);
+
+const scrollToBooth = (id: string) => {
+  const el = listRefs.current[id];
+  if (!el) return;
+
+  const rect = el.getBoundingClientRect();
+  const elementCenterY = rect.top + window.scrollY + rect.height / 2;
+  const targetScroll = elementCenterY - window.innerHeight / 2;
+
+  scrollToPosition(targetScroll, 400);
+
+  el.classList.add('highlight');
+  setTimeout(() => {
+    el.classList.remove('highlight');
+  }, 5000);
+};
+
+
+  const scrollToMapBooth = (id: string) => {
+    const el = boothRefs.current[id];
     if (!el) return;
     const offset = 80;
-    const top = el.getBoundingClientRect().top + window.scrollY - offset;
-    scrollToPosition(top, 400);
+    const map = wrapperRef.current;
+    disableScrollHide.current = true;
+    if (map) {
+      const top = map.getBoundingClientRect().top + window.scrollY - offset;
+      scrollToPosition(top, 400);
+    }
+    showTooltip(el);
     el.classList.add('highlight');
-    setTimeout(() => el.classList.remove('highlight'), 3000);
+    setTimeout(() => {
+      disableScrollHide.current = false;
+      if (!el.matches(':hover')) hideTooltip(el);
+    }, 2000);
+    setTimeout(() => {
+      el.classList.remove('highlight');
+    }, 5000);
   };
 
   const scrollToRow = (row: string) => {
@@ -183,6 +337,98 @@ export default function CreatorsMarketClient() {
     scrollToPosition(top, 400);
     el.classList.add('highlight');
     setTimeout(() => el.classList.remove('highlight'), 3000);
+  };
+
+  const handleDayChange = (value: (typeof DAYS)[number]['value']) => {
+    if (value === selectedDay) return;
+    const changed = new Set<string>();
+    ROWS.forEach(row => {
+      COLS_REVERSED.forEach(col => {
+        const prevBooth = findBooth(row, col, selectedDay);
+        const nextBooth = findBooth(row, col, value);
+        const prevActive = !!(prevBooth && !prevBooth.hidden);
+        const nextActive = !!(nextBooth && !nextBooth.hidden);
+        if (prevActive !== nextActive) {
+          changed.add(`${row}-${col}`);
+        }
+      });
+    });
+    setFlippedCells(changed);
+    setPrevDay(selectedDay);
+    setSelectedDay(value);
+    if (flipTimer.current) window.clearTimeout(flipTimer.current);
+    flipTimer.current = window.setTimeout(() => {
+      setFlippedCells(new Set());
+      setPrevDay(value);
+    }, 600);
+  };
+
+  const renderCell = (
+    row: string,
+    col: number,
+    day: (typeof DAYS)[number]['value'],
+    interactive: boolean,
+  ): { node: ReactNode; style?: CSSProperties } => {
+    const booth = findBooth(row, col, day);
+    const prevSpan = col > 1 && findBooth(row, col - 1, day)?.span;
+    if (!booth && prevSpan) return { node: null };
+    if (!booth) return { node: <div className="booth-empty">✕</div> };
+    if (booth.hidden) {
+      return {
+        node: <div className="booth-hidden" />,
+        style: booth.span ? { gridColumn: `span ${booth.span}` } : undefined,
+      };
+    }
+    if (booth.span && col !== booth.col) return { node: null };
+    const style = booth.span ? { gridColumn: `span ${booth.span}` } : undefined;
+    if (interactive) {
+      return {
+        node: (
+          <button
+            ref={el => {
+              boothRefs.current[booth.id] = el;
+            }}
+            className={`booth ${rowClasses[row]}`}
+            onClick={() => {
+              if (!touchInfo.current.longPress) scrollToBooth(booth.id);
+            }}
+            onMouseEnter={e => showTooltip(e.currentTarget)}
+            onMouseLeave={e => {
+              const el = e.currentTarget;
+              setTimeout(() => {
+                if (!el.matches(':hover')) hideTooltip(el);
+              }, 50);
+            }}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchEnd}
+          >
+            {displayBoothId(booth.id)}
+            <div className="booth-tooltip">
+              <div className="tooltip-img-wrapper">
+                <Image
+                  src={jacketSrc(booth.id)}
+                  alt={booth.name}
+                  width={120}
+                  height={120}
+                  className="tooltip-img"
+                />
+              </div>
+              <p className="tooltip-title">{booth.koPNames || booth.name}</p>
+            </div>
+          </button>
+        ),
+        style,
+      };
+    }
+    return {
+      node: (
+        <div className={`booth ${rowClasses[row]}`}>
+          {displayBoothId(booth.id)}
+        </div>
+      ),
+      style,
+    };
   };
 
   return (
@@ -196,13 +442,14 @@ export default function CreatorsMarketClient() {
 
       <div className="container cm-main">
         <nav className="day-tabs">
-          {DAYS.map(d => (
+          {DAYS.map(({ value, date, day, cls }) => (
             <button
-              key={d}
-              onClick={() => setSelectedDay(d)}
-              className={d === selectedDay ? 'active' : ''}
+              key={value}
+              onClick={() => handleDayChange(value)}
+              className={value === selectedDay ? 'active' : ''}
             >
-              {d}
+              <span className="date">{date}</span>
+              <span className={`booth-day ${cls}`}>{day}</span>
             </button>
           ))}
         </nav>
@@ -221,45 +468,28 @@ export default function CreatorsMarketClient() {
                         </div>
                       );
                     }
-                    const booth = findBooth(row, col, selectedDay);
-                    const prevSpan =
-                      col > 1 && findBooth(row, col - 1, selectedDay)?.span;
-                    if (!booth && prevSpan) return null;
-                    if (!booth) return <div key={`x-${row}-${col}`} className="booth-empty">✕</div>;
-                    if (booth.hidden) {
+                    const key = `${row}-${col}`;
+                    const flipping = flippedCells.has(key);
+                    const front = renderCell(row, col, prevDay, false);
+                    const back = renderCell(row, col, selectedDay, true);
+                    if (!front.node && !back.node) return null;
+                    const style = back.style || front.style;
+                    if (flipping && front.node && back.node) {
                       return (
-                        <div
-                          key={booth.id}
-                          className="booth-hidden"
-                          style={booth.span ? { gridColumn: `span ${booth.span}` } : {}}
-                        />
+                        <div key={key} className="flip-card flipping" style={style}>
+                          <div className="flip-inner">
+                            <div className="flip-front">{front.node}</div>
+                            <div className="flip-back">{back.node}</div>
+                          </div>
+                        </div>
                       );
                     }
-                    if (booth.span && col !== booth.col) return null;
-
+                    const content = back.node ?? front.node;
+                    if (!content) return null;
                     return (
-                      <button
-                        key={booth.id}
-                        className={`booth ${rowClasses[row]}`}
-                        style={booth.span ? { gridColumn: `span ${booth.span}` } : {}}
-                        onClick={() => scrollToBooth(booth.id)}
-                        onMouseEnter={e => showTooltip(e.currentTarget)}
-                        onMouseLeave={e => hideTooltip(e.currentTarget)}
-                      >
-                        {displayBoothId(booth.id)}
-                        <div className="booth-tooltip">
-                          <div className="tooltip-img-wrapper">
-                            <Image
-                              src={jacketSrc(booth.id)}
-                              alt={booth.name}
-                              width={120}
-                              height={120}
-                              className="tooltip-img"
-                            />
-                          </div>
-                          <p className="tooltip-title">{booth.koPNames || booth.name}</p>
-                        </div>
-                      </button>
+                      <div key={key} style={style}>
+                        {content}
+                      </div>
                     );
                   })}
                   {(row === 'A' || row === 'C' || row === 'E') && <div className="walk-gap" />}
@@ -317,6 +547,10 @@ export default function CreatorsMarketClient() {
                       style={{
                         '--row-color': rowColors[booth.row],
                       } as CSSProperties}
+                      onClick={e => {
+                        if ((e.target as HTMLElement).closest('.member-links')) return;
+                        scrollToMapBooth(booth.id);
+                      }}
                     >
                       <Image
                         src={jacketSrc(booth.id)}
@@ -330,7 +564,25 @@ export default function CreatorsMarketClient() {
                           {booth.name}
                           {booth.koPNames && <> ({booth.koPNames})</>}
                         </h3>
-                        <p className="booth-item-meta">{displayBoothId(booth.id)}</p>
+                        <p className="booth-item-meta">
+                          {displayBoothId(booth.id)}
+                          <span className="booth-days">
+                            {Array.from(
+                              new Set(
+                                booth.dates
+                                  .map(d => d.match(/\((.)\)/)?.[1])
+                                  .filter(Boolean) as string[],
+                              ),
+                            ).map(day => (
+                              <span
+                                key={day}
+                                className={`booth-day ${dayClass[day] ?? ''}`}
+                              >
+                                {day}
+                              </span>
+                            ))}
+                          </span>
+                        </p>
                         {booth.members.length > 0 && (
                           <ul className="member-list">
                             {booth.members.map(m => (
@@ -347,6 +599,7 @@ export default function CreatorsMarketClient() {
                                         href={link.url}
                                         target="_blank"
                                         rel="noopener noreferrer"
+                                        className="member-link"
                                       >
                                         <Image
                                           src="/images/link.svg"
