@@ -1,6 +1,13 @@
 'use client';
 
-import { useState, useLayoutEffect, Fragment, useRef, useEffect } from 'react';
+import {
+  useState,
+  useLayoutEffect,
+  Fragment,
+  useRef,
+  useEffect,
+  CSSProperties,
+} from 'react';
 import Image from 'next/image';
 import { ROWS, COLS, rowClasses, BOOTHS, Booth } from './boothData';
 import ScrollTopButton from '@/components/ScrollTopButton';
@@ -9,6 +16,16 @@ import { scrollToPosition } from '@/lib/scroll';
 const DAYS = ['8/9(토)', '8/10(일)', '8/11(월)'] as const;
 const COLS_REVERSED = [...COLS].reverse();
 const jacketSrc = (id: string) => `/images/osaka/creators-market/cc_${id}.jpg`;
+const displayBoothId = (id: string) => id.replace(/[a-z]$/i, '');
+const rowColors: Record<string, string> = {
+  A: '255,71,133',
+  B: '0,122,255',
+  C: '255,149,0',
+  D: '48,209,88',
+  E: '175,82,222',
+  F: '94,92,230',
+  G: '255,45,85',
+};
 
 const BOOTHS_MAP: Record<string, Record<number, Booth>> = {};
 for (const b of BOOTHS) (BOOTHS_MAP[b.row] ??= {})[b.col] = b;
@@ -31,6 +48,34 @@ export default function CreatorsMarketClient() {
       { tooltip: HTMLElement; wrapper: HTMLDivElement }
     >()
   );
+
+  useLayoutEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+
+    const updateDividers = () => {
+      const parentRect = wrapper.getBoundingClientRect();
+      const style = getComputedStyle(wrapper);
+      const rightGap = parseFloat(style.paddingRight) || 0;
+
+      Object.values(rowRefs.current).forEach(li => {
+        if (!li) return;
+        const elRect = li.getBoundingClientRect();
+        const offset = elRect.left - parentRect.left;
+        const width = parentRect.width - offset - rightGap;
+
+        li.style.setProperty('--divider-left', `${offset}px`);
+        li.style.setProperty('--divider-width', `${width}px`);
+      });
+    };
+
+    updateDividers();
+    window.addEventListener('resize', updateDividers);
+    return () => {
+      window.removeEventListener('resize', updateDividers);
+    };
+  }, []);
+
 
   useEffect(() => {
     const root = document.createElement('div');
@@ -200,7 +245,7 @@ export default function CreatorsMarketClient() {
                         onMouseEnter={e => showTooltip(e.currentTarget)}
                         onMouseLeave={e => hideTooltip(e.currentTarget)}
                       >
-                        {booth.id}
+                        {displayBoothId(booth.id)}
                         <div className="booth-tooltip">
                           <div className="tooltip-img-wrapper">
                             <Image
@@ -249,7 +294,7 @@ export default function CreatorsMarketClient() {
             {ROWS.map(row => {
               const booths = BOOTHS.filter(
                 b => !b.hidden && b.dates.includes(selectedDay) && b.row === row,
-              ).sort((a, b) => a.id.localeCompare(b.id));
+              ).sort((a, b) => a.col - b.col);
               if (booths.length === 0) return null;
               return (
                 <Fragment key={row}>
@@ -268,6 +313,9 @@ export default function CreatorsMarketClient() {
                         listRefs.current[booth.id] = el;
                       }}
                       className="booth-item"
+                      style={{
+                        '--row-color': rowColors[booth.row],
+                      } as CSSProperties}
                     >
                       <Image
                         src={jacketSrc(booth.id)}
@@ -281,13 +329,13 @@ export default function CreatorsMarketClient() {
                           {booth.name}
                           {booth.koPNames && <> ({booth.koPNames})</>}
                         </h3>
-                        <p className="booth-item-meta">{booth.id}</p>
+                        <p className="booth-item-meta">{displayBoothId(booth.id)}</p>
                         {booth.members.length > 0 && (
                           <ul className="member-list">
                             {booth.members.map(m => (
                               <li key={m.name} className="member-item">
                                 <span className="member-name">{m.name}</span>
-                                {m.links?.length && (
+                                {!!m.links?.length && (
                                   <span className="member-links">
                                     {m.links.map((link, i) => (
                                       <a
