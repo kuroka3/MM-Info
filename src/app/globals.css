@@ -1989,7 +1989,7 @@ body {
   opacity: 0;
   transform: translate(-50%, -10px) scale(0.95);
   pointer-events: none;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   bottom: 110%;
   left: 50%;
 }

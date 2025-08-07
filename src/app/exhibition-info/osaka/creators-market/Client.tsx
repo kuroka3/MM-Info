@@ -28,6 +28,12 @@ const rowColors: Record<string, string> = {
   G: '255,45,85',
 };
 
+const dayClass: Record<string, string> = {
+  토: 'sat',
+  일: 'sun',
+  월: 'mon',
+};
+
 const BOOTHS_MAP: Record<string, Record<number, Booth>> = {};
 for (const b of BOOTHS) (BOOTHS_MAP[b.row] ??= {})[b.col] = b;
 
@@ -40,6 +46,7 @@ export default function CreatorsMarketClient() {
   const [selectedDay, setSelectedDay] = useState<(typeof DAYS)[number]>(DAYS[0]);
   const listRefs = useRef<Record<string, HTMLLIElement | null>>({});
   const rowRefs = useRef<Record<string, HTMLLIElement | null>>({});
+  const boothRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [gutter, setGutter] = useState(0);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const tooltipRootRef = useRef<HTMLDivElement | null>(null);
@@ -49,6 +56,7 @@ export default function CreatorsMarketClient() {
       { tooltip: HTMLElement; wrapper: HTMLDivElement }
     >()
   );
+  const activeTooltip = useRef<HTMLButtonElement | null>(null);
   const touchInfo = useRef<{ target: HTMLButtonElement | null; longPress: boolean; timer: number | null }>({ target: null, longPress: false, timer: null });
 
   useLayoutEffect(() => {
@@ -92,21 +100,45 @@ export default function CreatorsMarketClient() {
     };
   }, []);
 
+  const updateTooltipPosition = (el: HTMLButtonElement) => {
+    const entry = tooltipMap.current.get(el);
+    if (!entry) return;
+    const { tooltip, wrapper } = entry;
+    const rect = el.getBoundingClientRect();
+    wrapper.style.left = `${rect.left}px`;
+    wrapper.style.top = `${rect.top}px`;
+    wrapper.style.width = `${rect.width}px`;
+    wrapper.style.height = `${rect.height}px`;
+    tooltip.style.left = `${rect.width / 2}px`;
+    tooltip.style.top = `calc(100% + 4px)`;
+    tooltip.style.bottom = 'auto';
+    const r = tooltip.getBoundingClientRect();
+    let shift = 0;
+    if (r.right > window.innerWidth) shift = window.innerWidth - r.right - 8;
+    if (r.left < 0) shift = -r.left + 8;
+    tooltip.style.left = `${rect.width / 2 + shift}px`;
+    if (r.bottom > window.innerHeight) {
+      tooltip.style.top = 'auto';
+      tooltip.style.bottom = `calc(100% + 4px)`;
+    }
+  };
+
   const showTooltip = (el: HTMLButtonElement) => {
     const root = tooltipRootRef.current;
     if (!root) return;
     let entry = tooltipMap.current.get(el);
     if (!entry) {
-      const found = el.querySelector('.booth-tooltip');
+      const found = el.querySelector('.booth-tooltip') as HTMLElement | null;
       if (!found) return;
       const wrapper = document.createElement('div');
       wrapper.style.position = 'absolute';
       wrapper.style.pointerEvents = 'none';
       wrapper.style.overflow = 'hidden';
-      const tooltip = found as HTMLElement;
+      const tooltip = found.cloneNode(true) as HTMLElement;
       wrapper.appendChild(tooltip);
       entry = { tooltip, wrapper };
       tooltipMap.current.set(el, entry);
+      found.style.display = 'none';
     }
     const { tooltip, wrapper } = entry;
     const rect = el.getBoundingClientRect();
@@ -116,6 +148,7 @@ export default function CreatorsMarketClient() {
     wrapper.style.height = `${rect.height}px`;
     wrapper.style.overflow = 'hidden';
     root.appendChild(wrapper);
+    activeTooltip.current = el;
 
     tooltip.style.position = 'absolute';
     tooltip.style.visibility = 'visible';
@@ -124,18 +157,10 @@ export default function CreatorsMarketClient() {
     tooltip.style.top = `calc(100% + 4px)`;
     tooltip.style.bottom = 'auto';
     tooltip.style.transform = 'translate(-50%, 8px)';
-    tooltip.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+    tooltip.style.transition = 'opacity 0.3s cubic-bezier(0.4,0,0.2,1), transform 0.3s cubic-bezier(0.4,0,0.2,1)';
 
     requestAnimationFrame(() => {
-      const r = tooltip.getBoundingClientRect();
-      let shift = 0;
-      if (r.right > window.innerWidth) shift = window.innerWidth - r.right - 8;
-      if (r.left < 0) shift = -r.left + 8;
-      tooltip.style.left = `${rect.width / 2 + shift}px`;
-      if (r.bottom > window.innerHeight) {
-        tooltip.style.top = 'auto';
-        tooltip.style.bottom = `calc(100% + 4px)`;
-      }
+      updateTooltipPosition(el);
       tooltip.style.transform = 'translate(-50%, 0)';
       tooltip.style.opacity = '1';
       wrapper.style.overflow = 'visible';
@@ -146,14 +171,31 @@ export default function CreatorsMarketClient() {
     const entry = tooltipMap.current.get(el);
     if (!entry) return;
     const { tooltip, wrapper } = entry;
+    const finish = () => {
+      tooltip.style.visibility = 'hidden';
+      if (wrapper.parentElement) wrapper.parentElement.removeChild(wrapper);
+    };
+    tooltip.addEventListener('transitionend', finish, { once: true });
+    setTimeout(finish, 350);
     tooltip.style.opacity = '0';
     tooltip.style.transform = 'translate(-50%, 8px)';
     wrapper.style.overflow = 'hidden';
-    setTimeout(() => {
-      tooltip.style.visibility = 'hidden';
-      if (wrapper.parentElement) wrapper.parentElement.removeChild(wrapper);
-    }, 200);
+    if (activeTooltip.current === el) activeTooltip.current = null;
   };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const active = activeTooltip.current;
+      if (!active) return;
+      if (active.matches(':hover')) {
+        updateTooltipPosition(active);
+      } else {
+        hideTooltip(active);
+      }
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   function handleTouchMove(e: TouchEvent) {
     const info = touchInfo.current;
@@ -214,6 +256,16 @@ export default function CreatorsMarketClient() {
     scrollToPosition(top, 400);
     el.classList.add('highlight');
     setTimeout(() => el.classList.remove('highlight'), 3000);
+  };
+
+  const scrollToMapBooth = (id: string) => {
+    const el = boothRefs.current[id];
+    if (!el) return;
+    const offset = 80;
+    const top = el.getBoundingClientRect().top + window.scrollY - offset;
+    scrollToPosition(top, 400);
+    el.classList.add('highlight');
+    setTimeout(() => el.classList.remove('highlight'), 5000);
   };
 
   const scrollToRow = (row: string) => {
@@ -278,22 +330,30 @@ export default function CreatorsMarketClient() {
                     }
                     if (booth.span && col !== booth.col) return null;
 
-                      return (
-                        <button
-                          key={booth.id}
-                          className={`booth ${rowClasses[row]}`}
-                          style={booth.span ? { gridColumn: `span ${booth.span}` } : {}}
-                          onClick={() => {
-                            if (!touchInfo.current.longPress) scrollToBooth(booth.id);
-                          }}
-                          onMouseEnter={e => showTooltip(e.currentTarget)}
-                          onMouseLeave={e => hideTooltip(e.currentTarget)}
-                          onTouchStart={handleTouchStart}
-                          onTouchEnd={handleTouchEnd}
-                          onTouchCancel={handleTouchEnd}
-                        >
-                          {displayBoothId(booth.id)}
-                          <div className="booth-tooltip">
+                    return (
+                      <button
+                        key={booth.id}
+                        ref={el => {
+                          boothRefs.current[booth.id] = el;
+                        }}
+                        className={`booth ${rowClasses[row]}`}
+                        style={booth.span ? { gridColumn: `span ${booth.span}` } : {}}
+                        onClick={() => {
+                          if (!touchInfo.current.longPress) scrollToBooth(booth.id);
+                        }}
+                        onMouseEnter={e => showTooltip(e.currentTarget)}
+                        onMouseLeave={e => {
+                          const el = e.currentTarget;
+                          setTimeout(() => {
+                            if (!el.matches(':hover')) hideTooltip(el);
+                          }, 50);
+                        }}
+                        onTouchStart={handleTouchStart}
+                        onTouchEnd={handleTouchEnd}
+                        onTouchCancel={handleTouchEnd}
+                      >
+                        {displayBoothId(booth.id)}
+                        <div className="booth-tooltip">
                           <div className="tooltip-img-wrapper">
                             <Image
                               src={jacketSrc(booth.id)}
@@ -363,6 +423,10 @@ export default function CreatorsMarketClient() {
                       style={{
                         '--row-color': rowColors[booth.row],
                       } as CSSProperties}
+                      onClick={e => {
+                        if ((e.target as HTMLElement).closest('.member-links')) return;
+                        scrollToMapBooth(booth.id);
+                      }}
                     >
                       <Image
                         src={jacketSrc(booth.id)}
@@ -376,7 +440,25 @@ export default function CreatorsMarketClient() {
                           {booth.name}
                           {booth.koPNames && <> ({booth.koPNames})</>}
                         </h3>
-                        <p className="booth-item-meta">{displayBoothId(booth.id)}</p>
+                        <p className="booth-item-meta">
+                          {displayBoothId(booth.id)}
+                          <span className="booth-days">
+                            {Array.from(
+                              new Set(
+                                booth.dates
+                                  .map(d => d.match(/\((.)\)/)?.[1])
+                                  .filter(Boolean) as string[],
+                              ),
+                            ).map(day => (
+                              <span
+                                key={day}
+                                className={`booth-day ${dayClass[day] ?? ''}`}
+                              >
+                                {day}
+                              </span>
+                            ))}
+                          </span>
+                        </p>
                         {booth.members.length > 0 && (
                           <ul className="member-list">
                             {booth.members.map(m => (
@@ -393,6 +475,7 @@ export default function CreatorsMarketClient() {
                                         href={link.url}
                                         target="_blank"
                                         rel="noopener noreferrer"
+                                        className="member-link"
                                       >
                                         <Image
                                           src="/images/link.svg"
