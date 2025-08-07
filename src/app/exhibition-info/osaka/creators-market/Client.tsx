@@ -53,7 +53,12 @@ export default function CreatorsMarketClient() {
   const tooltipMap = useRef(
     new Map<
       HTMLButtonElement,
-      { tooltip: HTMLElement; wrapper: HTMLDivElement }
+      {
+        tooltip: HTMLElement;
+        wrapper: HTMLDivElement;
+        hideTimer?: number;
+        finish?: () => void;
+      }
     >()
   );
   const activeTooltip = useRef<HTMLButtonElement | null>(null);
@@ -145,6 +150,14 @@ export default function CreatorsMarketClient() {
       found.style.display = 'none';
     }
     const { tooltip, wrapper } = entry;
+    if (entry.finish) {
+      tooltip.removeEventListener('transitionend', entry.finish);
+      entry.finish = undefined;
+    }
+    if (entry.hideTimer) {
+      clearTimeout(entry.hideTimer);
+      entry.hideTimer = undefined;
+    }
     const rect = el.getBoundingClientRect();
     wrapper.style.left = `${rect.left + window.scrollX}px`;
     wrapper.style.top = `${rect.top + window.scrollY}px`;
@@ -175,12 +188,21 @@ export default function CreatorsMarketClient() {
     const entry = tooltipMap.current.get(el);
     if (!entry) return;
     const { tooltip, wrapper } = entry;
+    if (entry.finish) {
+      tooltip.removeEventListener('transitionend', entry.finish);
+    }
+    if (entry.hideTimer) {
+      clearTimeout(entry.hideTimer);
+    }
     const finish = () => {
       tooltip.style.visibility = 'hidden';
       if (wrapper.parentElement) wrapper.parentElement.removeChild(wrapper);
+      entry.finish = undefined;
+      entry.hideTimer = undefined;
     };
     tooltip.addEventListener('transitionend', finish, { once: true });
-    setTimeout(finish, 350);
+    entry.finish = finish;
+    entry.hideTimer = window.setTimeout(finish, 350);
     tooltip.style.opacity = '0';
     tooltip.style.transform = 'translate(-50%, 8px)';
     if (activeTooltip.current === el) activeTooltip.current = null;
