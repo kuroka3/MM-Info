@@ -256,7 +256,7 @@ export default function CreatorsMarketClient() {
                               className="tooltip-img"
                             />
                           </div>
-                          <p className="tooltip-title">{booth.name}</p>
+                          <p className="tooltip-title">{booth.koPNames || booth.name}</p>
                         </div>
                       </button>
                     );
@@ -334,7 +334,10 @@ export default function CreatorsMarketClient() {
                           <ul className="member-list">
                             {booth.members.map(m => (
                               <li key={m.name} className="member-item">
-                                <span className="member-name">{m.name}</span>
+                                <span className="member-name">
+                                  {m.name}
+                                  {m.koName && <> ({m.koName})</>}
+                                </span>
                                 {!!m.links?.length && (
                                   <span className="member-links">
                                     {m.links.map((link, i) => (
