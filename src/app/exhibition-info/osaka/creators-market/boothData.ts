@@ -751,11 +751,12 @@ const boothsD: Booth[] = [
     row: 'D',
     col: 1,
     name: 'シシドサウンドとぐちりずむ',
-    koPNames: '',
+    koPNames: '구치리 / 시시도',
     dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
     members: [
       {
         name: 'ぐちり',
+        koName: '구치리',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000924' },
           { label: 'X(Twitter)', url: 'https://x.com/bomless_race' },
@@ -764,6 +765,7 @@ const boothsD: Booth[] = [
       },
       {
         name: 'シシド',
+        koName: '시시도',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000963' },
           { label: 'X(Twitter)', url: 'https://x.com/shishido_4410' },
@@ -777,11 +779,12 @@ const boothsD: Booth[] = [
     row: 'D',
     col: 2,
     name: '宮守文学',
-    koPNames: '',
+    koPNames: '미야모리 문학',
     dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
     members: [
       {
         name: '宮守文学',
+        koName: '미야모리 문학',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000976' },
           { label: 'X(Twitter)', url: 'https://x.com/miyamoribungaku' }
@@ -794,11 +797,12 @@ const boothsD: Booth[] = [
     row: 'D',
     col: 3,
     name: 'ど夏ue',
-    koPNames: '',
+    koPNames: '도파민 / 나츠야마 요츠기 / Glue',
     dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
     members: [
       {
         name: 'ど〜ぱみん',
+        koName: '도파민',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000957' },
           { label: 'X(Twitter)', url: 'https://x.com/DTM_dopamine' },
@@ -807,6 +811,7 @@ const boothsD: Booth[] = [
       },
       {
         name: '夏山よつぎ',
+        koName: '나츠야마 요츠기',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000961' },
           { label: 'X(Twitter)', url: 'https://x.com/seckarium' },
@@ -815,6 +820,7 @@ const boothsD: Booth[] = [
       },
       {
         name: 'Glue',
+        koName: 'Glue',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000918' },
           { label: 'X(Twitter)', url: 'https://x.com/_Glu_E_' },
@@ -828,11 +834,12 @@ const boothsD: Booth[] = [
     row: 'D',
     col: 4,
     name: 'あ子',
-    koPNames: '',
+    koPNames: '아코 / 아오야마 와사비',
     dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
     members: [
       {
         name: 'あ子',
+        koName: '아코',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000838' },
           { label: 'X(Twitter)', url: 'https://x.com/ako_okko' },
@@ -841,6 +848,7 @@ const boothsD: Booth[] = [
       },
       {
         name: '葵山わさび',
+        koName: '아오야마 와사비',
         links: [{ label: 'X(Twitter)', url: 'https://x.com/ahowasa86' }]
       }
     ]
@@ -850,11 +858,12 @@ const boothsD: Booth[] = [
     row: 'D',
     col: 5,
     name: 'まにそらマーケット',
-    koPNames: '',
+    koPNames: 'manika / Iceky',
     dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
     members: [
       {
         name: 'manika',
+        koName: 'manika',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp001087' },
           { label: 'X(Twitter)', url: 'https://x.com/ma_ni_ka_' }
@@ -862,6 +871,7 @@ const boothsD: Booth[] = [
       },
       {
         name: 'Iceky',
+        koName: 'Iceky',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp001122' },
           { label: 'X(Twitter)', url: 'https://x.com/flogsing' }
@@ -874,11 +884,12 @@ const boothsD: Booth[] = [
     row: 'D',
     col: 6,
     name: '浮幽会',
-    koPNames: '',
+    koPNames: '유우레 이리',
     dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
     members: [
       {
         name: '由末イリ',
+        koName: '유우레 이리',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp001019' },
           { label: 'WEB', url: 'https://ghostomeiris.wixsite.com/iriyule' }
@@ -891,11 +902,12 @@ const boothsD: Booth[] = [
     row: 'D',
     col: 7,
     name: 'しゃいとれこーず',
-    koPNames: '',
+    koPNames: '샤이토',
     dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
     members: [
       {
         name: 'しゃいと',
+        koName: '샤이토',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000947' },
           { label: 'X(Twitter)', url: 'https://x.com/shaito_otiahs' },
@@ -909,11 +921,12 @@ const boothsD: Booth[] = [
     row: 'D',
     col: 8,
     name: 'はかめ',
-    koPNames: '',
+    koPNames: '하카메',
     dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
     members: [
       {
         name: 'はかめ',
+        koName: '하카메',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp001095' }
         ]
@@ -931,11 +944,12 @@ const boothsD: Booth[] = [
     row: 'D',
     col: 9,
     name: 'EOとナサガシ',
-    koPNames: '',
+    koPNames: 'EO / 나사가시',
     dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
     members: [
       {
         name: 'EO',
+        koName: 'EO',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000955' },
           { label: 'X(Twitter)', url: 'https://x.com/eo_aui7740' },
@@ -944,6 +958,7 @@ const boothsD: Booth[] = [
       },
       {
         name: 'ナサガシ',
+        koName: '나사가시',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000996' },
           { label: 'X(Twitter)', url: 'https://x.com/nasagashi' },
@@ -957,11 +972,12 @@ const boothsD: Booth[] = [
     row: 'D',
     col: 10,
     name: 'ろいどる！',
-    koPNames: '',
+    koPNames: 'shino',
     dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
     members: [
       {
         name: 'shino',
+        koName: 'shino',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000816' },
           { label: 'X(Twitter)', url: 'https://x.com/shi_no_music' },
@@ -975,11 +991,12 @@ const boothsD: Booth[] = [
     row: 'D',
     col: 11,
     name: 'きさらんどりー',
-    koPNames: '',
+    koPNames: '키사라',
     dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
     members: [
       {
         name: 'きさら',
+        koName: '키사라',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000908' },
           { label: 'X(Twitter)', url: 'https://x.com/kisalaundry' },
@@ -993,11 +1010,12 @@ const boothsD: Booth[] = [
     row: 'D',
     col: 12,
     name: '南ノ店',
-    koPNames: '',
+    koPNames: '미나미노 미나미',
     dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
     members: [
       {
         name: '南ノ南',
+        koName: '미나미노 미나미',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp001016' },
           { label: 'X(Twitter)', url: 'https://x.com/mnmno373' }
