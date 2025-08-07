@@ -7,6 +7,7 @@ import {
   useRef,
   useEffect,
   CSSProperties,
+  type TouchEvent as ReactTouchEvent,
 } from 'react';
 import Image from 'next/image';
 import { ROWS, COLS, rowClasses, BOOTHS, Booth } from './boothData';
@@ -48,6 +49,7 @@ export default function CreatorsMarketClient() {
       { tooltip: HTMLElement; wrapper: HTMLDivElement }
     >()
   );
+  const touchInfo = useRef<{ target: HTMLButtonElement | null; longPress: boolean; timer: number | null }>({ target: null, longPress: false, timer: null });
 
   useLayoutEffect(() => {
     const wrapper = wrapperRef.current;
@@ -153,6 +155,45 @@ export default function CreatorsMarketClient() {
     }, 200);
   };
 
+  function handleTouchMove(e: TouchEvent) {
+    const info = touchInfo.current;
+    if (!info.longPress) return;
+    const touch = e.touches[0];
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    const booth = el?.closest('button.booth') as HTMLButtonElement | null;
+    if (booth !== info.target) {
+      if (info.target) hideTooltip(info.target);
+      info.target = booth;
+      if (booth) showTooltip(booth);
+    }
+    e.preventDefault();
+  }
+
+  const handleTouchStart = (e: ReactTouchEvent<HTMLButtonElement>) => {
+    const info = touchInfo.current;
+    const target = e.currentTarget;
+    info.target = target;
+    info.longPress = false;
+    if (info.timer) window.clearTimeout(info.timer);
+    info.timer = window.setTimeout(() => {
+      info.longPress = true;
+      showTooltip(target);
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    }, 200);
+  };
+
+  const handleTouchEnd = () => {
+    const info = touchInfo.current;
+    if (info.timer) window.clearTimeout(info.timer);
+    if (info.longPress && info.target) {
+      hideTooltip(info.target);
+    }
+    document.removeEventListener('touchmove', handleTouchMove);
+    info.target = null;
+    info.longPress = false;
+    info.timer = null;
+  };
+
   useLayoutEffect(() => {
     function updateGutter() {
       if (wrapperRef.current) {
@@ -237,17 +278,22 @@ export default function CreatorsMarketClient() {
                     }
                     if (booth.span && col !== booth.col) return null;
 
-                    return (
-                      <button
-                        key={booth.id}
-                        className={`booth ${rowClasses[row]}`}
-                        style={booth.span ? { gridColumn: `span ${booth.span}` } : {}}
-                        onClick={() => scrollToBooth(booth.id)}
-                        onMouseEnter={e => showTooltip(e.currentTarget)}
-                        onMouseLeave={e => hideTooltip(e.currentTarget)}
-                      >
-                        {displayBoothId(booth.id)}
-                        <div className="booth-tooltip">
+                      return (
+                        <button
+                          key={booth.id}
+                          className={`booth ${rowClasses[row]}`}
+                          style={booth.span ? { gridColumn: `span ${booth.span}` } : {}}
+                          onClick={() => {
+                            if (!touchInfo.current.longPress) scrollToBooth(booth.id);
+                          }}
+                          onMouseEnter={e => showTooltip(e.currentTarget)}
+                          onMouseLeave={e => hideTooltip(e.currentTarget)}
+                          onTouchStart={handleTouchStart}
+                          onTouchEnd={handleTouchEnd}
+                          onTouchCancel={handleTouchEnd}
+                        >
+                          {displayBoothId(booth.id)}
+                          <div className="booth-tooltip">
                           <div className="tooltip-img-wrapper">
                             <Image
                               src={jacketSrc(booth.id)}
