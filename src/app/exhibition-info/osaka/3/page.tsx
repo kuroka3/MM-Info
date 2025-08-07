@@ -23,7 +23,7 @@ export default function OsakaThirdFloorExhibitionInfoPage() {
             style={{ objectFit: 'contain', borderRadius: '16px' }}
           />
           <a
-            href="/exhibition-info/osaka/creators-market" target='_blank'
+            href="/exhibition-info/osaka/creators-market"
             className="image-map-link"
             style={{
               left: '22.13%',
