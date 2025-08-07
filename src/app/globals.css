@@ -2064,47 +2064,13 @@ body {
   text-decoration: underline;
 }
 
-.row-A {
-  --row-color: 255,71,133;
-  background: rgba(var(--row-color),0.4);
-  border-color: rgba(var(--row-color),0.8);
-}
-
-.row-B {
-  --row-color: 0,122,255;
-  background: rgba(var(--row-color),0.4);
-  border-color: rgba(var(--row-color),0.8);
-}
-
-.row-C {
-  --row-color: 255,149,0;
-  background: rgba(var(--row-color),0.4);
-  border-color: rgba(var(--row-color),0.8);
-}
-
-.row-D {
-  --row-color: 48,209,88;
-  background: rgba(var(--row-color),0.4);
-  border-color: rgba(var(--row-color),0.8);
-}
-
-.row-E {
-  --row-color: 175,82,222;
-  background: rgba(var(--row-color),0.4);
-  border-color: rgba(var(--row-color),0.8);
-}
-
-.row-F {
-  --row-color: 94,92,230;
-  background: rgba(var(--row-color),0.4);
-  border-color: rgba(var(--row-color),0.8);
-}
-
-.row-G {
-  --row-color: 255,45,85;
-  background: rgba(var(--row-color),0.4);
-  border-color: rgba(var(--row-color),0.8);
-}
+.row-A { --row-color: 255,71,133; background: rgba(var(--row-color),0.25); border-color: rgba(var(--row-color),0.8); }
+.row-B { --row-color: 0,122,255; background: rgba(var(--row-color),0.25); border-color: rgba(var(--row-color),0.8); }
+.row-C { --row-color: 255,149,0; background: rgba(var(--row-color),0.25); border-color: rgba(var(--row-color),0.8); }
+.row-D { --row-color: 48,209,88; background: rgba(var(--row-color),0.25); border-color: rgba(var(--row-color),0.8); }
+.row-E { --row-color: 175,82,222; background: rgba(var(--row-color),0.25); border-color: rgba(var(--row-color),0.8); }
+.row-F { --row-color: 94,92,230; background: rgba(var(--row-color),0.25); border-color: rgba(var(--row-color),0.8); }
+.row-G { --row-color: 255,45,85; background: rgba(var(--row-color),0.25); border-color: rgba(var(--row-color),0.8); }
 
 .row-A:hover,
 .row-B:hover,
@@ -2113,5 +2079,5 @@ body {
 .row-E:hover,
 .row-F:hover,
 .row-G:hover {
-  background: rgba(var(--row-color),0.7);
+  background: rgba(var(--row-color),0.45);
 }

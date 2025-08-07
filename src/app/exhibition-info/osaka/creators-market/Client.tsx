@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useLayoutEffect, Fragment, useRef } from 'react';
+import { useState, useLayoutEffect, Fragment, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { ROWS, COLS, rowClasses, BOOTHS, Booth } from './boothData';
 import ScrollTopButton from '@/components/ScrollTopButton';
@@ -24,12 +24,70 @@ export default function CreatorsMarketClient() {
   const rowRefs = useRef<Record<string, HTMLLIElement | null>>({});
   const [gutter, setGutter] = useState(0);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const tooltipRootRef = useRef<HTMLDivElement | null>(null);
+  const tooltipMap = useRef(new Map<HTMLButtonElement, HTMLElement>());
+
+  useEffect(() => {
+    const root = document.createElement('div');
+    root.style.position = 'fixed';
+    root.style.inset = '0';
+    root.style.pointerEvents = 'none';
+    root.style.zIndex = '99999';
+    document.body.appendChild(root);
+    tooltipRootRef.current = root;
+    return () => {
+      document.body.removeChild(root);
+    };
+  }, []);
+
+  const showTooltip = (el: HTMLButtonElement) => {
+    const root = tooltipRootRef.current;
+    if (!root) return;
+    const existing = tooltipMap.current.get(el);
+    let tooltip: HTMLElement;
+    if (existing) {
+      tooltip = existing;
+    } else {
+      const found = el.querySelector('.booth-tooltip');
+      if (!found) return;
+      tooltip = found as HTMLElement;
+      tooltipMap.current.set(el, tooltip);
+    }
+    root.appendChild(tooltip);
+    tooltip.style.position = 'absolute';
+    tooltip.style.opacity = '1';
+    tooltip.style.visibility = 'visible';
+    const rect = el.getBoundingClientRect();
+    let left = rect.left + rect.width / 2;
+    let top = rect.bottom + 4;
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
+    tooltip.style.transform = 'translateX(-50%)';
+    tooltip.style.bottom = 'auto';
+    tooltip.style.right = 'auto';
+
+    requestAnimationFrame(() => {
+      const r = tooltip.getBoundingClientRect();
+      if (r.right > window.innerWidth) left = window.innerWidth - r.width / 2 - 8;
+      if (r.left < 0) left = r.width / 2 + 8;
+      if (r.bottom > window.innerHeight) top = rect.top - r.height - 4;
+      tooltip.style.left = `${left}px`;
+      tooltip.style.top = `${top}px`;
+    });
+  };
+
+  const hideTooltip = (el: HTMLButtonElement) => {
+    const tooltip = tooltipMap.current.get(el);
+    if (!tooltip) return;
+    tooltip.style.opacity = '0';
+    tooltip.style.visibility = 'hidden';
+  };
 
   useLayoutEffect(() => {
     function updateGutter() {
       if (wrapperRef.current) {
         const { width, height } = wrapperRef.current.getBoundingClientRect();
-        setGutter(Math.min(width, height) * 0.12);
+        setGutter(Math.min(width, height) * 0.15);
       }
     }
     updateGutter();
@@ -122,6 +180,8 @@ export default function CreatorsMarketClient() {
                         className={`booth ${rowClasses[row]}`}
                         style={booth.span ? { gridColumn: `span ${booth.span}` } : {}}
                         onClick={() => scrollToBooth(booth.id)}
+                        onMouseEnter={e => showTooltip(e.currentTarget)}
+                        onMouseLeave={e => hideTooltip(e.currentTarget)}
                       >
                         {booth.id}
                         <div className="booth-tooltip">
