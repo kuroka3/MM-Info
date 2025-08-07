@@ -23,7 +23,7 @@ export default function OsakaThirdFloorExhibitionInfoPage() {
             style={{ objectFit: 'contain', borderRadius: '16px' }}
           />
           <a
-            href="https://magicalmirai.com/2025/osaka_exmarket.html" target='_blank' // Temp redirect
+            href="/exhibition-info/osaka/creators-market" target='_blank'
             className="image-map-link"
             style={{
               left: '22.13%',
