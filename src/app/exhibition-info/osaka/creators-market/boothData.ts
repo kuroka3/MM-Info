@@ -263,11 +263,12 @@ const boothsB: Booth[] = [
     row: 'B',
     col: 1,
     name: '雄之助/Yunosuke',
-    koPNames: '',
+    koPNames: '유노스케',
     dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
     members: [
       {
         name: '雄之助',
+        koName: '유노스케',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000760' },
           { label: 'X(Twitter)', url: 'https://x.com/bass_ynk' }
@@ -280,11 +281,12 @@ const boothsB: Booth[] = [
     row: 'B',
     col: 2,
     name: '歩く人のお店',
-    koPNames: '',
+    koPNames: '걷는 사람',
     dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
     members: [
       {
         name: '歩く人',
+        koName: '걷는 사람',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000792' },
           { label: 'X(Twitter)', url: 'https://x.com/tri_angl_e' },
@@ -299,11 +301,12 @@ const boothsB: Booth[] = [
     col: 3,
     span: 2,
     name: 'On Prism Records',
-    koPNames: '',
+    koPNames: '이루카아이스 / 이치노세루포 / Ponchi♪',
     dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
     members: [
       {
         name: 'いるかアイス',
+        koName: '이루카아이스',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000894' },
           { label: 'X(Twitter)', url: 'https://x.com/irucaice' },
@@ -312,6 +315,7 @@ const boothsB: Booth[] = [
       },
       {
         name: '市瀬るぽ',
+        koName: '이치노세루포',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000811' },
           { label: 'X(Twitter)', url: 'https://x.com/LUPO_Reportage' },
@@ -320,6 +324,7 @@ const boothsB: Booth[] = [
       },
       {
         name: 'Ponchi♪',
+        koName: 'Ponchi♪',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000952' },
           { label: 'X(Twitter)', url: 'https://x.com/ponchi_pop' },
@@ -333,11 +338,12 @@ const boothsB: Booth[] = [
     row: 'B',
     col: 5,
     name: 'ただただだいず',
-    koPNames: '',
+    koPNames: 'D-D-Dice(打打だいず)',
     dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
     members: [
       {
         name: '打打だいず',
+        koName: 'D-D-Dice(打打だいず)',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp001107' },
           { label: 'X(Twitter)', url: 'https://x.com/DICE__game' },
@@ -351,11 +357,12 @@ const boothsB: Booth[] = [
     row: 'B',
     col: 6,
     name: 'SPACELECTRO',
-    koPNames: '',
+    koPNames: 'SPACELECTRO',
     dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
     members: [
       {
         name: 'SPACELECTRO',
+        koName: 'SPACELECTRO',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000800' },
           { label: 'WEB', url: 'https://spacelectro.jp' }
@@ -368,11 +375,12 @@ const boothsB: Booth[] = [
     row: 'B',
     col: 7,
     name: 'Twinfield',
-    koPNames: '',
+    koPNames: 'Twinfield',
     dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
     members: [
       {
         name: 'Twinfield',
+        koName: 'Twinfield',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000912' },
           { label: 'X(Twitter)', url: 'https://x.com/twinfieldnex' },
@@ -390,11 +398,12 @@ const boothsB: Booth[] = [
     row: 'B',
     col: 8,
     name: 'Wakuwaku Miwaku',
-    koPNames: '',
+    koPNames: 'Mwk',
     dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
     members: [
       {
         name: 'Mwk',
+        koName: 'Mwk',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000820' },
           { label: 'X(Twitter)', url: 'https://x.com/Mwk_094' },
@@ -408,11 +417,12 @@ const boothsB: Booth[] = [
     row: 'B',
     col: 9,
     name: 'NEXTLIGHT',
-    koPNames: '',
+    koPNames: 'picco / puruni / Mi7s3',
     dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
     members: [
       {
         name: 'picco',
+        koName: 'picco',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000893' },
           { label: 'X(Twitter)', url: 'https://x.com/picco_xxx' }
@@ -420,6 +430,7 @@ const boothsB: Booth[] = [
       },
       {
         name: 'purini',
+        koName: 'purini',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp001111' },
           { label: 'X(Twitter)', url: 'https://x.com/purini_v' }
@@ -427,6 +438,7 @@ const boothsB: Booth[] = [
       },
       {
         name: 'Mi7s3',
+        koName: 'Mi7s3',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp001110' },
           { label: 'X(Twitter)', url: 'https://x.com/minase0402' }
@@ -439,11 +451,12 @@ const boothsB: Booth[] = [
     row: 'B',
     col: 10,
     name: 'Capchii',
-    koPNames: '',
+    koPNames: 'Capchii',
     dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
     members: [
       {
         name: 'Capchii',
+        koName: 'Capchii',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000931' },
           { label: 'X(Twitter)', url: 'https://x.com/capchii' },
@@ -457,11 +470,12 @@ const boothsB: Booth[] = [
     row: 'B',
     col: 11,
     name: '子牛',
-    koPNames: '',
+    koPNames: '코우시',
     dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
     members: [
       {
         name: '子牛',
+        koName: '코우시',
         links: [
           { label: 'X(Twitter)', url: 'https://x.com/COWshi504' },
           { label: 'ニコニコ動画', url: 'https://www.nicovideo.jp/user/87549428/video?sortKey=viewCount&sortOrder=desc' }
@@ -474,11 +488,12 @@ const boothsB: Booth[] = [
     row: 'B',
     col: 12,
     name: 'Omoi',
-    koPNames: '',
+    koPNames: '오모이',
     dates: ['8/9(토)', '8/10(일)', '8/11(월)'],
     members: [
       {
         name: 'Sakurai',
+        koName: '오모이',
         links: [
           { label: 'KARENT', url: 'https://karent.jp/artist/pp000832' },
           { label: 'X(Twitter)', url: 'https://x.com/Omoi3965' }
