@@ -1,3 +1,7 @@
+:root{
+  --text-primary:#f0f0f0;
+}
+
 .day-tabs{
   display:flex;
   justify-content:center;
@@ -8,12 +12,15 @@
   font-size:1.15rem;
   padding:.6rem 1.4rem;
   border-radius:9999px;
-  border:none;
+  border:1px solid var(--glass-border);
   background:var(--glass-bg);
-  color:#fff;
+  color:#f0f0f0;
   backdrop-filter:blur(10px);
   cursor:pointer;
-  transition:background .2s;
+  transition:background .2s, box-shadow .2s;
+}
+.day-tabs button:hover{
+  box-shadow:0 0 8px rgba(240,240,240,.6);
 }
 .day-tabs button.active{
   background:rgba(255,255,255,.25);
@@ -65,7 +72,7 @@
   padding: 0;
   font-size: clamp(.5rem, 5vw, 1.75rem);
   font-weight: bold;
-  color: white;
+  color: #f0f0f0;
 }
 
 .entrance-label {
@@ -76,7 +83,7 @@
   z-index: 10000;
   font-size: clamp(.5rem, 5vw, 1.75rem);
   font-weight: bold;
-  color: white;
+  color: #f0f0f0;
   transition: bottom .3s ease, right .3s ease;
 }
 
@@ -113,7 +120,7 @@
   padding:.55rem .2rem;
   border-radius:8px;
   text-align:center;
-  color:#fff;
+  color: #f0f0f0;
   cursor:pointer;
   background:rgba(var(--row-color),0.25);
   border:1px solid rgba(var(--row-color),0.5);
@@ -148,7 +155,7 @@
   padding:.7rem;
   border-radius:12px;
   background:rgba(255,255,255,.15);
-  color:#fff;
+  color: #f0f0f0;
   border:1px solid var(--glass-border);
   backdrop-filter:blur(8px);
   opacity:0;
@@ -200,7 +207,7 @@
   backdrop-filter:blur(10px);
   border-width:2px;
   border-style:solid;
-  color:#fff;
+  color: #f0f0f0;
   cursor:default;
   pointer-events:none;
   padding:.75rem 1rem;
@@ -291,7 +298,7 @@
   align-items:center;
   gap:.2rem;
   font-size:.78rem;
-  color:#fff;
+  color: #f0f0f0;
   text-decoration:none;
 }
 
@@ -304,11 +311,14 @@
 .row-nav-btn{
   width:80px;
   height:40px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   border-radius:8px;
   border-width:1px;
   border-style:solid;
   font-weight:700;
-  color:#fff;
+  color:#f0f0f0;
   backdrop-filter:blur(6px);
   cursor:pointer;
   transition:background-color .2s, filter .2s, box-shadow .2s;
@@ -325,7 +335,7 @@
   margin-right: auto;
 }
 button.booth {
-  opacity: 0.6;
+  opacity: 1;
 }
 @media (max-width:768px){
   .row-nav{
