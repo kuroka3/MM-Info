@@ -2,10 +2,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 const menu = [
-  { href: '/setlist', label: '세트리스트', icon: '/list.svg' },
-  { href: '/concert-guide', label: '공연 가이드', icon: '/ticket.svg' },
-  { href: '/exhibition-info', label: '기획전 정보', icon: '/info.svg' },
-  { href: '/call-guide', label: '콜 가이드', icon: '/megaphone.svg' },
+  { href: '/setlist', label: '세트리스트', icon: '/images/list.svg' },
+  { href: '/concert-guide', label: '공연 가이드', icon: '/images/ticket.svg' },
+  { href: '/exhibition-info', label: '기획전 정보', icon: '/images/info.svg' },
+  { href: '/call-guide', label: '콜 가이드', icon: '/images/megaphone.svg' },
 ];
 
 export default function Home() {

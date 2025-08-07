@@ -104,7 +104,7 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
                   rel="noopener noreferrer"
                 >
                   <Image
-                    src="/spotify.svg"
+                    src="/images/spotify.svg"
                     alt="Spotify"
                     width={24}
                     height={24}
@@ -118,7 +118,7 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
                   rel="noopener noreferrer"
                 >
                   <Image
-                    src="/youtube.svg"
+                    src="/images/youtube.svg"
                     alt="YouTube"
                     width={24}
                     height={24}
