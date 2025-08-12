@@ -44,6 +44,9 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
     const flipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const boothRefs = useRef<Record<string, HTMLButtonElement | null>>({});
     const wrapperRef = useRef<HTMLDivElement | null>(null);
+    const rotatorRef = useRef<HTMLDivElement | null>(null);
+    const raf = useRef<number | null>(null);
+
     const tooltipRootRef = useRef<HTMLDivElement | null>(null);
     const tooltipMap = useRef(
       new Map<
@@ -59,6 +62,69 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
     const activeTooltip = useRef<HTMLButtonElement | null>(null);
     const disableScrollHide = useRef(false);
     const [gutter, setGutter] = useState(0);
+
+    useLayoutEffect(() => {
+      const wrapper = wrapperRef.current;
+      const rotator = rotatorRef.current;
+      if (!wrapper || !rotator) return;
+
+      const applyRotation = () => {
+        const vv = window.visualViewport;
+        const vw = vv?.width ?? window.innerWidth;
+        const vh = vv?.height ?? window.innerHeight;
+        const isNarrow = vw <= 480;
+
+        if (isNarrow) {
+          const container = (wrapper.closest('.cm-main') as HTMLElement) || document.body;
+          const ww = container.clientWidth || vw;
+          const ratio = vh / vw;
+          const margin = ww * 0.08;
+
+          wrapper.style.position = 'relative';
+          wrapper.style.left = '';
+          wrapper.style.top = '';
+          wrapper.style.transform = '';
+          wrapper.style.margin = '0 auto';
+          wrapper.style.width = `${ww}px`;
+          wrapper.style.height = `${ww * ratio}px`;
+          wrapper.style.padding = `${margin}px`;
+          wrapper.style.overflow = 'hidden';
+
+          rotator.style.position = 'absolute';
+          rotator.style.left = '50%';
+          rotator.style.top = '50%';
+          rotator.style.width = `${ww * ratio - margin * 2}px`;
+          rotator.style.height = `${ww - margin * 2}px`;
+          rotator.style.transformOrigin = 'center';
+          rotator.style.transform = 'translate(-50%, -50%) rotate(90deg)';
+          rotator.setAttribute('data-rotated', '1');
+        } else {
+          wrapper.removeAttribute('style');
+          rotator.removeAttribute('style');
+          rotator.removeAttribute('data-rotated');
+        }
+      };
+
+      const schedule = () => {
+        if (raf.current) cancelAnimationFrame(raf.current);
+        raf.current = requestAnimationFrame(applyRotation);
+      };
+
+      schedule();
+
+      window.addEventListener('resize', schedule);
+      window.addEventListener('orientationchange', schedule);
+      window.visualViewport?.addEventListener('resize', schedule);
+      window.addEventListener('pageshow', schedule);
+
+      return () => {
+        if (raf.current) cancelAnimationFrame(raf.current);
+        window.removeEventListener('resize', schedule);
+        window.removeEventListener('orientationchange', schedule);
+        window.visualViewport?.removeEventListener('resize', schedule);
+        window.removeEventListener('pageshow', schedule);
+      };
+    }, []);
 
     useLayoutEffect(() => {
       function updateGutter() {
@@ -280,7 +346,6 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
     };
 
     const handleBoothClick = (e: ReactMouseEvent<HTMLButtonElement>, id: string) => {
-      // Fallback for keyboard interaction or browsers without Pointer Events
       if (e.detail === 0 || !('PointerEvent' in window)) {
         handleBoothActivation(e.currentTarget, id, false);
       }
@@ -311,7 +376,6 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
         }
       };
     }, [selectedDay, prevDay]);
-
 
     const scrollToMapBooth = async (id: string) => {
       const el = boothRefs.current[id];
@@ -374,93 +438,105 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
         };
       }
       if (booth.span && col !== booth.col) return { node: null };
-      const style = booth.span ? { gridColumn: `span ${booth.span}` } : undefined;
-      if (interactive) {
+        const style = booth.span ? { gridColumn: `span ${booth.span}` } : undefined;
+        const displayId = displayBoothId(booth.id);
+        const [labelRow, labelCol] = displayId.split('-');
+        const labelNode = (
+          <span className="booth-label">
+            <span>{labelRow}-</span>
+            <span>{labelCol}</span>
+          </span>
+        );
+        if (interactive) {
+          return {
+            node: (
+              <button
+                ref={el => {
+                  boothRefs.current[booth.id] = el;
+                }}
+                className={`booth ${rowClasses[row]} ${booth.span && booth.span > 1 ? 'booth-wide' : ''}`}
+                data-booth-id={booth.id}
+                onPointerUp={e => handleBoothPointerUp(e, booth.id)}
+                onClick={e => handleBoothClick(e, booth.id)}
+                onMouseEnter={e => showTooltip(e.currentTarget)}
+                onMouseLeave={e => {
+                  const el = e.currentTarget;
+                  setTimeout(() => {
+                    if (!el.matches(':hover')) hideTooltip(el);
+                  }, 50);
+                }}
+              >
+                {labelNode}
+                <div className="booth-tooltip">
+                  <div className="tooltip-img-wrapper">
+                    <Image
+                      src={jacketSrc(booth.id)}
+                      alt={booth.name}
+                      width={120}
+                      height={120}
+                      className="tooltip-img"
+                    />
+                  </div>
+                  <p className="tooltip-title">{booth.koPNames || booth.name}</p>
+                </div>
+              </button>
+            ),
+            style,
+          };
+        }
         return {
           node: (
-            <button
-              ref={el => {
-                boothRefs.current[booth.id] = el;
-              }}
-              className={`booth ${rowClasses[row]}`}
-              data-booth-id={booth.id}
-              onPointerUp={e => handleBoothPointerUp(e, booth.id)}
-              onClick={e => handleBoothClick(e, booth.id)}
-              onMouseEnter={e => showTooltip(e.currentTarget)}
-              onMouseLeave={e => {
-                const el = e.currentTarget;
-                setTimeout(() => {
-                  if (!el.matches(':hover')) hideTooltip(el);
-                }, 50);
-              }}
-            >
-              {displayBoothId(booth.id)}
-              <div className="booth-tooltip">
-                <div className="tooltip-img-wrapper">
-                  <Image
-                    src={jacketSrc(booth.id)}
-                    alt={booth.name}
-                    width={120}
-                    height={120}
-                    className="tooltip-img"
-                  />
-                </div>
-                <p className="tooltip-title">{booth.koPNames || booth.name}</p>
-              </div>
-            </button>
+            <div className={`booth ${rowClasses[row]} ${booth.span && booth.span > 1 ? 'booth-wide' : ''}`}>
+              {labelNode}
+            </div>
           ),
           style,
         };
-      }
-      return {
-        node: (
-          <div className={`booth ${rowClasses[row]}`}>{displayBoothId(booth.id)}</div>
-        ),
-        style,
-      };
     };
 
     return (
       <div className="cm-map-wrapper" ref={wrapperRef}>
         <div className="entrance-label">입구</div>
-        <div className="cm-grid">
-          {ROWS.map(row => (
-            <Fragment key={row}>
-              {COLS_REVERSED.map(col => {
-                if (row === 'A' && col === 12) {
-                  return (
-                    <div key="exit-cell" className="exit-label-cell">
-                      출구
-                    </div>
-                  );
-                }
-                const key = `${row}-${col}`;
-                const flipping = flippedCells.has(key);
-                const front = renderCell(row, col, prevDay, false);
-                const back = renderCell(row, col, selectedDay, true);
-                if (!front.node && !back.node) return null;
-                const style = back.style || front.style;
-                if (flipping && front.node && back.node) {
-                  return (
-                    <div key={key} className="flip-card flipping" style={style}>
-                      <div className="flip-inner">
-                        <div className="flip-front">{front.node}</div>
-                        <div className="flip-back">{back.node}</div>
+        <div className="map-inner" ref={rotatorRef}>
+          <div className="cm-grid">
+            {ROWS.map(row => (
+              <Fragment key={row}>
+                {COLS_REVERSED.map(col => {
+                  if (row === 'A' && col === 12) {
+                    return (
+                      <div key="exit-cell" className="exit-label-cell">
+                        출구
                       </div>
+                    );
+                  }
+                  const key = `${row}-${col}`;
+                  const flipping = flippedCells.has(key);
+                  const front = renderCell(row, col, prevDay, false);
+                  const back = renderCell(row, col, selectedDay, true);
+                  if (!front.node && !back.node) return null;
+                  const style = back.style || front.style;
+                  if (flipping && front.node && back.node) {
+                    return (
+                      <div key={key} className="flip-card flipping" style={style}>
+                        <div className="flip-inner">
+                          <div className="flip-front">{front.node}</div>
+                          <div className="flip-back">{back.node}</div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  const content = back.node ?? front.node;
+                  if (!content) return null;
+                  return (
+                    <div key={key} style={style}>
+                      {content}
                     </div>
                   );
-                }
-                const content = back.node ?? front.node;
-                if (!content) return null;
-                return (
-                  <div key={key} style={style}>
-                    {content}
-                  </div>
-                );
-              })}
-              {(row === 'A' || row === 'C' || row === 'E') && <div className="walk-gap" />}
-            </Fragment>
-          ))}
+                })}
+                {(row === 'A' || row === 'C' || row === 'E') && <div className="walk-gap" />}
+              </Fragment>
+            ))}
+          </div>
         </div>
         <div
           className="bottom-left-mask-box"
@@ -471,7 +547,8 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
         />
       </div>
     );
-  });
+  },
+);
 
 BoothMap.displayName = 'BoothMap';
 
