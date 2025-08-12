@@ -469,3 +469,26 @@ button.booth {
     transform-origin:center;
   }
 }
+
+@media (max-width:480px) and (orientation:portrait){
+  .cm-section.map-section{
+    width:100%;
+    overflow:hidden;
+  }
+  .cm-map-wrapper{
+    width:100%;
+    max-width:100%;
+    box-sizing:border-box;
+  }
+  .cm-map-wrapper::before,
+  .cm-map-wrapper::after{
+    content:none;
+  }
+  .cm-map-wrapper .entrance-label,
+  .cm-map-wrapper .exit-label-cell{
+    display:none;
+  }
+  .bottom-left-mask-box::after{
+    content:none;
+  }
+}
