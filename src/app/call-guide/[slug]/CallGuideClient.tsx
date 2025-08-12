@@ -63,8 +63,12 @@ export default function CallGuideClient({ song, prevSong, nextSong }: CallGuideC
   const [callPositions, setCallPositions] = useState<number[]>([]);
   const autoScrollRef = useRef(true);
   const programmaticScrollRef = useRef(false);
+  const programmaticScrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const seekingRef = useRef(false);
   const [activeLine, setActiveLine] = useState(0);
+  const activeLineRef = useRef(0);
+  const pendingSeekRef = useRef<number | null>(null);
+  const [skipGap, setSkipGap] = useState<{ target: number; showAt: number; end: number } | null>(null);
 
   const interpolateTokens = (tokens: Token[]): Token[] => {
     const res = tokens.map((t) => ({ ...t }));
@@ -121,7 +125,41 @@ export default function CallGuideClient({ song, prevSong, nextSong }: CallGuideC
         call: line.call,
       };
     });
-  }, [song]);
+    }, [song]);
+
+  const gaps = useMemo(() => {
+    const res: { start: number; showAt: number; end: number; target: number }[] = [];
+    const firstStart = lyrics[0]?.jp[0]?.time ?? 0;
+    if (firstStart >= 10) {
+      res.push({ start: 0, showAt: 2, end: firstStart, target: firstStart });
+    }
+    for (let i = 0; i < lyrics.length - 1; i++) {
+      const line = lyrics[i];
+      const nextLine = lyrics[i + 1];
+      const end = Math.max(
+        line.jp[line.jp.length - 1]?.time ?? 0,
+        line.pron[line.pron.length - 1]?.time ?? 0,
+        line.ko[line.ko.length - 1]?.time ?? 0
+      );
+      const nextStart = nextLine.jp[0]?.time ?? 0;
+      if (nextStart - end >= 10) {
+        res.push({ start: end, showAt: end + 1, end: nextStart, target: nextStart });
+      }
+    }
+    return res;
+  }, [lyrics]);
+
+  const scrollToLine = useCallback((idx: number) => {
+    const el = lineRefs.current[idx];
+    if (el) {
+      programmaticScrollRef.current = true;
+      if (programmaticScrollTimeout.current) clearTimeout(programmaticScrollTimeout.current);
+      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      programmaticScrollTimeout.current = setTimeout(() => {
+        programmaticScrollRef.current = false;
+      }, 500);
+    }
+  }, []);
 
   useEffect(() => {
     if (!song) return;
@@ -131,7 +169,15 @@ export default function CallGuideClient({ song, prevSong, nextSong }: CallGuideC
 
     const update = () => {
       if (seekingRef.current) return;
-      const t = playerRef.current?.getCurrentTime?.() ?? 0;
+      let t = playerRef.current?.getCurrentTime?.() ?? 0;
+      if (pendingSeekRef.current != null) {
+        if (Math.abs(t - pendingSeekRef.current) > 0.3) {
+          playerRef.current?.seekTo(pendingSeekRef.current, true);
+          t = pendingSeekRef.current;
+        } else {
+          pendingSeekRef.current = null;
+        }
+      }
       currentTimeRef.current = t;
       setCurrentTime(t);
     };
@@ -154,9 +200,21 @@ export default function CallGuideClient({ song, prevSong, nextSong }: CallGuideC
           onReady: (e: { target: YTPlayer }) => {
             playerRef.current = e.target;
             setDuration(e.target.getDuration?.() ?? 0);
+            autoScrollRef.current = true;
+            scrollToLine(activeLineRef.current);
+            if (pendingSeekRef.current != null) {
+              playerRef.current?.seekTo(pendingSeekRef.current, true);
+            }
           },
           onStateChange: (e: { data: number }) => {
             setIsPlaying(e.data === 1);
+            if (e.data === 1 || e.data === 3) {
+              autoScrollRef.current = true;
+              scrollToLine(activeLineRef.current);
+              if (pendingSeekRef.current != null) {
+                playerRef.current?.seekTo(pendingSeekRef.current, true);
+              }
+            }
           },
         },
       }) as unknown as YTPlayer;
@@ -182,7 +240,7 @@ export default function CallGuideClient({ song, prevSong, nextSong }: CallGuideC
       playerRef.current?.destroy?.();
       playerRef.current = null;
     };
-  }, [song]);
+  }, [song, scrollToLine]);
 
   useEffect(() => {
     let frame: number;
@@ -211,6 +269,10 @@ export default function CallGuideClient({ song, prevSong, nextSong }: CallGuideC
     if (idx !== activeLine) setActiveLine(idx);
   }, [currentTime, displayTime, timeToLine, activeLine]);
 
+  useEffect(() => {
+    activeLineRef.current = activeLine;
+  }, [activeLine]);
+
   const computeCallPositions = useCallback(() => {
     setCallPositions(
       lyrics.map((line, idx) => {
@@ -232,16 +294,11 @@ export default function CallGuideClient({ song, prevSong, nextSong }: CallGuideC
     return () => window.removeEventListener('resize', computeCallPositions);
   }, [computeCallPositions]);
 
-  const scrollToLine = useCallback((idx: number) => {
-    const el = lineRefs.current[idx];
-    if (el) {
-      programmaticScrollRef.current = true;
-      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      setTimeout(() => {
-        programmaticScrollRef.current = false;
-      }, 500);
-    }
-  }, []);
+  useEffect(() => {
+    const gap = gaps.find((g) => currentTime >= g.start && currentTime < g.end);
+    if (gap && currentTime >= gap.showAt) setSkipGap(gap);
+    else setSkipGap(null);
+  }, [currentTime, gaps]);
 
   useEffect(() => {
     if (!autoScrollRef.current) return;
@@ -261,6 +318,7 @@ export default function CallGuideClient({ song, prevSong, nextSong }: CallGuideC
         e.preventDefault();
         const delta = e.code === 'ArrowLeft' ? -5 : 5;
         const t = Math.max(0, Math.min((playerRef.current.getDuration?.() ?? 0), currentTime + delta));
+        pendingSeekRef.current = t;
         playerRef.current.seekTo?.(t, true);
         currentTimeRef.current = t;
         setCurrentTime(t);
@@ -330,6 +388,7 @@ export default function CallGuideClient({ song, prevSong, nextSong }: CallGuideC
                 }}
                 onClick={() => {
                   const t = line.jp[0]?.time ?? 0;
+                  pendingSeekRef.current = t;
                   playerRef.current?.seekTo(t, true);
                   currentTimeRef.current = t;
                   setCurrentTime(t);
@@ -386,12 +445,31 @@ export default function CallGuideClient({ song, prevSong, nextSong }: CallGuideC
             ))}
           </div>
         </section>
-
         <div className="player-controls">
-          <input
-            suppressHydrationWarning
-            className="player-seek"
-            type="range"
+          <div className="seek-container">
+            {skipGap && (
+              <button
+                className="skip-button glass-effect"
+                onClick={() => {
+                  const t = skipGap.target;
+                  pendingSeekRef.current = t;
+                  playerRef.current?.seekTo(t, true);
+                  currentTimeRef.current = t;
+                  setCurrentTime(t);
+                  setDisplayTime(t);
+                  autoScrollRef.current = true;
+                  const idx = timeToLine(t);
+                  scrollToLine(idx);
+                  setSkipGap(null);
+                }}
+              >
+                간주 스킵
+              </button>
+            )}
+            <input
+              suppressHydrationWarning
+              className="player-seek"
+              type="range"
             min={0}
             max={duration || 0}
             step={0.1}
@@ -402,6 +480,7 @@ export default function CallGuideClient({ song, prevSong, nextSong }: CallGuideC
             }}
             onChange={(e) => {
               const t = Number(e.target.value);
+              pendingSeekRef.current = t;
               playerRef.current?.seekTo(t, true);
               currentTimeRef.current = t;
               setCurrentTime(t);
@@ -409,6 +488,7 @@ export default function CallGuideClient({ song, prevSong, nextSong }: CallGuideC
             }}
             onPointerUp={(e) => {
               const t = Number(e.currentTarget.value);
+              pendingSeekRef.current = t;
               playerRef.current?.seekTo(t, true);
               currentTimeRef.current = t;
               setCurrentTime(t);
@@ -422,6 +502,7 @@ export default function CallGuideClient({ song, prevSong, nextSong }: CallGuideC
             }}
             onPointerCancel={(e) => {
               const t = Number(e.currentTarget.value);
+              pendingSeekRef.current = t;
               playerRef.current?.seekTo(t, true);
               currentTimeRef.current = t;
               setCurrentTime(t);
@@ -434,9 +515,11 @@ export default function CallGuideClient({ song, prevSong, nextSong }: CallGuideC
               }, 200);
             }}
             style={{
-              background: `linear-gradient(to right, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.8) ${progress}%, rgba(255,255,255,0.3) ${progress}%, rgba(255,255,255,0.3) 100%)`,
+              background: `linear-gradient(to right, #555 0%, #555 ${progress}%, rgba(255,255,255,0.15) ${progress}%, rgba(255,255,255,0.15) 100%)`,
+              boxShadow: progress > 0 ? '0 0 8px #39c5bb' : undefined,
             }}
           />
+          </div>
           <div className="player-buttons">
             <button
               className="control-button"
