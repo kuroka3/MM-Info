@@ -1328,11 +1328,35 @@ body {
   border-radius: 24px;
   backdrop-filter: blur(20px);
   transition: box-shadow 0.3s ease, transform 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .call-item:hover {
   box-shadow: 0 0 10px var(--accent-blue);
   transform: scale(1.02);
+}
+
+.call-item.higawari {
+  background: linear-gradient(135deg, rgba(0, 122, 255, 0.1) 0%, rgba(0, 122, 255, 0.05) 100%);
+  border-color: rgba(0, 122, 255, 0.3);
+}
+
+.call-item.higawari:hover {
+  background: linear-gradient(135deg, rgba(0, 122, 255, 0.15) 0%, rgba(0, 122, 255, 0.08) 100%);
+  border-color: rgba(0, 122, 255, 0.5);
+  box-shadow: 0 16px 48px rgba(0, 122, 255, 0.2);
+}
+
+.call-item.locationgawari {
+  background: linear-gradient(135deg, rgba(48, 209, 88, 0.1) 0%, rgba(48, 209, 88, 0.05) 100%);
+  border-color: rgba(48, 209, 88, 0.3);
+}
+
+.call-item.locationgawari:hover {
+  background: linear-gradient(135deg, rgba(48, 209, 88, 0.15) 0%, rgba(48, 209, 88, 0.08) 100%);
+  border-color: rgba(48, 209, 88, 0.5);
+  box-shadow: 0 16px 48px rgba(48, 209, 88, 0.2);
 }
 
 .call-info-link {
