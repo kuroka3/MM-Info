@@ -1,6 +1,6 @@
 'use client';
 
-import { DAYS } from '../constants';
+import { DAYS } from '@/data/exhibition/osaka/creators-market/constants';
 
 interface DayTabsProps {
   selectedDay: (typeof DAYS)[number]['value'];

@@ -4,8 +4,8 @@ import { useState, useRef } from 'react';
 import DayTabs from './components/DayTabs';
 import BoothMap, { BoothMapHandle } from './components/BoothMap';
 import BoothList, { BoothListHandle } from './components/BoothList';
-import { DAYS } from './constants';
-import { ROWS, rowClasses } from './boothData';
+import { DAYS } from '@/data/exhibition/osaka/creators-market/constants';
+import { ROWS, rowClasses } from '@/data/exhibition/osaka/creators-market/booths';
 import ScrollTopButton from '@/components/ScrollTopButton';
 
 export default function CreatorsMarketClient() {

@@ -13,8 +13,9 @@ import {
   type TouchEvent as ReactTouchEvent,
 } from 'react';
 import Image from 'next/image';
-import { ROWS, COLS, rowClasses, BOOTHS, Booth } from '../boothData';
-import { jacketSrc, displayBoothId, DAYS } from '../constants';
+import type { Booth } from '@/types/booth';
+import { ROWS, COLS, rowClasses, BOOTHS } from '@/data/exhibition/osaka/creators-market/booths';
+import { jacketSrc, displayBoothId, DAYS } from '@/data/exhibition/osaka/creators-market/constants';
 import { scrollToPosition } from '@/lib/scroll';
 
 interface BoothMapProps {

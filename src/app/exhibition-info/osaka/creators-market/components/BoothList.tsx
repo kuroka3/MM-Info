@@ -9,8 +9,14 @@ import {
   CSSProperties,
 } from 'react';
 import Image from 'next/image';
-import { ROWS, rowClasses, BOOTHS } from '../boothData';
-import { jacketSrc, displayBoothId, rowColors, dayClass, DAYS } from '../constants';
+import { ROWS, rowClasses, BOOTHS } from '@/data/exhibition/osaka/creators-market/booths';
+import {
+  jacketSrc,
+  displayBoothId,
+  rowColors,
+  dayClass,
+  DAYS,
+} from '@/data/exhibition/osaka/creators-market/constants';
 import { scrollToPosition } from '@/lib/scroll';
 
 interface BoothListProps {
