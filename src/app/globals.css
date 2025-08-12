@@ -1556,11 +1556,31 @@ body {
   z-index: 1000;
 }
 
-.player-seek {
+
+.seek-container {
+  position: relative;
   width: 80vw;
+}
+
+.skip-button {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 0.5rem);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.3);
+  border: 1px solid var(--glass-border);
+  color: #000;
+  backdrop-filter: blur(8px);
+  font-size: 0.9rem;
+  z-index: 1001;
+}
+
+.player-seek {
+  width: 100%;
   -webkit-appearance: none;
   appearance: none;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.15);
   border: 1px solid var(--glass-border);
   height: 8px;
   border-radius: 8px;
@@ -1588,8 +1608,9 @@ body {
   transition: box-shadow 0.3s ease;
 }
 
+
 .player-seek:hover {
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 8px #39c5bb;
 }
 
 .player-seek:hover::-webkit-slider-thumb {
