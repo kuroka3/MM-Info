@@ -61,7 +61,7 @@ const BoothList = forwardRef<BoothListHandle, BoothListProps>(
     const rect = el.getBoundingClientRect();
     const elementCenterY = rect.top + window.scrollY + rect.height / 2;
     const targetScroll = elementCenterY - window.innerHeight / 2;
-    scrollToPosition(targetScroll, 400);
+    void scrollToPosition(targetScroll, 400);
     el.classList.add('highlight');
     setTimeout(() => {
       el.classList.remove('highlight');
@@ -73,7 +73,7 @@ const BoothList = forwardRef<BoothListHandle, BoothListProps>(
     if (!el) return;
     const offset = 80;
     const top = el.getBoundingClientRect().top + window.scrollY - offset;
-    scrollToPosition(top, 400);
+    void scrollToPosition(top, 400);
     el.classList.add('highlight');
     setTimeout(() => el.classList.remove('highlight'), 3000);
   };
@@ -106,12 +106,14 @@ const BoothList = forwardRef<BoothListHandle, BoothListProps>(
                     listRefs.current[booth.id] = el;
                   }}
                   className="booth-item"
+                  data-booth-id={booth.id}
                   style={{
                     '--row-color': rowColors[booth.row],
                   } as CSSProperties}
                   onClick={e => {
                     if ((e.target as HTMLElement).closest('.member-links')) return;
-                    onBoothClick(booth.id);
+                    const id = (e.currentTarget as HTMLLIElement).dataset.boothId!;
+                    onBoothClick(id);
                   }}
                 >
                   <Image

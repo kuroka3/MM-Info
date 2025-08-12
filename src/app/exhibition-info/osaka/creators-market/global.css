@@ -165,6 +165,9 @@
   box-shadow:0 0 0 6px rgba(var(--row-color),1);
   animation:booth-highlight 5s ease-out;
 }
+.booth.touch-glow{
+  box-shadow:0 0 0 6px rgba(var(--row-color),1),0 0 12px rgba(var(--row-color),0.8);
+}
 @keyframes booth-highlight{
   to{box-shadow:0 0 0 0 rgba(var(--row-color),0);}
 }
@@ -228,6 +231,9 @@
   gap:.25rem;
   min-width:auto;
   pointer-events:none;
+}
+.booth-tooltip.touch-glow{
+  box-shadow:0 0 0 2px rgba(var(--row-color),0.9),0 0 12px rgba(var(--row-color),0.8);
 }
 .tooltip-img-wrapper{
   position:relative;

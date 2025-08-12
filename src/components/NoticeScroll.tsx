@@ -16,7 +16,7 @@ export default function NoticeScroll() {
       event.preventDefault();
       const offset = 80;
       const top = element.getBoundingClientRect().top + window.scrollY - offset;
-      scrollToPosition(top, 400);
+      void scrollToPosition(top, 400);
       history.pushState(null, '', href);
       const box = element.querySelector('.notice-box') as HTMLElement | null;
       box?.classList.add('highlight');

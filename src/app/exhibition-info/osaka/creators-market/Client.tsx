@@ -14,9 +14,21 @@ export default function CreatorsMarketClient() {
   );
   const mapRef = useRef<BoothMapHandle>(null);
   const listRef = useRef<BoothListHandle>(null);
+  const [scrollLock, setScrollLock] = useState(false);
+  const lockTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const lockScroll = (duration = 600) => {
+    setScrollLock(true);
+    if (lockTimer.current) clearTimeout(lockTimer.current);
+    lockTimer.current = setTimeout(() => {
+      setScrollLock(false);
+      lockTimer.current = null;
+    }, duration);
+  };
 
   return (
     <main>
+      {scrollLock && <div className="scroll-blocker" />}
       <header className="header">
         <div className="container header-content">
           <h1 className="header-title">Creators Market Map</h1>
@@ -31,7 +43,10 @@ export default function CreatorsMarketClient() {
           <BoothMap
             ref={mapRef}
             selectedDay={selectedDay}
-            onBoothClick={id => listRef.current?.scrollToBooth(id)}
+            onBoothClick={id => {
+              lockScroll();
+              listRef.current?.scrollToBooth(id);
+            }}
           />
         </section>
 
@@ -40,7 +55,10 @@ export default function CreatorsMarketClient() {
             <button
               key={r}
               className={`row-nav-btn ${rowClasses[r]}`}
-              onClick={() => listRef.current?.scrollToRow(r)}
+              onClick={() => {
+                lockScroll();
+                listRef.current?.scrollToRow(r);
+              }}
             >
               {r}열
             </button>
@@ -51,7 +69,10 @@ export default function CreatorsMarketClient() {
           <BoothList
             ref={listRef}
             selectedDay={selectedDay}
-            onBoothClick={id => mapRef.current?.scrollToMapBooth(id)}
+            onBoothClick={id => {
+              lockScroll();
+              mapRef.current?.scrollToMapBooth(id);
+            }}
           />
         </section>
       </div>
