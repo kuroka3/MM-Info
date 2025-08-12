@@ -446,7 +446,7 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
               ref={el => {
                 boothRefs.current[booth.id] = el;
               }}
-              className={`booth ${rowClasses[row]}`}
+              className={`booth ${rowClasses[row]} ${booth.span && booth.span > 1 ? 'booth-wide' : ''}`}
               data-booth-id={booth.id}
               onPointerUp={e => handleBoothPointerUp(e, booth.id)}
               onClick={e => handleBoothClick(e, booth.id)}
@@ -478,7 +478,7 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
       }
       return {
         node: (
-          <div className={`booth ${rowClasses[row]}`}>
+          <div className={`booth ${rowClasses[row]} ${booth.span && booth.span > 1 ? 'booth-wide' : ''}`}>
             <span className="booth-label">{displayBoothId(booth.id)}</span>
           </div>
         ),

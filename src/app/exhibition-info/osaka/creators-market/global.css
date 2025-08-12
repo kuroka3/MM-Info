@@ -436,6 +436,12 @@ button.booth {
   opacity: 1;
   z-index: 10000;
 }
+
+.booth:not(.booth-wide) .booth-label {
+  display: inline-block;
+  transform: rotate(0deg);
+  transform-origin: center;
+}
 @media (max-width:768px){
   .row-nav{
     margin-top:5rem;
@@ -462,11 +468,13 @@ button.booth {
     height:100%;
     grid-auto-rows:1fr;
   }
-  .cm-grid .booth,
   .cm-grid .booth-empty,
   .cm-grid .exit-label-cell{
     transform:rotate(-90deg);
     transform-origin:center;
+  }
+  .cm-grid .booth:not(.booth-wide) .booth-label{
+    display:inline-block;
   }
 }
 
@@ -490,5 +498,9 @@ button.booth {
   }
   .bottom-left-mask-box::after{
     content:none;
+  }
+  .cm-grid .booth:not(.booth-wide) .booth-label{
+    transform:rotate(-90deg);
+    transform-origin:center;
   }
 }
