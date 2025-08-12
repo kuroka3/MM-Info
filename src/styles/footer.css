@@ -1,0 +1,79 @@
+/* Footer Styles */
+.footer {
+  margin-top: 120px;
+  padding: 60px 0 80px;
+  border-top: 1px solid var(--border);
+  position: relative;
+  background: none;
+}
+
+.footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-blue), var(--accent-green), transparent);
+  border-radius: 1px;
+}
+
+.footer-nav-list {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-nav-list li {
+  /* Provide vertical space so hovered links don't overlap */
+  padding: 4px 0;
+}
+
+.footer-nav-list a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 16px 24px;
+  border-radius: 16px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  display: block;
+}
+
+.footer-nav-list a::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-green) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.footer-nav-list a span {
+  position: relative;
+  z-index: 1;
+}
+
+.footer-nav-list a:hover {
+  color: var(--text-primary);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 122, 255, 0.3);
+  border-color: var(--accent-blue);
+}
+
+.footer-nav-list a:hover::before {
+  opacity: 0.1;
+}
