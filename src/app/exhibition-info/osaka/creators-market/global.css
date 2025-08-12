@@ -437,7 +437,7 @@ button.booth {
   z-index: 10000;
 }
 
-.booth:not(.booth-wide) .booth-label {
+.booth .booth-label {
   display: inline-block;
   transform: rotate(0deg);
   transform-origin: center;
@@ -473,8 +473,11 @@ button.booth {
     transform:rotate(-90deg);
     transform-origin:center;
   }
-  .cm-grid .booth:not(.booth-wide) .booth-label{
+  .cm-grid .booth .booth-label{
     display:inline-block;
+  }
+  .cm-grid .booth .booth-label span{
+    display:block;
   }
 }
 
@@ -499,7 +502,7 @@ button.booth {
   .bottom-left-mask-box::after{
     content:none;
   }
-  .cm-grid .booth:not(.booth-wide) .booth-label{
+  .cm-grid .booth .booth-label{
     transform:rotate(-90deg);
     transform-origin:center;
   }

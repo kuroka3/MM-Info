@@ -438,52 +438,60 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
         };
       }
       if (booth.span && col !== booth.col) return { node: null };
-      const style = booth.span ? { gridColumn: `span ${booth.span}` } : undefined;
-      if (interactive) {
+        const style = booth.span ? { gridColumn: `span ${booth.span}` } : undefined;
+        const displayId = displayBoothId(booth.id);
+        const [labelRow, labelCol] = displayId.split('-');
+        const labelNode = (
+          <span className="booth-label">
+            <span>{labelRow}-</span>
+            <span>{labelCol}</span>
+          </span>
+        );
+        if (interactive) {
+          return {
+            node: (
+              <button
+                ref={el => {
+                  boothRefs.current[booth.id] = el;
+                }}
+                className={`booth ${rowClasses[row]} ${booth.span && booth.span > 1 ? 'booth-wide' : ''}`}
+                data-booth-id={booth.id}
+                onPointerUp={e => handleBoothPointerUp(e, booth.id)}
+                onClick={e => handleBoothClick(e, booth.id)}
+                onMouseEnter={e => showTooltip(e.currentTarget)}
+                onMouseLeave={e => {
+                  const el = e.currentTarget;
+                  setTimeout(() => {
+                    if (!el.matches(':hover')) hideTooltip(el);
+                  }, 50);
+                }}
+              >
+                {labelNode}
+                <div className="booth-tooltip">
+                  <div className="tooltip-img-wrapper">
+                    <Image
+                      src={jacketSrc(booth.id)}
+                      alt={booth.name}
+                      width={120}
+                      height={120}
+                      className="tooltip-img"
+                    />
+                  </div>
+                  <p className="tooltip-title">{booth.koPNames || booth.name}</p>
+                </div>
+              </button>
+            ),
+            style,
+          };
+        }
         return {
           node: (
-            <button
-              ref={el => {
-                boothRefs.current[booth.id] = el;
-              }}
-              className={`booth ${rowClasses[row]} ${booth.span && booth.span > 1 ? 'booth-wide' : ''}`}
-              data-booth-id={booth.id}
-              onPointerUp={e => handleBoothPointerUp(e, booth.id)}
-              onClick={e => handleBoothClick(e, booth.id)}
-              onMouseEnter={e => showTooltip(e.currentTarget)}
-              onMouseLeave={e => {
-                const el = e.currentTarget;
-                setTimeout(() => {
-                  if (!el.matches(':hover')) hideTooltip(el);
-                }, 50);
-              }}
-            >
-              <span className="booth-label">{displayBoothId(booth.id)}</span>
-              <div className="booth-tooltip">
-                <div className="tooltip-img-wrapper">
-                  <Image
-                    src={jacketSrc(booth.id)}
-                    alt={booth.name}
-                    width={120}
-                    height={120}
-                    className="tooltip-img"
-                  />
-                </div>
-                <p className="tooltip-title">{booth.koPNames || booth.name}</p>
-              </div>
-            </button>
+            <div className={`booth ${rowClasses[row]} ${booth.span && booth.span > 1 ? 'booth-wide' : ''}`}>
+              {labelNode}
+            </div>
           ),
           style,
         };
-      }
-      return {
-        node: (
-          <div className={`booth ${rowClasses[row]} ${booth.span && booth.span > 1 ? 'booth-wide' : ''}`}>
-            <span className="booth-label">{displayBoothId(booth.id)}</span>
-          </div>
-        ),
-        style,
-      };
     };
 
     return (
