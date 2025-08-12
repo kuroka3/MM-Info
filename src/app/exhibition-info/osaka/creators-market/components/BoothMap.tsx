@@ -44,6 +44,9 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
     const flipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const boothRefs = useRef<Record<string, HTMLButtonElement | null>>({});
     const wrapperRef = useRef<HTMLDivElement | null>(null);
+    const rotatorRef = useRef<HTMLDivElement | null>(null);
+    const raf = useRef<number | null>(null);
+
     const tooltipRootRef = useRef<HTMLDivElement | null>(null);
     const tooltipMap = useRef(
       new Map<
@@ -62,34 +65,65 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
 
     useLayoutEffect(() => {
       const wrapper = wrapperRef.current;
-      if (!wrapper) return;
+      const rotator = rotatorRef.current;
+      if (!wrapper || !rotator) return;
+
       const applyRotation = () => {
-        if (window.innerWidth <= 480) {
+        const vv = window.visualViewport;
+        const vw = vv?.width ?? window.innerWidth;
+        const vh = vv?.height ?? window.innerHeight;
+        const isNarrow = vw <= 480;
+
+        if (isNarrow) {
+          const container = (wrapper.closest('.cm-main') as HTMLElement) || document.body;
+          const ww = container.clientWidth || vw;
+          const ratio = vh / vw;
+          const margin = ww * 0.08;
+
+          wrapper.style.position = 'relative';
+          wrapper.style.left = '';
+          wrapper.style.top = '';
           wrapper.style.transform = '';
-          wrapper.style.width = '';
-          wrapper.style.height = '';
-          wrapper.style.marginLeft = '';
-          wrapper.style.marginRight = '';
-          wrapper.style.transformOrigin = '';
-          const size = window.innerWidth;
-          wrapper.style.width = `${size}px`;
-          wrapper.style.height = `${size}px`;
-          wrapper.style.marginLeft = 'auto';
-          wrapper.style.marginRight = 'auto';
-          wrapper.style.transform = 'rotate(90deg)';
-          wrapper.style.transformOrigin = 'center';
+          wrapper.style.margin = '0 auto';
+          wrapper.style.width = `${ww}px`;
+          wrapper.style.height = `${ww * ratio}px`;
+          wrapper.style.padding = `${margin}px`;
+          wrapper.style.overflow = 'hidden';
+
+          rotator.style.position = 'absolute';
+          rotator.style.left = '50%';
+          rotator.style.top = '50%';
+          rotator.style.width = `${ww * ratio - margin * 2}px`;
+          rotator.style.height = `${ww - margin * 2}px`;
+          rotator.style.transformOrigin = 'center';
+          rotator.style.transform = 'translate(-50%, -50%) rotate(90deg)';
+          rotator.setAttribute('data-rotated', '1');
         } else {
-          wrapper.style.transform = '';
-          wrapper.style.transformOrigin = '';
-          wrapper.style.width = '';
-          wrapper.style.height = '';
-          wrapper.style.marginLeft = '';
-          wrapper.style.marginRight = '';
+          wrapper.removeAttribute('style');
+          rotator.removeAttribute('style');
+          rotator.removeAttribute('data-rotated');
         }
       };
-      applyRotation();
-      window.addEventListener('resize', applyRotation);
-      return () => window.removeEventListener('resize', applyRotation);
+
+      const schedule = () => {
+        if (raf.current) cancelAnimationFrame(raf.current);
+        raf.current = requestAnimationFrame(applyRotation);
+      };
+
+      schedule();
+
+      window.addEventListener('resize', schedule);
+      window.addEventListener('orientationchange', schedule);
+      window.visualViewport?.addEventListener('resize', schedule);
+      window.addEventListener('pageshow', schedule);
+
+      return () => {
+        if (raf.current) cancelAnimationFrame(raf.current);
+        window.removeEventListener('resize', schedule);
+        window.removeEventListener('orientationchange', schedule);
+        window.visualViewport?.removeEventListener('resize', schedule);
+        window.removeEventListener('pageshow', schedule);
+      };
     }, []);
 
     useLayoutEffect(() => {
@@ -312,7 +346,6 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
     };
 
     const handleBoothClick = (e: ReactMouseEvent<HTMLButtonElement>, id: string) => {
-      // Fallback for keyboard interaction or browsers without Pointer Events
       if (e.detail === 0 || !('PointerEvent' in window)) {
         handleBoothActivation(e.currentTarget, id, false);
       }
@@ -343,7 +376,6 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
         }
       };
     }, [selectedDay, prevDay]);
-
 
     const scrollToMapBooth = async (id: string) => {
       const el = boothRefs.current[id];
@@ -426,7 +458,7 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
                 }, 50);
               }}
             >
-              {displayBoothId(booth.id)}
+              <span className="booth-label">{displayBoothId(booth.id)}</span>
               <div className="booth-tooltip">
                 <div className="tooltip-img-wrapper">
                   <Image
@@ -446,7 +478,9 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
       }
       return {
         node: (
-          <div className={`booth ${rowClasses[row]}`}>{displayBoothId(booth.id)}</div>
+          <div className={`booth ${rowClasses[row]}`}>
+            <span className="booth-label">{displayBoothId(booth.id)}</span>
+          </div>
         ),
         style,
       };
@@ -455,44 +489,46 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
     return (
       <div className="cm-map-wrapper" ref={wrapperRef}>
         <div className="entrance-label">입구</div>
-        <div className="cm-grid">
-          {ROWS.map(row => (
-            <Fragment key={row}>
-              {COLS_REVERSED.map(col => {
-                if (row === 'A' && col === 12) {
-                  return (
-                    <div key="exit-cell" className="exit-label-cell">
-                      출구
-                    </div>
-                  );
-                }
-                const key = `${row}-${col}`;
-                const flipping = flippedCells.has(key);
-                const front = renderCell(row, col, prevDay, false);
-                const back = renderCell(row, col, selectedDay, true);
-                if (!front.node && !back.node) return null;
-                const style = back.style || front.style;
-                if (flipping && front.node && back.node) {
-                  return (
-                    <div key={key} className="flip-card flipping" style={style}>
-                      <div className="flip-inner">
-                        <div className="flip-front">{front.node}</div>
-                        <div className="flip-back">{back.node}</div>
+        <div className="map-inner" ref={rotatorRef}>
+          <div className="cm-grid">
+            {ROWS.map(row => (
+              <Fragment key={row}>
+                {COLS_REVERSED.map(col => {
+                  if (row === 'A' && col === 12) {
+                    return (
+                      <div key="exit-cell" className="exit-label-cell">
+                        출구
                       </div>
+                    );
+                  }
+                  const key = `${row}-${col}`;
+                  const flipping = flippedCells.has(key);
+                  const front = renderCell(row, col, prevDay, false);
+                  const back = renderCell(row, col, selectedDay, true);
+                  if (!front.node && !back.node) return null;
+                  const style = back.style || front.style;
+                  if (flipping && front.node && back.node) {
+                    return (
+                      <div key={key} className="flip-card flipping" style={style}>
+                        <div className="flip-inner">
+                          <div className="flip-front">{front.node}</div>
+                          <div className="flip-back">{back.node}</div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  const content = back.node ?? front.node;
+                  if (!content) return null;
+                  return (
+                    <div key={key} style={style}>
+                      {content}
                     </div>
                   );
-                }
-                const content = back.node ?? front.node;
-                if (!content) return null;
-                return (
-                  <div key={key} style={style}>
-                    {content}
-                  </div>
-                );
-              })}
-              {(row === 'A' || row === 'C' || row === 'E') && <div className="walk-gap" />}
-            </Fragment>
-          ))}
+                })}
+                {(row === 'A' || row === 'C' || row === 'E') && <div className="walk-gap" />}
+              </Fragment>
+            ))}
+          </div>
         </div>
         <div
           className="bottom-left-mask-box"
@@ -503,7 +539,8 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
         />
       </div>
     );
-  });
+  },
+);
 
 BoothMap.displayName = 'BoothMap';
 
