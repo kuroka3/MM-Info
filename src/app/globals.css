@@ -383,25 +383,41 @@ body {
 }
 
 .song-item.higawari {
-  background: linear-gradient(135deg, rgba(0, 122, 255, 0.1) 0%, rgba(0, 122, 255, 0.05) 100%);
-  border-color: rgba(0, 122, 255, 0.3);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 122, 255, 0.25) 0%,
+    rgba(0, 122, 255, 0.15) 100%
+  );
+  border-color: rgba(0, 122, 255, 0.6);
 }
 
 .song-item.higawari:hover {
-  background: linear-gradient(135deg, rgba(0, 122, 255, 0.15) 0%, rgba(0, 122, 255, 0.08) 100%);
-  border-color: rgba(0, 122, 255, 0.5);
-  box-shadow: 0 16px 48px rgba(0, 122, 255, 0.2);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 122, 255, 0.35) 0%,
+    rgba(0, 122, 255, 0.2) 100%
+  );
+  border-color: rgba(0, 122, 255, 0.8);
+  box-shadow: 0 16px 48px rgba(0, 122, 255, 0.3);
 }
 
 .song-item.locationgawari {
-  background: linear-gradient(135deg, rgba(48, 209, 88, 0.1) 0%, rgba(48, 209, 88, 0.05) 100%);
-  border-color: rgba(48, 209, 88, 0.3);
+  background: linear-gradient(
+    135deg,
+    rgba(48, 209, 88, 0.25) 0%,
+    rgba(48, 209, 88, 0.15) 100%
+  );
+  border-color: rgba(48, 209, 88, 0.6);
 }
 
 .song-item.locationgawari:hover {
-  background: linear-gradient(135deg, rgba(48, 209, 88, 0.15) 0%, rgba(48, 209, 88, 0.08) 100%);
-  border-color: rgba(48, 209, 88, 0.5);
-  box-shadow: 0 16px 48px rgba(48, 209, 88, 0.2);
+  background: linear-gradient(
+    135deg,
+    rgba(48, 209, 88, 0.35) 0%,
+    rgba(48, 209, 88, 0.2) 100%
+  );
+  border-color: rgba(48, 209, 88, 0.8);
+  box-shadow: 0 16px 48px rgba(48, 209, 88, 0.3);
 }
 
 .song-item.final-playlist {
@@ -1338,25 +1354,41 @@ body {
 }
 
 .call-item.higawari {
-  background: linear-gradient(135deg, rgba(0, 122, 255, 0.1) 0%, rgba(0, 122, 255, 0.05) 100%);
-  border-color: rgba(0, 122, 255, 0.3);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 122, 255, 0.25) 0%,
+    rgba(0, 122, 255, 0.15) 100%
+  );
+  border-color: rgba(0, 122, 255, 0.6);
 }
 
 .call-item.higawari:hover {
-  background: linear-gradient(135deg, rgba(0, 122, 255, 0.15) 0%, rgba(0, 122, 255, 0.08) 100%);
-  border-color: rgba(0, 122, 255, 0.5);
-  box-shadow: 0 16px 48px rgba(0, 122, 255, 0.2);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 122, 255, 0.35) 0%,
+    rgba(0, 122, 255, 0.2) 100%
+  );
+  border-color: rgba(0, 122, 255, 0.8);
+  box-shadow: 0 16px 48px rgba(0, 122, 255, 0.3);
 }
 
 .call-item.locationgawari {
-  background: linear-gradient(135deg, rgba(48, 209, 88, 0.1) 0%, rgba(48, 209, 88, 0.05) 100%);
-  border-color: rgba(48, 209, 88, 0.3);
+  background: linear-gradient(
+    135deg,
+    rgba(48, 209, 88, 0.25) 0%,
+    rgba(48, 209, 88, 0.15) 100%
+  );
+  border-color: rgba(48, 209, 88, 0.6);
 }
 
 .call-item.locationgawari:hover {
-  background: linear-gradient(135deg, rgba(48, 209, 88, 0.15) 0%, rgba(48, 209, 88, 0.08) 100%);
-  border-color: rgba(48, 209, 88, 0.5);
-  box-shadow: 0 16px 48px rgba(48, 209, 88, 0.2);
+  background: linear-gradient(
+    135deg,
+    rgba(48, 209, 88, 0.35) 0%,
+    rgba(48, 209, 88, 0.2) 100%
+  );
+  border-color: rgba(48, 209, 88, 0.8);
+  box-shadow: 0 16px 48px rgba(48, 209, 88, 0.3);
 }
 
 .call-info-link {
