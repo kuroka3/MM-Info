@@ -41,12 +41,11 @@ const BoothList = forwardRef<BoothListHandle, BoothListProps>(
       const parentRect = wrapper.getBoundingClientRect();
       const style = getComputedStyle(wrapper);
       const rightGap = parseFloat(style.paddingRight) || 0;
+      const maxWidth = Math.min(parentRect.width, window.innerWidth);
       Object.values(rowRefs.current).forEach(li => {
         if (!li) return;
-        const elRect = li.getBoundingClientRect();
-        const offset = elRect.left - parentRect.left;
-        const width = parentRect.width - offset - rightGap;
-        li.style.setProperty('--divider-left', `${offset}px`);
+        const width = maxWidth - rightGap;
+        li.style.setProperty('--divider-left', '0px');
         li.style.setProperty('--divider-width', `${width}px`);
       });
     };

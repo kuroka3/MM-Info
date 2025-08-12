@@ -61,6 +61,38 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
     const [gutter, setGutter] = useState(0);
 
     useLayoutEffect(() => {
+      const wrapper = wrapperRef.current;
+      if (!wrapper) return;
+      const applyRotation = () => {
+        if (window.innerWidth <= 480) {
+          wrapper.style.transform = '';
+          wrapper.style.width = '';
+          wrapper.style.height = '';
+          wrapper.style.marginLeft = '';
+          wrapper.style.marginRight = '';
+          wrapper.style.transformOrigin = '';
+          const size = window.innerWidth;
+          wrapper.style.width = `${size}px`;
+          wrapper.style.height = `${size}px`;
+          wrapper.style.marginLeft = 'auto';
+          wrapper.style.marginRight = 'auto';
+          wrapper.style.transform = 'rotate(90deg)';
+          wrapper.style.transformOrigin = 'center';
+        } else {
+          wrapper.style.transform = '';
+          wrapper.style.transformOrigin = '';
+          wrapper.style.width = '';
+          wrapper.style.height = '';
+          wrapper.style.marginLeft = '';
+          wrapper.style.marginRight = '';
+        }
+      };
+      applyRotation();
+      window.addEventListener('resize', applyRotation);
+      return () => window.removeEventListener('resize', applyRotation);
+    }, []);
+
+    useLayoutEffect(() => {
       function updateGutter() {
         if (wrapperRef.current) {
           const { width, height } = wrapperRef.current.getBoundingClientRect();
