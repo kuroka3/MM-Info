@@ -100,6 +100,12 @@ export default function CreatorsMarketClient() {
           rotate: 0deg !important;
         }
 
+        .cm-scope .booth-label {
+          display: inline-block !important;
+          transform: rotate(-90deg) !important;
+          transform-origin: center !important;
+        }
+
         @media (max-width: 480px) {
           .cm-scope .map-inner.is-rotated {
             position: absolute !important;
@@ -126,7 +132,7 @@ export default function CreatorsMarketClient() {
           }
           .cm-scope .map-inner.is-rotated .booth-label {
             display: inline-block !important;
-            transform: rotate(90deg) !important;
+            transform: rotate(-90deg) !important;
             transform-origin: center !important;
             white-space: nowrap !important;
             line-height: 1 !important;
