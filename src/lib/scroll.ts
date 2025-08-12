@@ -4,26 +4,29 @@ function easeInOutQuad(t: number) {
     : -1 + (4 - 2 * t) * t;
 }
 
-export function scrollToPosition(target: number, duration = 250) {
-  const start = window.scrollY;
-  const diff = target - start;
-  const html = document.documentElement;
-  const prev = html.style.scrollBehavior;
-  html.style.scrollBehavior = 'auto';
-  let startTime: number | null = null;
+export function scrollToPosition(target: number, duration = 250): Promise<void> {
+  return new Promise(resolve => {
+    const start = window.scrollY;
+    const diff = target - start;
+    const html = document.documentElement;
+    const prev = html.style.scrollBehavior;
+    html.style.scrollBehavior = 'auto';
+    let startTime: number | null = null;
 
-  function step(timestamp: number) {
-    if (startTime === null) startTime = timestamp;
-    const elapsed = timestamp - startTime;
-    const raw = Math.min(elapsed / duration, 1);
-    const eased = easeInOutQuad(raw);
-    window.scrollTo(0, start + diff * eased);
-    if (raw < 1) {
-      requestAnimationFrame(step);
-    } else {
-      html.style.scrollBehavior = prev;
+    function step(timestamp: number) {
+      if (startTime === null) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const raw = Math.min(elapsed / duration, 1);
+      const eased = easeInOutQuad(raw);
+      window.scrollTo(0, start + diff * eased);
+      if (raw < 1) {
+        requestAnimationFrame(step);
+      } else {
+        html.style.scrollBehavior = prev;
+        resolve();
+      }
     }
-  }
 
-  requestAnimationFrame(step);
+    requestAnimationFrame(step);
+  });
 }

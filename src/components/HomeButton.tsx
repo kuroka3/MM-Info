@@ -1,15 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function HomeButton() {
-  const pathname = usePathname();
+  const [show, setShow] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
+    setShow(window.location.pathname !== '/');
     const handleResize = () => {
       setIsMobile(window.innerWidth < 640);
     };
@@ -28,7 +28,7 @@ export default function HomeButton() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isMobile]);
 
-  if (pathname === '/') return null;
+  if (!show) return null;
 
   return (
     <Link href="/" className={`home-button${hidden ? ' hidden' : ''}`}>

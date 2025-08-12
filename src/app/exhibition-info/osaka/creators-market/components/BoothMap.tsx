@@ -8,9 +8,10 @@ import {
   Fragment,
   forwardRef,
   useImperativeHandle,
+  type PointerEvent as ReactPointerEvent,
+  type MouseEvent as ReactMouseEvent,
   CSSProperties,
   type ReactNode,
-  type TouchEvent as ReactTouchEvent,
 } from 'react';
 import Image from 'next/image';
 import type { Booth } from '@/types/booth';
@@ -24,7 +25,7 @@ interface BoothMapProps {
 }
 
 export interface BoothMapHandle {
-  scrollToMapBooth: (id: string) => void;
+  scrollToMapBooth: (id: string) => Promise<void>;
 }
 
 const COLS_REVERSED = [...COLS].reverse();
@@ -57,11 +58,6 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
     );
     const activeTooltip = useRef<HTMLButtonElement | null>(null);
     const disableScrollHide = useRef(false);
-    const touchInfo = useRef<{
-      target: HTMLButtonElement | null;
-      longPress: boolean;
-      timer: number | null;
-    }>({ target: null, longPress: false, timer: null });
     const [gutter, setGutter] = useState(0);
 
     useLayoutEffect(() => {
@@ -82,7 +78,7 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
       root.style.top = '0';
       root.style.left = '0';
       root.style.pointerEvents = 'none';
-      root.style.zIndex = '99999';
+      root.style.zIndex = '2147483647';
       document.body.appendChild(root);
       tooltipRootRef.current = root;
       return () => {
@@ -94,7 +90,6 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
       const entry = tooltipMap.current.get(el);
       if (!entry) return;
       const { tooltip, wrapper } = entry;
-      tooltip.style.pointerEvents = 'none';
       const rect = el.getBoundingClientRect();
       wrapper.style.left = `${rect.left + window.scrollX}px`;
       wrapper.style.top = `${rect.top + window.scrollY}px`;
@@ -114,7 +109,7 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
       }
     };
 
-    const showTooltip = (el: HTMLButtonElement) => {
+    const showTooltip = (el: HTMLButtonElement, allowClick = false) => {
       const root = tooltipRootRef.current;
       if (!root) return;
       let entry = tooltipMap.current.get(el);
@@ -125,8 +120,17 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
         wrapper.style.position = 'absolute';
         wrapper.style.pointerEvents = 'none';
         wrapper.style.overflow = 'hidden';
+        const color = getComputedStyle(el).getPropertyValue('--row-color');
+        if (color) wrapper.style.setProperty('--row-color', color);
         const tooltip = found.cloneNode(true) as HTMLElement;
         tooltip.style.pointerEvents = 'none';
+        const id = el.dataset.boothId!;
+        wrapper.addEventListener('pointerup', e => {
+          if (e.pointerType === 'touch') {
+            hideTooltip(el);
+            onBoothClick(id);
+          }
+        });
         wrapper.appendChild(tooltip);
         entry = { tooltip, wrapper };
         tooltipMap.current.set(el, entry);
@@ -147,8 +151,16 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
       wrapper.style.width = `${rect.width}px`;
       wrapper.style.height = `${rect.height}px`;
       wrapper.style.overflow = 'hidden';
+      wrapper.style.pointerEvents = allowClick ? 'auto' : 'none';
+      wrapper.style.zIndex = '2147483647';
+      tooltip.style.pointerEvents = allowClick ? 'auto' : 'none';
+      root.style.pointerEvents = allowClick ? 'auto' : 'none';
       root.appendChild(wrapper);
       activeTooltip.current = el;
+      if (allowClick) {
+        el.classList.add('touch-glow');
+        tooltip.classList.add('touch-glow');
+      }
 
       tooltip.style.position = 'absolute';
       tooltip.style.visibility = 'visible';
@@ -172,6 +184,8 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
       const entry = tooltipMap.current.get(el);
       if (!entry) return;
       const { tooltip, wrapper } = entry;
+      el.classList.remove('touch-glow');
+      tooltip.classList.remove('touch-glow');
       if (entry.finish) {
         tooltip.removeEventListener('transitionend', entry.finish);
       }
@@ -187,6 +201,11 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
       tooltip.addEventListener('transitionend', finish, { once: true });
       entry.finish = finish;
       entry.hideTimer = window.setTimeout(finish, 350);
+      tooltip.style.pointerEvents = 'none';
+      wrapper.style.pointerEvents = 'none';
+      if (tooltipRootRef.current) {
+        tooltipRootRef.current.style.pointerEvents = 'none';
+      }
       tooltip.style.opacity = '0';
       tooltip.style.transform = 'translate(-50%, 8px)';
       if (activeTooltip.current === el) activeTooltip.current = null;
@@ -206,44 +225,17 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
       return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    function handleTouchMove(e: TouchEvent) {
-      const info = touchInfo.current;
-      if (!info.longPress) return;
-      const touch = e.touches[0];
-      const el = document.elementFromPoint(touch.clientX, touch.clientY);
-      const booth = el?.closest('button.booth') as HTMLButtonElement | null;
-      if (booth !== info.target) {
-        if (info.target) hideTooltip(info.target);
-        info.target = booth;
-        if (booth) showTooltip(booth);
-      }
-      e.preventDefault();
-    }
-
-    const handleTouchStart = (e: ReactTouchEvent<HTMLButtonElement>) => {
-      const info = touchInfo.current;
-      const target = e.currentTarget;
-      info.target = target;
-      info.longPress = false;
-      if (info.timer) window.clearTimeout(info.timer);
-      info.timer = window.setTimeout(() => {
-        info.longPress = true;
-        showTooltip(target);
-        document.addEventListener('touchmove', handleTouchMove, { passive: false });
-      }, 200);
-    };
-
-    const handleTouchEnd = () => {
-      const info = touchInfo.current;
-      if (info.timer) window.clearTimeout(info.timer);
-      if (info.longPress && info.target) {
-        hideTooltip(info.target);
-      }
-      document.removeEventListener('touchmove', handleTouchMove);
-      info.target = null;
-      info.longPress = false;
-      info.timer = null;
-    };
+    useEffect(() => {
+      const handlePointerDown = (e: PointerEvent) => {
+        if (e.pointerType !== 'touch') return;
+        const target = e.target as HTMLElement;
+        if (!target.closest('.booth') && !target.closest('.booth-tooltip')) {
+          if (activeTooltip.current) hideTooltip(activeTooltip.current);
+        }
+      };
+      window.addEventListener('pointerdown', handlePointerDown);
+      return () => window.removeEventListener('pointerdown', handlePointerDown);
+    }, []);
 
     useEffect(() => {
       return () => {
@@ -251,52 +243,116 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
       };
     }, []);
 
-useEffect(() => {
-  if (prevDay === selectedDay) return;
-  const changed = new Set<string>();
-  ROWS.forEach(row => {
-    COLS_REVERSED.forEach(col => {
-      const prevBooth = findBooth(row, col, prevDay);
-      const nextBooth = findBooth(row, col, selectedDay);
-      const prevActive = !!(prevBooth && !prevBooth.hidden);
-      const nextActive = !!(nextBooth && !nextBooth.hidden);
-      if (prevActive !== nextActive) changed.add(`${row}-${col}`);
-    });
-  });
-  setFlippedCells(changed);
-  if (flipTimer.current) clearTimeout(flipTimer.current);
-  flipTimer.current = setTimeout(() => {
-    setFlippedCells(new Set());
-    setPrevDay(prev => (prev === selectedDay ? prev : selectedDay));
-  }, 600);
-  return () => {
-    if (flipTimer.current) {
-      clearTimeout(flipTimer.current);
-      flipTimer.current = null;
-    }
-  };
-}, [selectedDay, prevDay]);
+    const handleBoothActivation = (
+      el: HTMLButtonElement,
+      id: string,
+      isTouch: boolean,
+    ) => {
+      if (activeTooltip.current === el) {
+        hideTooltip(el);
+        onBoothClick(id);
+      } else {
+        if (activeTooltip.current) hideTooltip(activeTooltip.current);
+        if (isTouch) {
+          disableScrollHide.current = true;
+          window.setTimeout(() => {
+            disableScrollHide.current = false;
+          }, 600);
+        }
+        showTooltip(el, isTouch);
+        window.setTimeout(() => {
+          if (activeTooltip.current === el) hideTooltip(el);
+        }, 2000);
+      }
+    };
+
+    const handleBoothPointerUp = (
+      e: ReactPointerEvent<HTMLButtonElement>,
+      id: string,
+    ) => {
+      const el = e.currentTarget;
+      if (e.pointerType === 'touch') {
+        e.preventDefault();
+        handleBoothActivation(el, id, true);
+      } else {
+        onBoothClick(id);
+      }
+    };
+
+    const handleBoothClick = (e: ReactMouseEvent<HTMLButtonElement>, id: string) => {
+      // Fallback for keyboard interaction or browsers without Pointer Events
+      if (e.detail === 0 || !('PointerEvent' in window)) {
+        handleBoothActivation(e.currentTarget, id, false);
+      }
+    };
+
+    useEffect(() => {
+      if (prevDay === selectedDay) return;
+      const changed = new Set<string>();
+      ROWS.forEach(row => {
+        COLS_REVERSED.forEach(col => {
+          const prevBooth = findBooth(row, col, prevDay);
+          const nextBooth = findBooth(row, col, selectedDay);
+          const prevActive = !!(prevBooth && !prevBooth.hidden);
+          const nextActive = !!(nextBooth && !nextBooth.hidden);
+          if (prevActive !== nextActive) changed.add(`${row}-${col}`);
+        });
+      });
+      setFlippedCells(changed);
+      if (flipTimer.current) clearTimeout(flipTimer.current);
+      flipTimer.current = setTimeout(() => {
+        setFlippedCells(new Set());
+        setPrevDay(prev => (prev === selectedDay ? prev : selectedDay));
+      }, 600);
+      return () => {
+        if (flipTimer.current) {
+          clearTimeout(flipTimer.current);
+          flipTimer.current = null;
+        }
+      };
+    }, [selectedDay, prevDay]);
 
 
-    const scrollToMapBooth = (id: string) => {
+    const scrollToMapBooth = async (id: string) => {
       const el = boothRefs.current[id];
       if (!el) return;
       const offset = 80;
-      const map = wrapperRef.current;
-      disableScrollHide.current = true;
-      if (map) {
-        const top = map.getBoundingClientRect().top + window.scrollY - offset;
-        scrollToPosition(top, 400);
+      const rect = el.getBoundingClientRect();
+      let target = rect.top + window.scrollY - offset;
+
+      const hiddenTooltip = el.querySelector('.booth-tooltip') as HTMLElement | null;
+      if (hiddenTooltip) {
+        const tooltipHeight = hiddenTooltip.offsetHeight;
+        const margin = 8;
+        const bottomSafe = 80;
+        const bottomLimit = window.innerHeight - bottomSafe - margin;
+        const boothBottom = offset + rect.height;
+        const tipBottom = boothBottom + tooltipHeight + margin;
+        if (tipBottom > bottomLimit) {
+          target += tipBottom - bottomLimit;
+        } else {
+          const extra = Math.min(bottomLimit - tipBottom, target);
+          target -= extra;
+        }
       }
+
+      const dayTabs = document.querySelector('.day-tabs') as HTMLElement | null;
+      if (dayTabs) {
+        const minTop = dayTabs.getBoundingClientRect().top + window.scrollY;
+        if (target < minTop) target = minTop;
+      }
+
+      disableScrollHide.current = true;
+      await scrollToPosition(target, 400);
       showTooltip(el);
+      await new Promise(resolve => requestAnimationFrame(resolve));
+      updateTooltipPosition(el);
       el.classList.add('highlight');
+      setTimeout(() => el.classList.remove('highlight'), 5000);
       setTimeout(() => {
         disableScrollHide.current = false;
         if (!el.matches(':hover')) hideTooltip(el);
       }, 2000);
-      setTimeout(() => {
-        el.classList.remove('highlight');
-      }, 5000);
     };
 
     useImperativeHandle(ref, () => ({ scrollToMapBooth }));
@@ -327,9 +383,9 @@ useEffect(() => {
                 boothRefs.current[booth.id] = el;
               }}
               className={`booth ${rowClasses[row]}`}
-              onClick={() => {
-                if (!touchInfo.current.longPress) onBoothClick(booth.id);
-              }}
+              data-booth-id={booth.id}
+              onPointerUp={e => handleBoothPointerUp(e, booth.id)}
+              onClick={e => handleBoothClick(e, booth.id)}
               onMouseEnter={e => showTooltip(e.currentTarget)}
               onMouseLeave={e => {
                 const el = e.currentTarget;
@@ -337,9 +393,6 @@ useEffect(() => {
                   if (!el.matches(':hover')) hideTooltip(el);
                 }, 50);
               }}
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
-              onTouchCancel={handleTouchEnd}
             >
               {displayBoothId(booth.id)}
               <div className="booth-tooltip">
