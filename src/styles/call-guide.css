@@ -235,6 +235,10 @@
   transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
+.delete-playlist-title {
+  color: red;
+}
+
 .current-playlist-bar {
   position: fixed;
   left: 0;
@@ -249,6 +253,7 @@
   border-top: 1px solid rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(20px);
   z-index: 40;
+  cursor: pointer;
 }
 
 .current-playlist-name {
@@ -259,6 +264,8 @@
 .current-playlist-bar .glass-button {
   padding: 0.25rem 0.75rem;
   font-size: 0.9rem;
+  color: #fff;
+  border: 1px solid #39c5bb;
 }
 
 

@@ -52,12 +52,17 @@ export default function CallGuideIndexClient({ songs }: Props) {
     const activeStored = localStorage.getItem('callGuideActivePlaylist');
     if (activeStored) {
       try {
-        setActivePlaylist(JSON.parse(activeStored));
+        const parsed = JSON.parse(activeStored);
+        if (parsed.name === 'default') {
+          parsed.name = '전체 곡';
+          localStorage.setItem('callGuideActivePlaylist', JSON.stringify(parsed));
+        }
+        setActivePlaylist(parsed);
       } catch {
         /* ignore */
       }
     } else {
-      const def = { name: 'default', slugs: songs.map((s) => s.slug!) };
+      const def = { name: '전체 곡', slugs: songs.map((s) => s.slug!) };
       localStorage.setItem('callGuideActivePlaylist', JSON.stringify(def));
       setActivePlaylist(def);
     }
@@ -104,7 +109,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
   const selectPlaylist = (pl: Playlist | 'default') => {
     const active =
       pl === 'default'
-        ? { name: 'default', slugs: songs.map((s) => s.slug!) }
+        ? { name: '전체 곡', slugs: songs.map((s) => s.slug!) }
         : pl;
     localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
     setActivePlaylist(active);
@@ -139,7 +144,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
 
   const handleSongClick = () => {
     if (!activePlaylist) {
-      const def = { name: 'default', slugs: songs.map((s) => s.slug!) };
+      const def = { name: '전체 곡', slugs: songs.map((s) => s.slug!) };
       localStorage.setItem('callGuideActivePlaylist', JSON.stringify(def));
       setActivePlaylist(def);
     }
@@ -398,6 +403,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
       {deleteIndex !== null && (
         <div className="playlist-modal" onClick={cancelDelete}>
           <div className="playlist-delete-popup" onClick={(e) => e.stopPropagation()}>
+            <p className="delete-playlist-title">{playlists[deleteIndex].name}</p>
             <p>삭제하시겠습니까?</p>
             <div className="name-modal-actions">
               <button className="confirm-button" onClick={confirmDelete}>
@@ -412,9 +418,15 @@ export default function CallGuideIndexClient({ songs }: Props) {
       )}
 
       {!selectMode && activePlaylist && (
-        <div className="current-playlist-bar">
+        <div className="current-playlist-bar" onClick={openPlaylistModal}>
           <span className="current-playlist-name">{activePlaylist.name}</span>
-          <button className="glass-button" onClick={() => selectPlaylist('default')}>
+          <button
+            className="glass-button"
+            onClick={(e) => {
+              e.stopPropagation();
+              selectPlaylist('default');
+            }}
+          >
             전체 곡
           </button>
         </div>
