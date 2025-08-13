@@ -3,7 +3,11 @@
 import { useEffect, useState } from 'react';
 import { scrollToPosition } from '@/lib/scroll';
 
-export default function ScrollTopButton() {
+interface ScrollTopButtonProps {
+  className?: string;
+}
+
+export default function ScrollTopButton({ className = '' }: ScrollTopButtonProps) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -16,7 +20,7 @@ export default function ScrollTopButton() {
     <button
       aria-label="맨 위로"
       title="맨 위로"
-      className={`scroll-top ${visible ? 'show' : ''}`}
+      className={`scroll-top ${visible ? 'show' : ''} ${className}`.trim()}
       onClick={() => void scrollToPosition(0, 400)}
     >
       ↑

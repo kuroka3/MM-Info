@@ -491,7 +491,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
         <header className="header">
           <Link href="/call-guide" className="container header-content" style={{ textDecoration: 'none' }}>
             <h1 className="header-title">콜 가이드</h1>
-            <p className="header-subtitle">{song.title}</p>
+            <p className="header-subtitle">{song.krtitle || song.title}</p>
           </Link>
         </header>
 
@@ -499,7 +499,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
           <div className="call-song-jacket">
             <Image
               src={song.thumbnail!}
-              alt={song.title}
+              alt={song.krtitle || song.title}
               width={200}
               height={200}
               className="song-jacket"
@@ -679,13 +679,13 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                     {prevSong.thumbnail && (
                       <Image
                         src={prevSong.thumbnail}
-                        alt={prevSong.title}
+                        alt={prevSong.krtitle || prevSong.title}
                         width={80}
                         height={80}
                         className="song-tooltip-image"
                       />
                     )}
-                    <p className="song-tooltip-title">{prevSong.title}</p>
+                    <p className="song-tooltip-title">{prevSong.krtitle || prevSong.title}</p>
                   </div>
                 )}
               </div>
@@ -733,13 +733,13 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                     {nextSong.thumbnail && (
                       <Image
                         src={nextSong.thumbnail}
-                        alt={nextSong.title}
+                        alt={nextSong.krtitle || nextSong.title}
                         width={80}
                         height={80}
                         className="song-tooltip-image"
                       />
                     )}
-                    <p className="song-tooltip-title">{nextSong.title}</p>
+                    <p className="song-tooltip-title">{nextSong.krtitle || nextSong.title}</p>
                   </div>
                 )}
               </div>
@@ -793,13 +793,15 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
               onClick={toggleAutoNext}
             >
               {autoNext ? (
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <polygon points="8,5 16,12 8,19" />
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="4" y1="12" x2="14" y2="12" />
+                  <polyline points="14,6 20,12 14,18" />
                 </svg>
               ) : (
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <polygon points="8,5 16,12 8,19" />
-                  <line x1="5" y1="5" x2="19" y2="19" stroke="currentColor" strokeWidth="2" />
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="4" y1="12" x2="14" y2="12" />
+                  <polyline points="14,6 20,12 14,18" />
+                  <line x1="6" y1="8" x2="10" y2="16" />
                 </svg>
               )}
             </button>
@@ -808,12 +810,13 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
               onClick={cycleRepeat}
             >
               {repeatMode === 'one' ? (
-                <svg viewBox="0 0 24 24" fill="currentColor">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M17 1l4 4-4 4" />
-                  <path d="M3 11v-3a6 6 0 016-6h8" stroke="currentColor" strokeWidth="2" fill="none" />
+                  <path d="M3 11v-3a6 6 0 016-6h8" />
                   <path d="M7 23l-4-4 4-4" />
-                  <path d="M21 13v3a6 6 0 01-6 6H7" stroke="currentColor" strokeWidth="2" fill="none" />
-                  <text x="12" y="17" fontSize="8" textAnchor="middle">1</text>
+                  <path d="M21 13v3a6 6 0 01-6 6H7" />
+                  <path d="M12 9v6" strokeLinecap="round" />
+                  <path d="M11 9h2" strokeLinecap="round" />
                 </svg>
               ) : repeatMode === 'all' ? (
                 <svg viewBox="0 0 24 24" fill="currentColor">
@@ -833,9 +836,11 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
               className={`small-glass-button${shuffle ? ' active' : ' inactive'}`}
               onClick={toggleShuffle}
             >
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M4 4h4l5 8 5-8h2" stroke="currentColor" strokeWidth="2" fill="none" />
-                <path d="M4 20h4l5-8 5 8h2" stroke="currentColor" strokeWidth="2" fill="none" />
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M4 4h4l5 8 5-8" />
+                <polyline points="18,4 22,4 20,6" />
+                <path d="M4 20h4l5-8 5 8" />
+                <polyline points="18,20 22,20 20,18" />
               </svg>
             </button>
           </div>
@@ -844,8 +849,8 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
           </button>
         </div>
 
-        <ScrollTopButton />
       </main>
+      <ScrollTopButton className="between-bar" />
       {activePlaylist && (
         <div className="current-playlist-bar" onClick={openPlaylistModal}>
           <span className="current-playlist-name">{activePlaylist.name}</span>
@@ -888,7 +893,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                       closePlaylistSongs();
                     }}
                   >
-                    {s.title}
+                    {s.krtitle || s.title}
                   </li>
                 );
               })}

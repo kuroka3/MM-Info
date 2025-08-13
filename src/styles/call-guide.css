@@ -269,6 +269,13 @@
   border: 1px solid #39c5bb;
 }
 
+.scroll-top.between-bar {
+  bottom: 3rem;
+  right: 0.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
 .player-bottom-row {
   position: relative;
   width: 100vw;
@@ -817,5 +824,40 @@
   .small-glass-button svg {
     width: 16px;
     height: 16px;
+  }
+  .scroll-top.between-bar {
+    bottom: 2.8rem;
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .player-controls {
+    left: 0;
+    transform: none;
+    align-items: flex-start;
+  }
+  .seek-container {
+    width: calc(100vw - 120px);
+    margin-left: 0;
+  }
+  .player-bottom-row {
+    justify-content: flex-start;
+  }
+  .player-buttons {
+    margin-left: 0;
+    gap: 0.75rem;
+  }
+  .control-button {
+    width: 32px;
+    height: 32px;
+  }
+  .control-button svg {
+    width: 14px;
+    height: 14px;
+  }
+  .volume-bar {
+    width: 50px;
   }
 }
