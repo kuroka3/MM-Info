@@ -259,10 +259,11 @@ export default function CallGuideIndexClient({ songs }: Props) {
     if (isDefaultPlaylist) return;
     if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
     const startY = e.touches[0].clientY;
+    const currentTarget = e.currentTarget as HTMLElement;
     touchTimerRef.current = setTimeout(() => {
       setSongDragIndex(index);
       touchStartY.current = startY;
-      const item = (e.currentTarget as HTMLElement).closest('.call-item') as HTMLElement | null;
+      const item = currentTarget.closest('.call-item') as HTMLElement | null;
       if (item) {
         dragItemRef.current = item;
         item.classList.add('dragging');
