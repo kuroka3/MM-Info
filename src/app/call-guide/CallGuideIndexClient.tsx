@@ -42,6 +42,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
   const previousActive = useRef<Playlist | null>(null);
   const sortButtonRef = useRef<HTMLButtonElement | null>(null);
   const [showSortButton, setShowSortButton] = useState(false);
+  const touchTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem('callGuidePlaylists');
@@ -248,6 +249,24 @@ export default function CallGuideIndexClient({ songs }: Props) {
     setSongDragIndex(index);
   };
 
+  const handleSongTouchStart = (index: number) => {
+    if (isDefaultPlaylist) return;
+    if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+    touchTimerRef.current = setTimeout(() => setSongDragIndex(index), 300);
+  };
+
+  const handleSongTouchMove = (e: React.TouchEvent) => {
+    if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+    if (songDragIndex !== null) {
+      const touch = e.touches[0];
+      const y = touch.clientY;
+      const threshold = 50;
+      if (y < threshold) window.scrollBy({ top: -10, behavior: 'smooth' });
+      else if (y > window.innerHeight - threshold) window.scrollBy({ top: 10, behavior: 'smooth' });
+      e.preventDefault();
+    }
+  };
+
   const handleSongDrop = (index: number) => {
     if (songDragIndex === null || songDragIndex === index || !activePlaylist || isDefaultPlaylist) return;
     setActivePlaylist(prev => {
@@ -273,15 +292,30 @@ export default function CallGuideIndexClient({ songs }: Props) {
   };
 
   const handleSongTouchEnd = (e: React.TouchEvent) => {
+    if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
     if (songDragIndex === null) return;
     const touch = e.changedTouches[0];
-    const target = document.elementFromPoint(touch.clientX, touch.clientY);
+    const target = document.elementFromPoint(window.innerWidth / 2, touch.clientY);
     const item = target?.closest('[data-song-index]') as HTMLElement | null;
     if (item) {
       const dropIndex = parseInt(item.dataset.songIndex || '', 10);
       if (!isNaN(dropIndex) && dropIndex !== songDragIndex) {
         handleSongDrop(dropIndex);
         e.preventDefault();
+      }
+    }
+    setSongDragIndex(null);
+  };
+
+  const handleSongDragEnd = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (songDragIndex === null) return;
+    const target = document.elementFromPoint(window.innerWidth / 2, e.clientY);
+    const item = target?.closest('[data-song-index]') as HTMLElement | null;
+    if (item) {
+      const dropIndex = parseInt(item.dataset.songIndex || '', 10);
+      if (!isNaN(dropIndex) && dropIndex !== songDragIndex) {
+        handleSongDrop(dropIndex);
       }
     }
     setSongDragIndex(null);
@@ -481,8 +515,10 @@ export default function CallGuideIndexClient({ songs }: Props) {
                 onDragOver={(e) => {
                   if (!isDefaultPlaylist) e.preventDefault();
                 }}
-                onDrop={() => handleSongDrop(index)}
-                onTouchStart={() => handleSongDragStart(index)}
+                onDrop={handleSongDragEnd}
+                onDragEnd={handleSongDragEnd}
+                onTouchStart={() => handleSongTouchStart(index)}
+                onTouchMove={handleSongTouchMove}
                 onTouchEnd={handleSongTouchEnd}
               >
                 {colors.length > 0 && <div style={borderStyle} />}

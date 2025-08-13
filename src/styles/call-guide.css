@@ -52,6 +52,10 @@
   transform: translateY(-10px);
   opacity: 0;
   transition: transform 0.3s ease, opacity 0.3s ease;
+  justify-content: center;
+  white-space: nowrap;
+  font-size: clamp(0.8rem, 2.5vw, 1rem);
+  text-align: center;
 }
 
 .sort-button.show {
@@ -318,6 +322,15 @@
   position: relative;
   width: 40px;
   align-self: stretch;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.song-index {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
 }
 
 .song-drag-handle {
@@ -329,6 +342,15 @@
   height: 24px;
   cursor: grab;
   opacity: 0.7;
+  z-index: 2;
+}
+
+@media (max-width: 600px) {
+  .song-drag-handle {
+    left: calc(100% + 4px);
+    top: 50%;
+    transform: translateY(-50%);
+  }
 }
 
 .current-playlist-bar {
@@ -694,6 +716,18 @@
     width: 100%;
     margin-top: 0.75rem;
   }
+
+  .player-controls {
+    transform: translateX(calc(-50% - 60px));
+  }
+
+  .player-bottom-row {
+    padding-right: 120px;
+  }
+
+  .volume-controls {
+    right: 0.5rem;
+  }
 }
 
 .call-item-summary p {
@@ -1006,7 +1040,7 @@
 @media (max-width: 360px) {
   .player-controls {
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(calc(-50% - 60px));
     align-items: center;
   }
   .seek-container {
@@ -1017,7 +1051,7 @@
   .player-bottom-row {
     width: calc(100vw - 100px);
     justify-content: center;
-    padding-right: 0;
+    padding-right: 120px;
     margin: 0 auto;
   }
   .player-buttons {
