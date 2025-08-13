@@ -328,7 +328,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       let t = playerRef.current?.getCurrentTime?.() ?? 0;
       if (pendingSeekRef.current != null) {
         if (Math.abs(t - pendingSeekRef.current) > 0.3) {
-          playerRef.current?.seekTo(pendingSeekRef.current, true);
+          playerRef.current?.seekTo?.(pendingSeekRef.current, true);
           t = pendingSeekRef.current;
         } else {
           pendingSeekRef.current = null;
@@ -362,14 +362,14 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
             autoScrollRef.current = true;
             scrollToLine(activeLineRef.current);
             if (pendingSeekRef.current != null) {
-              playerRef.current?.seekTo(pendingSeekRef.current, true);
+              playerRef.current?.seekTo?.(pendingSeekRef.current, true);
             }
           },
           onStateChange: (e: { data: number }) => {
             setIsPlaying(e.data === 1);
             if (e.data === 0) {
               if (repeatMode === 'one') {
-                playerRef.current?.seekTo(0, true);
+                playerRef.current?.seekTo?.(0, true);
                 playerRef.current?.playVideo?.();
               } else {
                 let targetSlug: string | undefined;
@@ -388,7 +388,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
               autoScrollRef.current = true;
               scrollToLine(activeLineRef.current);
               if (pendingSeekRef.current != null) {
-                playerRef.current?.seekTo(pendingSeekRef.current, true);
+                playerRef.current?.seekTo?.(pendingSeekRef.current, true);
               }
             }
           },
@@ -495,7 +495,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
         const delta = e.code === 'ArrowLeft' ? -5 : 5;
         const t = Math.max(0, Math.min((playerRef.current.getDuration?.() ?? 0), currentTime + delta));
         pendingSeekRef.current = t;
-        playerRef.current.seekTo?.(t, true);
+        playerRef.current?.seekTo?.(t, true);
         currentTimeRef.current = t;
         setCurrentTime(t);
         setDisplayTime(t);
@@ -565,7 +565,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                 onClick={() => {
                   const t = line.jp[0]?.time ?? 0;
                   pendingSeekRef.current = t;
-                  playerRef.current?.seekTo(t, true);
+                  playerRef.current?.seekTo?.(t, true);
                   currentTimeRef.current = t;
                   setCurrentTime(t);
                   setDisplayTime(t);
@@ -629,7 +629,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                 onClick={() => {
                   const t = skipGap.target;
                   pendingSeekRef.current = t;
-                  playerRef.current?.seekTo(t, true);
+                  playerRef.current?.seekTo?.(t, true);
                   currentTimeRef.current = t;
                   setCurrentTime(t);
                   setDisplayTime(t);
@@ -657,7 +657,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
             onChange={(e) => {
               const t = Number(e.target.value);
               pendingSeekRef.current = t;
-              playerRef.current?.seekTo(t, true);
+              playerRef.current?.seekTo?.(t, true);
               currentTimeRef.current = t;
               setCurrentTime(t);
               setDisplayTime(t);
@@ -665,7 +665,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
             onPointerUp={(e) => {
               const t = Number(e.currentTarget.value);
               pendingSeekRef.current = t;
-              playerRef.current?.seekTo(t, true);
+              playerRef.current?.seekTo?.(t, true);
               currentTimeRef.current = t;
               setCurrentTime(t);
               setDisplayTime(t);
@@ -679,7 +679,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
             onPointerCancel={(e) => {
               const t = Number(e.currentTarget.value);
               pendingSeekRef.current = t;
-              playerRef.current?.seekTo(t, true);
+              playerRef.current?.seekTo?.(t, true);
               currentTimeRef.current = t;
               setCurrentTime(t);
               setDisplayTime(t);
