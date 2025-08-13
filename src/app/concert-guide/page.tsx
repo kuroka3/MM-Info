@@ -42,12 +42,7 @@ export default function ConcertGuidePage() {
 
           <div className="feature-card">
             <h3 className="feature-title">도쿄</h3>
-            <Link
-              href="/exhibition-info/tokyo/creators-market"
-              className="glass-effect map-link"
-            >
-              크리에이터즈 마켓 맵
-            </Link>
+            <p className="feature-text">추가 예정입니다.</p>
           </div>
         </div>
       </section>

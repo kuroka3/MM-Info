@@ -1,5 +1,5 @@
 export const DAYS = [
-  { value: '8/29(금)', date: '8/29', day: '금', cls: 'fri' },
+  { value: '8/29(금)', date: '8/26', day: '금', cls: 'fri' },
   { value: '8/30(토)', date: '8/30', day: '토', cls: 'sat' },
   { value: '8/31(일)', date: '8/31', day: '일', cls: 'sun' },
 ] as const;

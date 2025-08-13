@@ -2192,39 +2192,11 @@ const boothsF: Booth[] = [
 ];
 
 
-export const ROWS = ['A', 'B', 'C', 'D', 'E', 'F'] as const;
-export const COLS = Array.from({ length: 17 }, (_, i) => i + 1);
-
-export const rowClasses: Record<string, string> = {
-  A: 'row-A',
-  B: 'row-B',
-  C: 'row-C',
-  D: 'row-D',
-  E: 'row-E',
-  F: 'row-F',
-};
-
-export const BOOTHS: Booth[] = [
-  ...boothsA,
-  ...boothsB,
-  ...boothsC,
-  ...boothsD,
-  ...boothsE,
-  ...boothsF,
-];
-
-type BoothIndex = Record<string, Record<number, Booth>>;
-const boothIndex: BoothIndex = (() => {
-  const idx: BoothIndex = {};
-  for (const b of BOOTHS) {
-    if (b.hidden) continue;
-    (idx[b.row] ??= {})[b.col] = b;
-  }
-  return idx;
-})();
-
+export const ROWS: string[] = [];
+export const COLS: number[] = [];
+export const rowClasses: Record<string, string> = {};
+export const BOOTHS: Booth[] = [];
 export const findBooth = (r: string, c: number): Booth | undefined =>
-  boothIndex[r]?.[c];
-
+  BOOTHS.find(b => b.row === r && b.col === c);
 export const findBooths = (r: string, c: number): Booth[] =>
-  BOOTHS.filter(b => b.row === r && b.col === c && !b.hidden);
+  BOOTHS.filter(b => b.row === r && b.col === c);
