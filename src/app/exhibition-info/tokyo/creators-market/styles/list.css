@@ -1,0 +1,119 @@
+.booth-list{
+  display:flex;
+  flex-direction:column;
+  gap:1.25rem;
+  margin-top:2rem;
+  position: relative;
+}
+.booth-row-header{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width: 38.2%;
+  margin:2rem 0 .5rem;
+  font-size:1.25rem;
+  font-weight:700;
+  border-radius:12px 12px 0 0;
+  backdrop-filter:blur(10px);
+  border-width:2px;
+  border-style:solid;
+  color: #f0f0f0;
+  cursor:default;
+  pointer-events:none;
+  padding:.75rem 1rem;
+  overflow: visible;
+  position: relative;
+  z-index: 1;
+}
+.booth-row-header::after {
+  content: "";
+  position: absolute;
+  left: var(--divider-left, 0);
+  bottom: -2px;
+  width: var(--divider-width, 0);
+  height: 2px;
+  background: rgba(var(--row-color), 0.8);
+  pointer-events: none;
+}
+.booth-row-header.highlight{
+  animation:notice-highlight 3s ease-out;
+}
+
+.booth-item{
+  display:flex;
+  gap:1rem;
+  padding:1rem;
+  background:rgba(255,255,255,.17);
+  border-radius:16px;
+  backdrop-filter:blur(10px);
+  position:relative;
+  overflow:hidden;
+  border:1px solid rgba(var(--row-color),0.8);
+  transition:all .4s cubic-bezier(.4,0,.2,1);
+}
+.booth-item::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  bottom:0;
+  background:linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+  opacity:0;
+  transition:opacity .3s ease;
+  pointer-events:none;
+}
+.booth-item.highlight{
+  animation:notice-highlight 3s ease-out;
+}
+.booth-item:hover{
+  transform:translateY(-4px);
+  box-shadow:0 16px 48px var(--shadow);
+  border-color:rgba(var(--row-color),1);
+}
+.booth-item:hover::before{
+  opacity:1;
+}
+.booth-item-img{
+  border-radius:12px;
+  width:96px;
+  height:96px;
+  object-fit:cover;
+}
+.booth-item-title{
+  font-size:1.1rem;
+  font-weight:700;
+  margin:0 0 .3rem;
+}
+.booth-item-meta{
+  font-size:.88rem;
+  opacity:.8;
+  margin:0 0 .5rem;
+}
+.booth-days{
+  display:inline-flex;
+  gap:.25rem;
+  margin-left:.5rem;
+}
+.member-list{
+  list-style:none;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  gap:.25rem;
+}
+.member-item{
+  font-size:.83rem;
+  display:flex;
+  justify-content:space-between;
+}
+.member-links a{
+  margin-left:.4rem;
+  display:inline-flex;
+  align-items:center;
+  gap:.2rem;
+  font-size:.78rem;
+  color: #f0f0f0;
+  text-decoration:none;
+}
