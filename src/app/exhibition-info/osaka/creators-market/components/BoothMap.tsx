@@ -34,7 +34,9 @@ for (const b of BOOTHS) (BOOTHS_MAP[b.row] ??= {})[b.col] = b;
 
 const findBooth = (row: string, col: number, day: string) => {
   const booth = BOOTHS_MAP[row]?.[col];
-  return booth && booth.dates.includes(day) ? booth : undefined;
+  if (!booth) return undefined;
+  if (booth.hidden) return booth;
+  return booth.dates.includes(day) ? booth : undefined;
 };
 
 const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
