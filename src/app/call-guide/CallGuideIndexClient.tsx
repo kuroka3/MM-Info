@@ -108,10 +108,27 @@ export default function CallGuideIndexClient({ songs }: Props) {
     <>
       <div className="call-guide-actions">
         <button className="glass-button" onClick={openPlaylistModal}>
-          재생목록
+          <Image
+            src="/images/list.svg"
+            alt="목록 리스트"
+            width={24}
+            height={24}
+            className="button-icon"
+          />
+          <span className="button-text">목록 리스트</span>
         </button>
-        <button className="glass-button" onClick={() => setSelectMode(true)}>
-          + 새 재생목록
+        <button
+          className="glass-button"
+          onClick={() => setSelectMode(true)}
+        >
+          <Image
+            src="/images/plus.svg"
+            alt="새 재생목록"
+            width={28}
+            height={28}
+            className="button-icon plus-icon"
+          />
+          <span className="button-text">새 재생목록</span>
         </button>
       </div>
 
