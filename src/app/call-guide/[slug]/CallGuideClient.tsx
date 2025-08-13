@@ -28,6 +28,11 @@ interface ProcessedLine {
   call?: Call;
 }
 
+interface Playlist {
+  name: string;
+  slugs: string[];
+}
+
 interface YTPlayer {
   getCurrentTime: () => number;
   getDuration: () => number;
@@ -35,6 +40,11 @@ interface YTPlayer {
   pauseVideo: () => void;
   seekTo: (seconds: number, allowSeekAhead?: boolean) => void;
   destroy: () => void;
+  getVolume: () => number;
+  setVolume: (volume: number) => void;
+  mute: () => void;
+  unMute: () => void;
+  isMuted: () => boolean;
 }
 
 declare global {
@@ -70,27 +80,104 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const activeLineRef = useRef(0);
   const pendingSeekRef = useRef<number | null>(null);
   const [skipGap, setSkipGap] = useState<{ target: number; showAt: number; end: number } | null>(null);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null);
+  const [showPlaylistModal, setShowPlaylistModal] = useState(false);
+  const [showPlaylistSongs, setShowPlaylistSongs] = useState(false);
+  const [extraOpen, setExtraOpen] = useState(false);
+  const [autoNext, setAutoNext] = useState(true);
+  const [repeatMode, setRepeatMode] = useState<'off' | 'all' | 'one'>('off');
+  const [shuffle, setShuffle] = useState(false);
+  const [volume, setVolume] = useState(100);
+  const [muted, setMuted] = useState(false);
 
   useEffect(() => {
-    let playlistSlugs: string[] | undefined;
-    const stored = typeof window !== 'undefined' ? localStorage.getItem('callGuideActivePlaylist') : null;
-    if (stored) {
+    const storedPlaylists = localStorage.getItem('callGuidePlaylists');
+    if (storedPlaylists) {
       try {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed.slugs)) playlistSlugs = parsed.slugs as string[];
+        setPlaylists(JSON.parse(storedPlaylists));
       } catch {
         /* ignore */
       }
     }
-    if (!playlistSlugs || playlistSlugs.length === 0) {
-      playlistSlugs = songs.map((s) => s.slug!);
+    const activeStored = localStorage.getItem('callGuideActivePlaylist');
+    let active: Playlist | null = null;
+    if (activeStored) {
+      try {
+        active = JSON.parse(activeStored);
+      } catch {
+        /* ignore */
+      }
     }
+    if (!active || !Array.isArray(active.slugs)) {
+      active = { name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
+    }
+    setActivePlaylist(active);
+  }, [songs]);
+
+  useEffect(() => {
+    const playlistSlugs = activePlaylist?.slugs || songs.map((s) => s.slug!);
     const idx = playlistSlugs.indexOf(song.slug!);
     const prevSlug = playlistSlugs[idx - 1];
     const nextSlug = playlistSlugs[idx + 1];
     setPrevSong(songs.find((s) => s.slug === prevSlug) || null);
     setNextSong(songs.find((s) => s.slug === nextSlug) || null);
-  }, [song, songs]);
+  }, [song, songs, activePlaylist]);
+
+  const openPlaylistModal = () => setShowPlaylistModal(true);
+  const closePlaylistModal = () => setShowPlaylistModal(false);
+
+  const selectPlaylist = (pl: Playlist | 'default') => {
+    const selected =
+      pl === 'default'
+        ? { name: '전체 곡', slugs: songs.map((s) => s.slug!) }
+        : pl;
+    setActivePlaylist(selected);
+    localStorage.setItem('callGuideActivePlaylist', JSON.stringify(selected));
+    closePlaylistModal();
+    if (!selected.slugs.includes(song.slug!)) {
+      const firstSlug = selected.slugs[0];
+      const firstSong = songs.find((s) => s.slug === firstSlug);
+      if (firstSong) router.push(`/call-guide/${firstSong.slug}`);
+    }
+  };
+
+  const openPlaylistSongs = () => setShowPlaylistSongs(true);
+  const closePlaylistSongs = () => setShowPlaylistSongs(false);
+
+  const toggleAutoNext = () => {
+    setAutoNext((prev) => {
+      const next = !prev;
+      if (!next) setRepeatMode('off');
+      return next;
+    });
+  };
+  const cycleRepeat = () => {
+    setRepeatMode((prev) => (prev === 'off' ? 'all' : prev === 'all' ? 'one' : 'off'));
+  };
+  const toggleShuffle = () => setShuffle((prev) => !prev);
+
+  const songListRef = useRef<HTMLUListElement | null>(null);
+
+  useEffect(() => {
+    if (showPlaylistSongs && songListRef.current && activePlaylist) {
+      const idx = activePlaylist.slugs.indexOf(song.slug!);
+      const item = songListRef.current.children[idx] as HTMLElement | undefined;
+      item?.scrollIntoView({ block: 'center' });
+    }
+  }, [showPlaylistSongs, activePlaylist, song.slug]);
+
+  const toggleMute = () => {
+    if (muted) {
+      playerRef.current?.unMute?.();
+      playerRef.current?.setVolume?.(volume);
+      setMuted(false);
+    } else {
+      playerRef.current?.mute?.();
+      setMuted(true);
+    }
+  };
 
   const interpolateTokens = (tokens: Token[]): Token[] => {
     const res = tokens.map((t) => ({ ...t }));
@@ -222,6 +309,9 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
           onReady: (e: { target: YTPlayer }) => {
             playerRef.current = e.target;
             setDuration(e.target.getDuration?.() ?? 0);
+            setVolume(e.target.getVolume?.() ?? 100);
+            const m = e.target.isMuted?.() ?? false;
+            setMuted(m);
             autoScrollRef.current = true;
             scrollToLine(activeLineRef.current);
             if (pendingSeekRef.current != null) {
@@ -230,6 +320,26 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
           },
           onStateChange: (e: { data: number }) => {
             setIsPlaying(e.data === 1);
+            if (e.data === 0) {
+              if (repeatMode === 'one') {
+                playerRef.current?.seekTo(0, true);
+                playerRef.current?.playVideo?.();
+              } else {
+                let targetSlug: string | undefined;
+                const playlistSlugs = activePlaylist?.slugs || songs.map((s) => s.slug!);
+                if (shuffle) {
+                  const others = playlistSlugs.filter((s) => s !== song.slug);
+                  targetSlug = others[Math.floor(Math.random() * others.length)];
+                } else {
+                  const idx = playlistSlugs.indexOf(song.slug!);
+                  targetSlug = playlistSlugs[idx + 1];
+                  if (!targetSlug && repeatMode === 'all') targetSlug = playlistSlugs[0];
+                }
+                if (autoNext && targetSlug) {
+                  router.push(`/call-guide/${targetSlug}`);
+                }
+              }
+            }
             if (e.data === 1 || e.data === 3) {
               autoScrollRef.current = true;
               scrollToLine(activeLineRef.current);
@@ -262,7 +372,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       playerRef.current?.destroy?.();
       playerRef.current = null;
     };
-  }, [song, scrollToLine]);
+  }, [song, scrollToLine, repeatMode, activePlaylist, songs, shuffle, autoNext, router]);
 
   useEffect(() => {
     let frame: number;
@@ -542,61 +652,208 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
             }}
           />
           </div>
-          <div className="player-buttons">
-            <button
-              className="control-button"
-              disabled={!prevSong}
-              onClick={() => {
-                if (!prevSong) return;
-                autoScrollRef.current = true;
-                router.push(`/call-guide/${prevSong.slug}`);
-              }}
-            >
+          <div className="player-bottom-row">
+            <div className="player-buttons">
+              <button
+                className="control-button"
+                disabled={!prevSong}
+                onClick={() => {
+                  if (!prevSong) return;
+                  autoScrollRef.current = true;
+                  router.push(`/call-guide/${prevSong.slug}`);
+                }}
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="15,5 7,12 15,19" />
+                  <rect x="5" y="5" width="2" height="14" />
+                </svg>
+              </button>
+              <button
+                className="control-button"
+                onClick={() => {
+                  if (!playerRef.current) return;
+                  if (isPlaying) playerRef.current.pauseVideo?.();
+                  else playerRef.current.playVideo?.();
+                  autoScrollRef.current = true;
+                  scrollToLine(activeLine);
+                }}
+              >
+                {isPlaying ? (
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="6" y="5" width="4" height="14" />
+                    <rect x="14" y="5" width="4" height="14" />
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="8,5 19,12 8,19" />
+                  </svg>
+                )}
+              </button>
+              <button
+                className="control-button"
+                disabled={!nextSong}
+                onClick={() => {
+                  if (!nextSong) return;
+                  autoScrollRef.current = true;
+                  router.push(`/call-guide/${nextSong.slug}`);
+                }}
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="9,5 17,12 9,19" />
+                  <rect x="17" y="5" width="2" height="14" />
+                </svg>
+              </button>
+            </div>
+            <div className="volume-controls">
+              <button className="control-button" onClick={toggleMute}>
+                {muted ? (
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="3,9 7,9 12,4 12,20 7,15 3,15" />
+                    <line x1="16" y1="8" x2="22" y2="16" stroke="currentColor" strokeWidth="2" />
+                    <line x1="22" y1="8" x2="16" y2="16" stroke="currentColor" strokeWidth="2" />
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="3,9 7,9 12,4 12,20 7,15 3,15" />
+                    <path d="M16 8a5 5 0 010 8" stroke="currentColor" strokeWidth="2" fill="none" />
+                  </svg>
+                )}
+              </button>
+              <input
+                className={`volume-bar${muted ? ' muted' : ''}`}
+                type="range"
+                min={0}
+                max={100}
+                value={volume}
+                onChange={(e) => {
+                  const v = Number(e.target.value);
+                  setVolume(v);
+                  playerRef.current?.setVolume?.(v);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className={`extra-toggle${extraOpen ? ' open' : ''}`}>
+          <div className="extra-buttons">
+            <button className="small-glass-button" onClick={openPlaylistSongs}>
               <svg viewBox="0 0 24 24" fill="currentColor">
-                <polygon points="15,5 7,12 15,19" />
-                <rect x="5" y="5" width="2" height="14" />
+                <rect x="4" y="5" width="16" height="2" />
+                <rect x="4" y="11" width="16" height="2" />
+                <rect x="4" y="17" width="16" height="2" />
               </svg>
             </button>
             <button
-              className="control-button"
-              onClick={() => {
-                if (!playerRef.current) return;
-                if (isPlaying) playerRef.current.pauseVideo?.();
-                else playerRef.current.playVideo?.();
-                autoScrollRef.current = true;
-                scrollToLine(activeLine);
-              }}
+              className={`small-glass-button${autoNext ? ' active' : ''}`}
+              onClick={toggleAutoNext}
             >
-              {isPlaying ? (
+              {autoNext ? (
                 <svg viewBox="0 0 24 24" fill="currentColor">
-                  <rect x="6" y="5" width="4" height="14" />
-                  <rect x="14" y="5" width="4" height="14" />
+                  <text x="2" y="17" fontSize="12">AUTO</text>
+                  <polygon points="14,7 20,12 14,17" />
                 </svg>
               ) : (
                 <svg viewBox="0 0 24 24" fill="currentColor">
-                  <polygon points="8,5 19,12 8,19" />
+                  <text x="2" y="17" fontSize="12">A</text>
+                  <polygon points="10,7 16,12 10,17" />
+                  <line x1="2" y1="7" x2="22" y2="17" stroke="currentColor" strokeWidth="2" />
                 </svg>
               )}
             </button>
             <button
-              className="control-button"
-              disabled={!nextSong}
-              onClick={() => {
-                if (!nextSong) return;
-                autoScrollRef.current = true;
-                router.push(`/call-guide/${nextSong.slug}`);
-              }}
+              className={`small-glass-button repeat-${repeatMode}`}
+              onClick={cycleRepeat}
+            >
+              {repeatMode === 'one' ? (
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17 1l4 4-4 4" />
+                  <path d="M3 11v-3a6 6 0 016-6h8" stroke="currentColor" strokeWidth="2" fill="none" />
+                  <path d="M7 23l-4-4 4-4" />
+                  <path d="M21 13v3a6 6 0 01-6 6H7" stroke="currentColor" strokeWidth="2" fill="none" />
+                  <text x="11" y="17" fontSize="8">1</text>
+                </svg>
+              ) : repeatMode === 'all' ? (
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17 1l4 4-4 4" />
+                  <path d="M3 11v-3a6 6 0 016-6h8" stroke="currentColor" strokeWidth="2" fill="none" />
+                  <path d="M7 23l-4-4 4-4" />
+                  <path d="M21 13v3a6 6 0 01-6 6H7" stroke="currentColor" strokeWidth="2" fill="none" />
+                </svg>
+              ) : (
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17 1l4 4-4 4" />
+                  <path d="M3 11v-3a6 6 0 016-6h8" stroke="currentColor" strokeWidth="2" fill="none" />
+                </svg>
+              )}
+            </button>
+            <button
+              className={`small-glass-button${shuffle ? ' active' : ''}`}
+              onClick={toggleShuffle}
             >
               <svg viewBox="0 0 24 24" fill="currentColor">
-                <polygon points="9,5 17,12 9,19" />
-                <rect x="17" y="5" width="2" height="14" />
+                <path d="M4 4h4l5 8 5-8h2" stroke="currentColor" strokeWidth="2" fill="none" />
+                <path d="M4 20h4l5-8 5 8h2" stroke="currentColor" strokeWidth="2" fill="none" />
               </svg>
             </button>
           </div>
+          <button className="triangle-toggle" onClick={() => setExtraOpen((p) => !p)}>
+            {extraOpen ? '▼' : '▲'}
+          </button>
         </div>
 
         <ScrollTopButton />
       </main>
+      {activePlaylist && (
+        <div className="current-playlist-bar" onClick={openPlaylistModal}>
+          <span className="current-playlist-name">{activePlaylist.name}</span>
+          <button
+            className="glass-button"
+            onClick={(e) => {
+              e.stopPropagation();
+              selectPlaylist('default');
+            }}
+          >
+            전체 곡
+          </button>
+        </div>
+      )}
+      {showPlaylistModal && (
+        <div className="playlist-modal" onClick={closePlaylistModal}>
+          <div className="playlist-modal-content" onClick={(e) => e.stopPropagation()}>
+            <ul>
+              <li onClick={() => selectPlaylist('default')}>전체 곡</li>
+              {playlists.map((pl, i) => (
+                <li key={i} onClick={() => selectPlaylist(pl)}>{pl.name}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+      {showPlaylistSongs && activePlaylist && (
+        <div className="playlist-modal" onClick={closePlaylistSongs}>
+          <div className="playlist-songs-popup" onClick={(e) => e.stopPropagation()}>
+            <ul ref={songListRef}>
+              {activePlaylist.slugs.map((slug) => {
+                const s = songs.find((song) => song.slug === slug);
+                if (!s) return null;
+                return (
+                  <li
+                    key={slug}
+                    className={`playlist-song-item${slug === song.slug ? ' active' : ''}`}
+                    onClick={() => {
+                      router.push(`/call-guide/${slug}`);
+                      closePlaylistSongs();
+                    }}
+                  >
+                    {s.title}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </div>
+      )}
     </SpoilerGate>
   );
 }
