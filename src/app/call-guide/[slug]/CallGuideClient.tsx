@@ -95,6 +95,17 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const [showPrevTooltip, setShowPrevTooltip] = useState(false);
   const [showNextTooltip, setShowNextTooltip] = useState(false);
 
+  useEffect(() => {
+    const stored = localStorage.getItem('callGuideAutoNext');
+    if (stored !== null) {
+      setAutoNext(stored === 'true');
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('callGuideAutoNext', String(autoNext));
+  }, [autoNext]);
+
   const playlistOrderRef = useRef<string[]>([]);
   useEffect(() => {
     playlistOrderRef.current = playlistOrder;
@@ -119,6 +130,16 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   useEffect(() => {
     songsRef.current = songs;
   }, [songs]);
+
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'hidden' && isPlaying) {
+        playerRef.current?.playVideo?.();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, [isPlaying]);
 
   const songDurations = useMemo(() => {
     const map: Record<string, number> = {};
@@ -515,6 +536,8 @@ const volumeControlsRef = useRef<HTMLDivElement | null>(null);
           iv_load_policy: 3,
           rel: 0,
           modestbranding: 1,
+          playsinline: 1,
+          autoplay: autoNextRef.current ? 1 : 0,
         },
         events: {
           onReady: (e: { target: YTPlayer }) => {
@@ -523,10 +546,16 @@ const volumeControlsRef = useRef<HTMLDivElement | null>(null);
             setVolume(e.target.getVolume?.() ?? 100);
             const m = e.target.isMuted?.() ?? false;
             setMuted(m);
+            const iframe = e.target.getIframe?.();
+            iframe?.setAttribute('allow', 'autoplay');
+            iframe?.setAttribute('playsinline', '1');
             autoScrollRef.current = true;
             scrollToLine(activeLineRef.current);
             if (pendingSeekRef.current != null) {
               playerRef.current?.seekTo?.(pendingSeekRef.current, true);
+            }
+            if (autoNextRef.current) {
+              e.target.playVideo?.();
             }
           },
           onStateChange: (e: { data: number }) => {

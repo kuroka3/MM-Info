@@ -322,15 +322,17 @@
 
 
 .song-index-wrapper {
-  position: relative;
+  position: absolute;
+  top: 1rem;
+  bottom: 1rem;
+  left: 1rem;
   width: 40px;
-  min-height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
 }
 
 .song-index {
+  position: absolute;
+  top: 0;
+  left: 0;
   pointer-events: none;
   z-index: 1;
 }
@@ -345,14 +347,25 @@
   cursor: grab;
   opacity: 0.7;
   z-index: 2;
+  touch-action: none;
 }
 
 @media (max-width: 600px) {
+  .call-item {
+    padding-left: 1rem;
+  }
   .song-index-wrapper {
+    position: relative;
+    top: auto;
+    bottom: auto;
+    left: auto;
     width: 100%;
     min-height: 40px;
     justify-content: flex-start;
     align-items: center;
+  }
+  .song-index {
+    position: static;
   }
   .song-drag-handle {
     top: 50%;
@@ -636,6 +649,7 @@
   align-items: flex-start;
   gap: 1rem;
   padding: 1rem;
+  padding-left: calc(1rem + 40px);
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: 24px;

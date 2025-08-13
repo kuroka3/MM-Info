@@ -45,6 +45,8 @@ export default function CallGuideIndexClient({ songs }: Props) {
   const touchTimerRef = useRef<NodeJS.Timeout | null>(null);
   const dragItemRef = useRef<HTMLElement | null>(null);
   const touchStartY = useRef(0);
+  const swappingRef = useRef(false);
+  const swapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem('callGuidePlaylists');
@@ -268,12 +270,15 @@ export default function CallGuideIndexClient({ songs }: Props) {
         dragItemRef.current = item;
         item.classList.add('dragging');
         item.style.transition = 'none';
+        document.body.style.overflow = 'hidden';
       }
     }, 300);
   };
 
   const swapSong = (from: number, to: number) => {
     if (!activePlaylist || isDefaultPlaylist) return;
+    if (swapTimeoutRef.current) clearTimeout(swapTimeoutRef.current);
+    swappingRef.current = true;
     const container = document.querySelector('.call-list');
     if (!container) return;
     const rectMap = new Map<string, DOMRect>();
@@ -318,16 +323,20 @@ export default function CallGuideIndexClient({ songs }: Props) {
                 { transform: `translateY(${dy}px)` },
                 { transform: 'translateY(0)' },
               ],
-              { duration: 300, easing: 'cubic-bezier(0.455, 0.03, 0.515, 0.955)' },
+              { duration: 500, easing: 'ease-in-out' },
             );
           }
         }
       });
     });
+    swapTimeoutRef.current = setTimeout(() => {
+      swappingRef.current = false;
+    }, 550);
   };
 
   const handleSongTouchMove = (e: React.TouchEvent) => {
     if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+    if (swappingRef.current) return;
     if (songDragIndex !== null) {
       const touch = e.touches[0];
       const y = touch.clientY;
@@ -357,6 +366,8 @@ export default function CallGuideIndexClient({ songs }: Props) {
 
   const handleSongDrop = (index: number) => {
     if (songDragIndex === null || songDragIndex === index || !activePlaylist || isDefaultPlaylist) return;
+    if (swapTimeoutRef.current) clearTimeout(swapTimeoutRef.current);
+    swappingRef.current = true;
     const container = document.querySelector('.call-list');
     if (!container) return;
     const rectMap = new Map<string, DOMRect>();
@@ -401,7 +412,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
                 { transform: `translateY(${dy}px)` },
                 { transform: 'translateY(0)' },
               ],
-              { duration: 300, easing: 'cubic-bezier(0.455, 0.03, 0.515, 0.955)' },
+              { duration: 500, easing: 'ease-in-out' },
             );
           }
         }
@@ -413,7 +424,11 @@ export default function CallGuideIndexClient({ songs }: Props) {
       dragItemRef.current.classList.remove('dragging');
       dragItemRef.current = null;
     }
+    document.body.style.overflow = '';
     setSongDragIndex(null);
+    swapTimeoutRef.current = setTimeout(() => {
+      swappingRef.current = false;
+    }, 550);
   };
 
   const handleSongTouchEnd = (e: React.TouchEvent) => {
@@ -424,6 +439,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
       dragItemRef.current.classList.remove('dragging');
       dragItemRef.current = null;
     }
+    document.body.style.overflow = '';
     const touch = e.changedTouches[0];
     const target = document.elementFromPoint(window.innerWidth / 2, touch.clientY);
     const item = target?.closest('[data-song-index]') as HTMLElement | null;
@@ -448,6 +464,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
         handleSongDrop(dropIndex);
       }
     }
+    document.body.style.overflow = '';
     setSongDragIndex(null);
   };
 
