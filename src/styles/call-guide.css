@@ -54,8 +54,10 @@
   transition: transform 0.3s ease, opacity 0.3s ease;
   justify-content: center;
   white-space: nowrap;
-  font-size: clamp(0.8rem, 2.5vw, 1rem);
+  font-size: clamp(0.7rem, 2.5vw, 1rem);
   text-align: center;
+  display: flex;
+  align-items: center;
 }
 
 .sort-button.show {
@@ -318,17 +320,20 @@
   font-size: 1.1em;
 }
 
+
 .song-index-wrapper {
   position: relative;
   width: 40px;
   align-self: stretch;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: flex-start;
+  align-items: flex-start;
 }
 
 .song-index {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
   z-index: 1;
   pointer-events: none;
 }
@@ -346,10 +351,18 @@
 }
 
 @media (max-width: 600px) {
+  .song-index-wrapper {
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .song-index {
+    left: 50%;
+    transform: translateX(-50%);
+  }
   .song-drag-handle {
-    left: calc(100% + 4px);
-    top: 50%;
-    transform: translateY(-50%);
+    top: 0;
+    left: 100%;
+    transform: translate(-100%, 0);
   }
 }
 
@@ -718,11 +731,11 @@
   }
 
   .player-controls {
-    transform: translateX(calc(-50% - 60px));
+    transform: translateX(-50%);
   }
 
   .player-bottom-row {
-    padding-right: 120px;
+    padding-right: 0;
   }
 
   .volume-controls {
@@ -997,7 +1010,7 @@
     height: 16px;
   }
   .seek-container {
-    width: 60vw;
+    width: 90vw;
     margin-left: auto;
     margin-right: auto;
   }
@@ -1018,9 +1031,8 @@
     align-items: center;
   }
   .player-bottom-row {
-    width: 60vw;
+    width: 100%;
     justify-content: center;
-    padding-right: 0;
     margin: 0 auto;
   }
   .player-buttons {
@@ -1040,7 +1052,7 @@
 @media (max-width: 360px) {
   .player-controls {
     left: 50%;
-    transform: translateX(calc(-50% - 60px));
+    transform: translateX(-50%);
     align-items: center;
   }
   .seek-container {
@@ -1049,9 +1061,8 @@
     margin-right: auto;
   }
   .player-bottom-row {
-    width: calc(100vw - 100px);
+    width: 100%;
     justify-content: center;
-    padding-right: 120px;
     margin: 0 auto;
   }
   .player-buttons {

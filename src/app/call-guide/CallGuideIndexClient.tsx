@@ -150,24 +150,28 @@ export default function CallGuideIndexClient({ songs }: Props) {
   const shouldShowSort = !isDefaultPlaylist && !isSorted;
 
   useEffect(() => {
-    const btn = sortButtonRef.current;
     if (shouldShowSort) {
       setShowSortButton(true);
+    } else {
+      const btn = sortButtonRef.current;
+      if (btn) {
+        btn.classList.remove('show');
+        btn.classList.add('hide');
+      }
+      const t = setTimeout(() => setShowSortButton(false), 300);
+      return () => clearTimeout(t);
+    }
+  }, [shouldShowSort]);
+
+  useEffect(() => {
+    if (showSortButton) {
+      const btn = sortButtonRef.current;
       requestAnimationFrame(() => {
         btn?.classList.add('show');
         btn?.classList.remove('hide');
       });
-    } else if (btn) {
-      btn.classList.remove('show');
-      btn.classList.add('hide');
-      const t = setTimeout(() => {
-        setShowSortButton(false);
-      }, 300);
-      return () => clearTimeout(t);
-    } else {
-      setShowSortButton(false);
     }
-  }, [shouldShowSort]);
+  }, [showSortButton]);
 
   const openPlaylistModal = () => setShowPlaylistModal(true);
   const closePlaylistModal = () => {
@@ -503,23 +507,9 @@ export default function CallGuideIndexClient({ songs }: Props) {
                 style={{ textDecoration: 'none' }}
                 onClick={handleSongClick}
                 data-song-index={index}
-                draggable={!isDefaultPlaylist}
-                onDragStart={(e) => {
-                  handleSongDragStart(index);
-                  e.dataTransfer?.setDragImage(
-                    e.currentTarget,
-                    e.currentTarget.clientWidth / 2,
-                    e.currentTarget.clientHeight / 2,
-                  );
-                }}
                 onDragOver={(e) => {
                   if (!isDefaultPlaylist) e.preventDefault();
                 }}
-                onDrop={handleSongDragEnd}
-                onDragEnd={handleSongDragEnd}
-                onTouchStart={() => handleSongTouchStart(index)}
-                onTouchMove={handleSongTouchMove}
-                onTouchEnd={handleSongTouchEnd}
               >
                 {colors.length > 0 && <div style={borderStyle} />}
                 <div className="song-index-wrapper">
@@ -531,6 +521,22 @@ export default function CallGuideIndexClient({ songs }: Props) {
                       width={24}
                       height={24}
                       className="song-drag-handle"
+                      draggable
+                      onDragStart={(e) => {
+                        handleSongDragStart(index);
+                        e.dataTransfer?.setDragImage(
+                          e.currentTarget,
+                          e.currentTarget.clientWidth / 2,
+                          e.currentTarget.clientHeight / 2,
+                        );
+                      }}
+                      onDragEnd={handleSongDragEnd}
+                      onTouchStart={(e) => {
+                        e.preventDefault();
+                        handleSongTouchStart(index);
+                      }}
+                      onTouchMove={handleSongTouchMove}
+                      onTouchEnd={handleSongTouchEnd}
                     />
                   )}
                 </div>
