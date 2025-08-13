@@ -6,9 +6,9 @@ import type { Song } from '@prisma/client';
 import type { Metadata } from 'next';
 
 interface PageProps {
-  params: Promise<{
+  params: {
     slug: string;
-  }>;
+  };
 }
 
 export const revalidate = 60;
@@ -47,8 +47,7 @@ const getSongData = async (
 };
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const { song } = await getSongData(slug);
+  const { song } = await getSongData(params.slug);
   return {
     title: `${song.krtitle ? song.krtitle : song.title} - 콜 가이드`,
   };
@@ -66,8 +65,7 @@ export async function generateStaticParams() {
 }
 
 export default async function CallGuideSongPage({ params }: PageProps) {
-  const { slug } = await params;
-  const { song, songs } = await getSongData(slug);
+  const { song, songs } = await getSongData(params.slug);
 
   return <CallGuideClient song={song} songs={songs} />;
 }
