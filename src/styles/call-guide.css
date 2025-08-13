@@ -16,8 +16,19 @@
   top: 1rem;
   right: 1rem;
   display: flex;
-  gap: 0.5rem;
+  flex-direction: column;
+  gap: 0.75rem;
   z-index: 20;
+}
+
+.call-guide-actions .glass-button {
+  padding: 1rem 1.5rem;
+  font-size: 1.1rem;
+  background: rgba(255, 255, 255, 0.85);
+  border: 2px solid var(--glass-border);
+  border-radius: 12px;
+  backdrop-filter: blur(20px);
+  cursor: pointer;
 }
 
 .glass-button {
@@ -67,8 +78,54 @@
   right: 1rem;
   bottom: 1rem;
   display: flex;
-  gap: 0.5rem;
+  gap: 1rem;
   z-index: 20;
+}
+
+.confirm-button,
+.cancel-button {
+  padding: 1rem 2rem;
+  font-size: 1.25rem;
+  border-radius: 12px;
+  border: 2px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  cursor: pointer;
+}
+
+.confirm-button {
+  background: #39c5bb;
+  color: #000;
+}
+
+.cancel-button {
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+}
+
+.playlist-name-popup {
+  background: rgba(255, 255, 255, 0.85);
+  border: 2px solid #39c5bb;
+  backdrop-filter: blur(20px);
+  padding: 1rem;
+  border-radius: 12px;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.playlist-name-popup input {
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+  background: rgba(0, 0, 0, 0.3);
+  color: inherit;
+}
+
+.name-modal-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
 }
 
 .playlist-modal {

@@ -35,6 +35,8 @@ export default function CallGuideIndexClient({ songs }: Props) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
+  const [showNameModal, setShowNameModal] = useState(false);
+  const [playlistName, setPlaylistName] = useState('');
 
   useEffect(() => {
     const stored = localStorage.getItem('callGuidePlaylists');
@@ -57,14 +59,24 @@ export default function CallGuideIndexClient({ songs }: Props) {
 
   const confirmSelection = () => {
     if (selected.size === 0) return;
-    const name = prompt('재생목록 이름을 입력하세요');
-    if (!name) return;
-    const newPlaylist = { name, slugs: Array.from(selected) };
+    setShowNameModal(true);
+  };
+
+  const createPlaylist = () => {
+    if (!playlistName.trim()) return;
+    const newPlaylist = { name: playlistName.trim(), slugs: Array.from(selected) };
     const updated = [...playlists, newPlaylist];
     setPlaylists(updated);
     localStorage.setItem('callGuidePlaylists', JSON.stringify(updated));
     setSelected(new Set());
     setSelectMode(false);
+    setPlaylistName('');
+    setShowNameModal(false);
+  };
+
+  const cancelNameModal = () => {
+    setPlaylistName('');
+    setShowNameModal(false);
   };
 
   const cancelSelection = () => {
@@ -99,7 +111,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
           재생목록
         </button>
         <button className="glass-button" onClick={() => setSelectMode(true)}>
-          선택
+          + 새 재생목록
         </button>
       </div>
 
@@ -219,10 +231,10 @@ export default function CallGuideIndexClient({ songs }: Props) {
             {selected.size}곡 선택됨
           </div>
           <div className="selection-actions">
-            <button className="glass-button" onClick={confirmSelection}>
-              확인
+            <button className="confirm-button" onClick={confirmSelection}>
+              선택
             </button>
-            <button className="glass-button" onClick={cancelSelection}>
+            <button className="cancel-button" onClick={cancelSelection}>
               취소
             </button>
           </div>
@@ -241,6 +253,32 @@ export default function CallGuideIndexClient({ songs }: Props) {
                 </li>
               ))}
             </ul>
+          </div>
+        </div>
+      )}
+
+      {showNameModal && (
+        <div className="playlist-modal" onClick={cancelNameModal}>
+          <div
+            className="playlist-name-popup"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3>재생목록 이름</h3>
+            <input
+              type="text"
+              value={playlistName}
+              onChange={(e) => setPlaylistName(e.target.value)}
+              placeholder="이름 입력"
+              autoFocus
+            />
+            <div className="name-modal-actions">
+              <button className="confirm-button" onClick={createPlaylist}>
+                선택
+              </button>
+              <button className="cancel-button" onClick={cancelNameModal}>
+                취소
+              </button>
+            </div>
           </div>
         </div>
       )}
