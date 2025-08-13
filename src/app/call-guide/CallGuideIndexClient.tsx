@@ -272,6 +272,60 @@ export default function CallGuideIndexClient({ songs }: Props) {
     }, 300);
   };
 
+  const swapSong = (from: number, to: number) => {
+    if (!activePlaylist || isDefaultPlaylist) return;
+    const container = document.querySelector('.call-list');
+    if (!container) return;
+    const rectMap = new Map<string, DOMRect>();
+    const children = Array.from(container.children) as HTMLElement[];
+    activePlaylist.slugs.forEach((slug, i) => {
+      const el = children[i];
+      if (el) rectMap.set(slug, el.getBoundingClientRect());
+    });
+
+    const updatedSlugs = [...activePlaylist.slugs];
+    const [moved] = updatedSlugs.splice(from, 1);
+    updatedSlugs.splice(to, 0, moved);
+
+    setActivePlaylist(prev => {
+      if (!prev) return prev;
+      const updated = { ...prev, slugs: updatedSlugs };
+      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(updated));
+      setPlaylists(pls => {
+        const idx = pls.findIndex(p => p.name === prev.name);
+        if (idx >= 0) {
+          const newPls = [...pls];
+          newPls[idx] = { ...newPls[idx], slugs: updatedSlugs };
+          localStorage.setItem('callGuidePlaylists', JSON.stringify(newPls));
+          return newPls;
+        }
+        return pls;
+      });
+      return updated;
+    });
+
+    requestAnimationFrame(() => {
+      const newChildren = Array.from(container.children) as HTMLElement[];
+      updatedSlugs.forEach((slug, i) => {
+        const el = newChildren[i];
+        const prevRect = rectMap.get(slug);
+        if (el && prevRect) {
+          const newRect = el.getBoundingClientRect();
+          const dy = prevRect.top - newRect.top;
+          if (dy) {
+            el.animate(
+              [
+                { transform: `translateY(${dy}px)` },
+                { transform: 'translateY(0)' },
+              ],
+              { duration: 300, easing: 'cubic-bezier(0.455, 0.03, 0.515, 0.955)' },
+            );
+          }
+        }
+      });
+    });
+  };
+
   const handleSongTouchMove = (e: React.TouchEvent) => {
     if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
     if (songDragIndex !== null) {
@@ -280,6 +334,19 @@ export default function CallGuideIndexClient({ songs }: Props) {
       const deltaY = y - touchStartY.current;
       if (dragItemRef.current) {
         dragItemRef.current.style.transform = `translateY(${deltaY}px) scale(1.05)`;
+      }
+      const target = document.elementFromPoint(window.innerWidth / 2, y);
+      const item = target?.closest('[data-song-index]') as HTMLElement | null;
+      if (item) {
+        const overIndex = parseInt(item.dataset.songIndex || '', 10);
+        if (!isNaN(overIndex) && overIndex !== songDragIndex) {
+          swapSong(songDragIndex, overIndex);
+          setSongDragIndex(overIndex);
+          touchStartY.current = y;
+          if (dragItemRef.current) {
+            dragItemRef.current.style.transform = 'scale(1.05)';
+          }
+        }
       }
       const threshold = 50;
       if (y < threshold) window.scrollBy({ top: -10, behavior: 'smooth' });

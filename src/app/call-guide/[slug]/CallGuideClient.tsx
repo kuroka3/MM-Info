@@ -160,7 +160,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     if (activeStored) {
       try {
         active = JSON.parse(activeStored);
-        if (active.name === 'default' || active.name === '전체 곡') {
+        if (active?.name === 'default' || active?.name === '전체 곡') {
           active = { name: '전체 곡', slugs: songs.map((s) => s.slug!) };
           localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
         }
@@ -236,10 +236,12 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
 
   const songListRef = useRef<HTMLUListElement | null>(null);
   const [songDragIndex, setSongDragIndex] = useState<number | null>(null);
-  const touchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const wasDraggingRef = useRef(false);
-  const originalOrderRef = useRef<string[]>([]);
-  const prevPlaylistNameRef = useRef<string | null>(null);
+const touchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+const wasDraggingRef = useRef(false);
+const originalOrderRef = useRef<string[]>([]);
+const prevPlaylistNameRef = useRef<string | null>(null);
+const playerButtonsRef = useRef<HTMLDivElement | null>(null);
+const volumeControlsRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (activePlaylist && activePlaylist.name !== prevPlaylistNameRef.current) {
@@ -255,6 +257,22 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       item?.scrollIntoView({ block: 'center' });
     }
   }, [showPlaylistSongs, playlistOrder, song.slug, activePlaylist]);
+
+  useEffect(() => {
+    const adjust = () => {
+      const buttons = playerButtonsRef.current;
+      const volume = volumeControlsRef.current;
+      const container = buttons?.parentElement;
+      if (!buttons || !volume || !container) return;
+      const gap = 0;
+      const total = buttons.offsetWidth + gap + volume.offsetWidth;
+      if (total > container.offsetWidth) volume.classList.add('compact');
+      else volume.classList.remove('compact');
+    };
+    adjust();
+    window.addEventListener('resize', adjust);
+    return () => window.removeEventListener('resize', adjust);
+  }, []);
 
   const handleSongDragStart = (index: number) => {
     if (activePlaylistRef.current?.name === '전체 곡') return;
@@ -843,7 +861,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
           />
           </div>
           <div className="player-bottom-row">
-            <div className="player-buttons">
+            <div className="player-buttons" ref={playerButtonsRef}>
               <div className="tooltip-wrapper">
                 <button
                   className="control-button"
@@ -932,7 +950,10 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                 )}
               </div>
             </div>
-            <div className={`volume-controls${muted ? ' disabled' : ''}`}>
+            <div
+              ref={volumeControlsRef}
+              className={`volume-controls${muted ? ' disabled' : ''}`}
+            >
               <button className={`control-button${muted ? ' muted' : ''}`} onClick={toggleMute}>
                 {muted ? (
                   <svg viewBox="0 0 24 24" fill="currentColor">
