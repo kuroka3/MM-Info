@@ -45,13 +45,14 @@ declare global {
 }
 
 interface CallGuideClientProps {
-    song: Song;
-    prevSong: Song | null;
-    nextSong: Song | null;
+  song: Song;
+  songs: Song[];
 }
 
-export default function CallGuideClient({ song, prevSong, nextSong }: CallGuideClientProps) {
+export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const router = useRouter();
+  const [prevSong, setPrevSong] = useState<Song | null>(null);
+  const [nextSong, setNextSong] = useState<Song | null>(null);
   const playerRef = useRef<YTPlayer | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [displayTime, setDisplayTime] = useState(0);
@@ -69,6 +70,27 @@ export default function CallGuideClient({ song, prevSong, nextSong }: CallGuideC
   const activeLineRef = useRef(0);
   const pendingSeekRef = useRef<number | null>(null);
   const [skipGap, setSkipGap] = useState<{ target: number; showAt: number; end: number } | null>(null);
+
+  useEffect(() => {
+    let playlistSlugs: string[] | undefined;
+    const stored = typeof window !== 'undefined' ? localStorage.getItem('callGuideActivePlaylist') : null;
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed.slugs)) playlistSlugs = parsed.slugs as string[];
+      } catch {
+        /* ignore */
+      }
+    }
+    if (!playlistSlugs || playlistSlugs.length === 0) {
+      playlistSlugs = songs.map((s) => s.slug!);
+    }
+    const idx = playlistSlugs.indexOf(song.slug!);
+    const prevSlug = playlistSlugs[idx - 1];
+    const nextSlug = playlistSlugs[idx + 1];
+    setPrevSong(songs.find((s) => s.slug === prevSlug) || null);
+    setNextSong(songs.find((s) => s.slug === nextSlug) || null);
+  }, [song, songs]);
 
   const interpolateTokens = (tokens: Token[]): Token[] => {
     const res = tokens.map((t) => ({ ...t }));

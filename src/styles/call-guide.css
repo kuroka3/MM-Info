@@ -11,6 +11,101 @@
   margin-top: 2rem;
 }
 
+.call-guide-actions {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  z-index: 20;
+}
+
+.glass-button {
+  padding: 0.5rem 1rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  backdrop-filter: blur(20px);
+  cursor: pointer;
+}
+
+.select-marker {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.select-marker-inner {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #39c5bb;
+}
+
+.selection-info {
+  position: fixed;
+  left: 1rem;
+  bottom: 1rem;
+  padding: 0.5rem 1rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  backdrop-filter: blur(20px);
+  z-index: 20;
+}
+
+.selection-actions {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  display: flex;
+  gap: 0.5rem;
+  z-index: 20;
+}
+
+.playlist-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+}
+
+.playlist-modal-content {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(20px);
+  padding: 1rem;
+  border-radius: 12px;
+  min-width: 200px;
+}
+
+.playlist-modal-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.playlist-modal-content li {
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.playlist-modal-content li:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
 
 .call-item {
   display: flex;

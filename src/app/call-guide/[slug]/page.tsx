@@ -13,29 +13,38 @@ interface PageProps {
 
 export const revalidate = 60;
 
-const getSongData = async (slug: string): Promise<{ song: Song; prevSong: Song | null; nextSong: Song | null }> => {
-    const allCallSongs = await prisma.song.findMany({
-        where: {
-          slug: { not: null },
-          videoId: { not: null },
-          summary: { not: null },
-          lyrics: { not: Prisma.JsonNull },
-        },
-        orderBy: { slug: 'asc' },
-    });
+const getSongData = async (
+  slug: string
+): Promise<{ song: Song; songs: Song[] }> => {
+  const songs = await prisma.song.findMany({
+    where: {
+      slug: { not: null },
+      videoId: { not: null },
+      summary: { not: null },
+      lyrics: { not: Prisma.JsonNull },
+    },
+    include: {
+      setlists: {
+        select: { order: true, higawari: true, locationgawari: true },
+        orderBy: { order: 'asc' },
+        take: 1,
+      },
+    },
+  });
 
-    const songIndex = allCallSongs.findIndex((s) => s.slug === slug);
+  songs.sort((a, b) => {
+    const orderA = a.setlists[0]?.order ?? Number.MAX_SAFE_INTEGER;
+    const orderB = b.setlists[0]?.order ?? Number.MAX_SAFE_INTEGER;
+    return orderA - orderB;
+  });
 
-    if (songIndex === -1) {
-        notFound();
-    }
+  const song = songs.find((s) => s.slug === slug);
+  if (!song) {
+    notFound();
+  }
 
-    const song = allCallSongs[songIndex];
-    const prevSong = songIndex > 0 ? allCallSongs[songIndex - 1] : null;
-    const nextSong = songIndex < allCallSongs.length - 1 ? allCallSongs[songIndex + 1] : null;
-
-    return { song, prevSong, nextSong };
-}
+  return { song, songs };
+};
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
@@ -58,7 +67,7 @@ export async function generateStaticParams() {
 
 export default async function CallGuideSongPage({ params }: PageProps) {
   const { slug } = await params;
-  const { song, prevSong, nextSong } = await getSongData(slug);
+  const { song, songs } = await getSongData(slug);
 
-  return <CallGuideClient song={song} prevSong={prevSong} nextSong={nextSong} />;
+  return <CallGuideClient song={song} songs={songs} />;
 }

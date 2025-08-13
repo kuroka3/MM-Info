@@ -1,0 +1,244 @@
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import type { Prisma } from '@prisma/client';
+
+const partColors = {
+  MIKU: '#39c5bbaa',
+  RIN: '#ffa500aa',
+  LEN: '#ffe211aa',
+  LUKA: '#ffc0cbaa',
+  KAITO: '#0000ffaa',
+  MEIKO: '#d80000aa',
+} as const;
+
+ type SongWithSetlist = Prisma.SongGetPayload<{ include: { setlists: { select: { order: true; higawari: true; locationgawari: true }; orderBy: { order: 'asc' }; take: 1 } } }>;
+
+interface Playlist {
+  name: string;
+  slugs: string[];
+}
+
+interface Props {
+  songs: SongWithSetlist[];
+}
+
+export default function CallGuideIndexClient({ songs }: Props) {
+  const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [showPlaylistModal, setShowPlaylistModal] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('callGuidePlaylists');
+    if (stored) {
+      try {
+        setPlaylists(JSON.parse(stored));
+      } catch {
+        /* ignore */
+      }
+    }
+  }, []);
+
+  const toggleSelect = useCallback((slug: string) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(slug)) next.delete(slug); else next.add(slug);
+      return next;
+    });
+  }, []);
+
+  const confirmSelection = () => {
+    if (selected.size === 0) return;
+    const name = prompt('재생목록 이름을 입력하세요');
+    if (!name) return;
+    const newPlaylist = { name, slugs: Array.from(selected) };
+    const updated = [...playlists, newPlaylist];
+    setPlaylists(updated);
+    localStorage.setItem('callGuidePlaylists', JSON.stringify(updated));
+    setSelected(new Set());
+    setSelectMode(false);
+  };
+
+  const cancelSelection = () => {
+    setSelected(new Set());
+    setSelectMode(false);
+  };
+
+  const openPlaylistModal = () => setShowPlaylistModal(true);
+  const closePlaylistModal = () => setShowPlaylistModal(false);
+
+  const selectPlaylist = (pl: Playlist | 'default') => {
+    const active =
+      pl === 'default'
+        ? { name: 'default', slugs: songs.map((s) => s.slug!) }
+        : pl;
+    localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
+    closePlaylistModal();
+  };
+
+  const handleSongClick = () => {
+    const active = localStorage.getItem('callGuideActivePlaylist');
+    if (!active) {
+      const def = { name: 'default', slugs: songs.map((s) => s.slug!) };
+      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(def));
+    }
+  };
+
+  return (
+    <>
+      <div className="call-guide-actions">
+        <button className="glass-button" onClick={openPlaylistModal}>
+          재생목록
+        </button>
+        <button className="glass-button" onClick={() => setSelectMode(true)}>
+          선택
+        </button>
+      </div>
+
+      <div className="call-list">
+        {songs.map((song) => {
+          const first = song.setlists[0];
+          const order = first?.order ?? 0;
+          const itemClass = first?.higawari
+            ? 'call-item higawari'
+            : first?.locationgawari
+            ? 'call-item locationgawari'
+            : 'call-item';
+
+          const colors = song.part
+            ? song.part
+                .map((name) => partColors[name as keyof typeof partColors])
+                .filter(Boolean)
+            : [];
+
+          const borderStyle =
+            colors.length > 0
+              ? {
+                  position: 'absolute' as const,
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  borderRadius: '24px',
+                  padding: '2px',
+                  background:
+                    colors.length === 1
+                      ? colors[0]
+                      : `linear-gradient(to bottom right, ${colors.join(', ')})`,
+                  WebkitMask:
+                    'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                  WebkitMaskComposite: 'xor',
+                  maskComposite: 'exclude',
+                  pointerEvents: 'none',
+                }
+              : undefined;
+
+          if (selectMode) {
+            return (
+              <div
+                key={song.slug!}
+                className={itemClass}
+                onClick={() => toggleSelect(song.slug!)}
+                style={{ textDecoration: 'none', cursor: 'pointer' }}
+              >
+                {colors.length > 0 && <div style={borderStyle} />}
+                <span className="song-index">{order}</span>
+                <div className="call-info-link">
+                  <Image
+                    src={song.thumbnail!}
+                    alt={song.title}
+                    width={80}
+                    height={80}
+                    className="song-jacket"
+                  />
+                  <div className="song-text-info">
+                    <p className="song-title">
+                      {song.krtitle ? song.krtitle : song.title}
+                    </p>
+                    <p className="song-artist">{song.artist}</p>
+                  </div>
+                </div>
+                <div className="call-item-summary">
+                  {song.summary!.split('\n').map((line, i) => (
+                    <p key={i}>{line}</p>
+                  ))}
+                </div>
+                <div className="select-marker">
+                  {selected.has(song.slug!) && <div className="select-marker-inner" />}
+                </div>
+              </div>
+            );
+          }
+
+          return (
+            <Link
+              key={song.slug!}
+              href={`/call-guide/${song.slug}`}
+              className={itemClass}
+              style={{ textDecoration: 'none' }}
+              onClick={handleSongClick}
+            >
+              {colors.length > 0 && <div style={borderStyle} />}
+              <span className="song-index">{order}</span>
+              <div className="call-info-link">
+                <Image
+                  src={song.thumbnail!}
+                  alt={song.title}
+                  width={80}
+                  height={80}
+                  className="song-jacket"
+                />
+                <div className="song-text-info">
+                  <p className="song-title">
+                    {song.krtitle ? song.krtitle : song.title}
+                  </p>
+                  <p className="song-artist">{song.artist}</p>
+                </div>
+              </div>
+              <div className="call-item-summary">
+                {song.summary!.split('\n').map((line, i) => (
+                  <p key={i}>{line}</p>
+                ))}
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+
+      {selectMode && (
+        <>
+          <div className="selection-info">
+            {selected.size}곡 선택됨
+          </div>
+          <div className="selection-actions">
+            <button className="glass-button" onClick={confirmSelection}>
+              확인
+            </button>
+            <button className="glass-button" onClick={cancelSelection}>
+              취소
+            </button>
+          </div>
+        </>
+      )}
+
+      {showPlaylistModal && (
+        <div className="playlist-modal" onClick={closePlaylistModal}>
+          <div className="playlist-modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>재생목록 선택</h3>
+            <ul>
+              <li onClick={() => selectPlaylist('default')}>전체 곡</li>
+              {playlists.map((pl) => (
+                <li key={pl.name} onClick={() => selectPlaylist(pl)}>
+                  {pl.name}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
