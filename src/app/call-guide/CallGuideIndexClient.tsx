@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, type CSSProperties, } from 'react';
+import React, { useState, useEffect, useCallback, useRef, type CSSProperties } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Prisma } from '@prisma/client';
@@ -37,6 +37,8 @@ export default function CallGuideIndexClient({ songs }: Props) {
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
   const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null);
   const [colorIndex, setColorIndex] = useState<number | null>(null);
+  const [playlistColor, setPlaylistColor] = useState('rgba(255,255,255,0.1)');
+  const previousActive = useRef<Playlist | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem('callGuidePlaylists');
@@ -78,16 +80,32 @@ export default function CallGuideIndexClient({ songs }: Props) {
     setShowNameModal(true);
   };
 
+  const restorePrevious = () => {
+    if (previousActive.current) {
+      setActivePlaylist(previousActive.current);
+      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(previousActive.current));
+      previousActive.current = null;
+    }
+  };
+
   const createPlaylist = () => {
     if (!playlistName.trim()) return;
-    const newPlaylist = { name: playlistName.trim(), slugs: Array.from(selected) };
+    const color =
+      playlistColor === 'rgba(255,255,255,0.1)' ? undefined : playlistColor;
+    const newPlaylist = {
+      name: playlistName.trim(),
+      slugs: Array.from(selected),
+      color,
+    };
     const updated = [...playlists, newPlaylist];
     setPlaylists(updated);
     localStorage.setItem('callGuidePlaylists', JSON.stringify(updated));
     setSelected(new Set());
     setSelectMode(false);
     setPlaylistName('');
+    setPlaylistColor('rgba(255,255,255,0.1)');
     setShowNameModal(false);
+    restorePrevious();
   };
 
   const cancelNameModal = () => {
@@ -98,12 +116,23 @@ export default function CallGuideIndexClient({ songs }: Props) {
   const cancelSelection = () => {
     setSelected(new Set());
     setSelectMode(false);
+    restorePrevious();
   };
 
   const openPlaylistModal = () => setShowPlaylistModal(true);
   const closePlaylistModal = () => {
     setShowPlaylistModal(false);
     setColorIndex(null);
+  };
+
+  const startNewPlaylist = () => {
+    previousActive.current = activePlaylist;
+    const def = { name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+    setActivePlaylist(def);
+    localStorage.setItem('callGuideActivePlaylist', JSON.stringify(def));
+    setSelected(new Set());
+    setPlaylistColor('rgba(255,255,255,0.1)');
+    setSelectMode(true);
   };
 
   const selectPlaylist = (pl: Playlist | 'default') => {
@@ -180,7 +209,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
         </button>
         <button
           className="glass-button"
-          onClick={() => setSelectMode(true)}
+          onClick={startNewPlaylist}
         >
           <Image
             src="/images/plus.svg"
@@ -414,22 +443,32 @@ export default function CallGuideIndexClient({ songs }: Props) {
             className="playlist-name-popup"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3>재생목록 이름</h3>
-            <input
-              type="text"
-              value={playlistName}
-              onChange={(e) => setPlaylistName(e.target.value)}
-              placeholder="이름 입력"
-              autoFocus
-            />
-            <div className="name-modal-actions">
-              <button className="confirm-button" onClick={createPlaylist}>
-                선택
-              </button>
-              <button className="cancel-button" onClick={cancelNameModal}>
-                취소
-              </button>
-            </div>
+          <h3>재생목록 이름</h3>
+          <input
+            type="text"
+            value={playlistName}
+            onChange={(e) => setPlaylistName(e.target.value)}
+            placeholder="이름 입력"
+            autoFocus
+          />
+          <div className="color-palette">
+            {['rgba(255,255,255,0.1)', '#39c5bbaa', '#ffa500aa', '#ffe211aa', '#ffc0cbaa', '#0000ffaa', '#d80000aa'].map((c) => (
+              <span
+                key={c}
+                className={`palette-color${playlistColor === c ? ' selected' : ''}`}
+                style={{ background: c }}
+                onClick={() => setPlaylistColor(c)}
+              />
+            ))}
+          </div>
+          <div className="name-modal-actions">
+            <button className="confirm-button" onClick={createPlaylist}>
+              선택
+            </button>
+            <button className="cancel-button" onClick={cancelNameModal}>
+              취소
+            </button>
+          </div>
           </div>
         </div>
       )}
@@ -437,7 +476,9 @@ export default function CallGuideIndexClient({ songs }: Props) {
       {deleteIndex !== null && (
         <div className="playlist-modal" onClick={cancelDelete}>
           <div className="playlist-delete-popup" onClick={(e) => e.stopPropagation()}>
-            <p className="delete-playlist-title">{playlists[deleteIndex].name}</p>
+            <p>
+              &apos;<span className="delete-playlist-name">{playlists[deleteIndex].name}</span>&apos; 재생목록을
+            </p>
             <p>삭제하시겠습니까?</p>
             <div className="name-modal-actions">
               <button className="confirm-button" onClick={confirmDelete}>

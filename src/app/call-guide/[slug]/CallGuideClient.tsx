@@ -206,6 +206,18 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const toggleShuffle = () => setShuffle((prev) => !prev);
 
   const songListRef = useRef<HTMLUListElement | null>(null);
+  const [songDragIndex, setSongDragIndex] = useState<number | null>(null);
+  const touchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wasDraggingRef = useRef(false);
+  const originalOrderRef = useRef<string[]>([]);
+  const prevPlaylistNameRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (activePlaylist && activePlaylist.name !== prevPlaylistNameRef.current) {
+      originalOrderRef.current = [...activePlaylist.slugs];
+      prevPlaylistNameRef.current = activePlaylist.name;
+    }
+  }, [activePlaylist]);
 
   useEffect(() => {
     if (showPlaylistSongs && songListRef.current && activePlaylist) {
@@ -214,6 +226,103 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       item?.scrollIntoView({ block: 'center' });
     }
   }, [showPlaylistSongs, playlistOrder, song.slug, activePlaylist]);
+
+  const handleSongDragStart = (index: number) => {
+    setSongDragIndex(index);
+    wasDraggingRef.current = true;
+  };
+
+  const handleSongDrop = (index: number) => {
+    if (songDragIndex === null || songDragIndex === index || !activePlaylist) return;
+    setPlaylistOrder((prev) => {
+      const updated = [...prev];
+      const [moved] = updated.splice(songDragIndex, 1);
+      updated.splice(index, 0, moved);
+      const newActive = { ...activePlaylist, slugs: updated };
+      setActivePlaylist(newActive);
+      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(newActive));
+      setPlaylists((pls) => {
+        const updatedPls = pls.map((pl) =>
+          pl.name === activePlaylist.name ? newActive : pl,
+        );
+        localStorage.setItem('callGuidePlaylists', JSON.stringify(updatedPls));
+        return updatedPls;
+      });
+      return updated;
+    });
+    setSongDragIndex(null);
+    setTimeout(() => {
+      wasDraggingRef.current = false;
+    }, 0);
+  };
+
+  const handleSongTouchStart = (index: number) => {
+    if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+    touchTimerRef.current = setTimeout(() => setSongDragIndex(index), 300);
+  };
+
+  const handleSongTouchMove = (e: React.TouchEvent) => {
+    if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+    if (songDragIndex !== null) e.preventDefault();
+  };
+
+  const handleSongTouchEnd = (e: React.TouchEvent) => {
+    if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+    if (songDragIndex === null) return;
+    const touch = e.changedTouches[0];
+    const target = document.elementFromPoint(touch.clientX, touch.clientY);
+    const li = target?.closest('li[data-index]') as HTMLElement | null;
+    if (li) {
+      const dropIndex = parseInt(li.dataset.index || '', 10);
+      if (!isNaN(dropIndex)) handleSongDrop(dropIndex);
+    }
+    e.preventDefault();
+    setSongDragIndex(null);
+    setTimeout(() => {
+      wasDraggingRef.current = false;
+    }, 0);
+  };
+
+  const resetOrder = () => {
+    if (!activePlaylist || !songListRef.current) return;
+    const oldPositions: Record<string, DOMRect> = {};
+    Array.from(songListRef.current.children).forEach((child) => {
+      const el = child as HTMLElement;
+      oldPositions[el.dataset.slug!] = el.getBoundingClientRect();
+    });
+    const newOrder = [...originalOrderRef.current];
+    setPlaylistOrder(newOrder);
+    const newActive = { ...activePlaylist, slugs: newOrder };
+    setActivePlaylist(newActive);
+    setPlaylists((pls) => {
+      const updatedPls = pls.map((pl) =>
+        pl.name === activePlaylist.name ? newActive : pl,
+      );
+      localStorage.setItem('callGuidePlaylists', JSON.stringify(updatedPls));
+      return updatedPls;
+    });
+    localStorage.setItem('callGuideActivePlaylist', JSON.stringify(newActive));
+    requestAnimationFrame(() => {
+      Array.from(songListRef.current!.children).forEach((child) => {
+        const el = child as HTMLElement;
+        const slug = el.dataset.slug!;
+        const first = oldPositions[slug];
+        const last = el.getBoundingClientRect();
+        const invertX = first.left - last.left;
+        const invertY = first.top - last.top;
+        el.animate(
+          [
+            { transform: `translate(${invertX}px, ${invertY}px)` },
+            { transform: 'translate(0,0)' },
+          ],
+          {
+            duration: 500,
+            easing: 'cubic-bezier(0.455, 0.03, 0.515, 0.955)',
+          },
+        );
+      });
+    });
+  };
 
   const toggleMute = () => {
     if (muted) {
@@ -941,15 +1050,38 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                 : undefined
             }
           >
+            {activePlaylist.name !== '전체 곡' && (
+              <button className="reset-order-button" onClick={resetOrder}>
+                원래대로
+              </button>
+            )}
             <ul ref={songListRef}>
-              {playlistOrder.map((slug) => {
+              {playlistOrder.map((slug, i) => {
                 const s = songs.find((song) => song.slug === slug);
                 if (!s) return null;
+                const draggable = activePlaylist.name !== '전체 곡';
                 return (
                   <li
                     key={slug}
-                    className={`playlist-song-item${slug === song.slug ? ' active' : ''}`}
+                    data-index={i}
+                    data-slug={slug}
+                    className={`playlist-song-item${slug === song.slug ? ' active' : ''}${draggable ? ' draggable' : ''}`}
+                    draggable={draggable}
+                    onDragStart={() => draggable && handleSongDragStart(i)}
+                    onDragOver={(e) => {
+                      if (draggable) e.preventDefault();
+                    }}
+                    onDrop={(e) => {
+                      if (draggable) {
+                        e.preventDefault();
+                        handleSongDrop(i);
+                      }
+                    }}
+                    onTouchStart={draggable ? () => handleSongTouchStart(i) : undefined}
+                    onTouchMove={draggable ? handleSongTouchMove : undefined}
+                    onTouchEnd={draggable ? handleSongTouchEnd : undefined}
                     onClick={() => {
+                      if (wasDraggingRef.current) return;
                       router.push(`/call-guide/${slug}`);
                       closePlaylistSongs();
                     }}

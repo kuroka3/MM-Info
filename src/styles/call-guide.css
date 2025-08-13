@@ -153,6 +153,14 @@
   color: inherit;
 }
 
+.playlist-name-popup .color-palette {
+  position: static;
+  transform: none;
+  top: auto;
+  left: auto;
+  justify-content: center;
+}
+
 .name-modal-actions {
   display: flex;
   gap: 1rem;
@@ -237,6 +245,10 @@
   cursor: pointer;
 }
 
+.palette-color.selected {
+  outline: 2px solid #fff;
+}
+
 .drag-handle {
   cursor: grab;
 }
@@ -267,8 +279,11 @@
   transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
-.delete-playlist-title {
+
+.delete-playlist-name {
   color: red;
+  -webkit-text-stroke: 1px #fff;
+  text-shadow: 0 0 4px #fff;
 }
 
 .current-playlist-bar {
@@ -469,6 +484,22 @@
   flex-direction: column;
 }
 
+.reset-order-button {
+  display: block;
+  margin: 0 auto 0.5rem;
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  padding: 0.25rem 0.5rem;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.reset-order-button:hover {
+  background: rgba(0, 0, 0, 0.6);
+  box-shadow: 0 0 8px var(--accent-blue);
+}
+
 .playlist-song-item {
   display: flex;
   justify-content: space-between;
@@ -476,6 +507,10 @@
   padding: 0.5rem 0.75rem;
   color: #fff;
   border-bottom: 1px solid var(--playlist-color, var(--glass-border));
+}
+
+.playlist-song-item.draggable {
+  cursor: grab;
 }
 
 .playlist-song-item:last-child {
