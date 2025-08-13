@@ -1,6 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  type CSSProperties,
+} from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Prisma } from '@prisma/client';
@@ -114,9 +119,9 @@ export default function CallGuideIndexClient({ songs }: Props) {
                 .filter(Boolean)
             : [];
 
-          const borderStyle =
+          const borderStyle: React.CSSProperties | undefined =
             colors.length > 0
-              ? {
+              ? ({
                   position: 'absolute' as const,
                   top: 0,
                   left: 0,
@@ -132,8 +137,8 @@ export default function CallGuideIndexClient({ songs }: Props) {
                     'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
                   WebkitMaskComposite: 'xor',
                   maskComposite: 'exclude',
-                  pointerEvents: 'none',
-                }
+                  pointerEvents: 'none' as React.CSSProperties['pointerEvents'],
+                } satisfies CSSProperties)
               : undefined;
 
           if (selectMode) {
