@@ -95,6 +95,31 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const [showPrevTooltip, setShowPrevTooltip] = useState(false);
   const [showNextTooltip, setShowNextTooltip] = useState(false);
 
+  const playlistOrderRef = useRef<string[]>([]);
+  useEffect(() => {
+    playlistOrderRef.current = playlistOrder;
+  }, [playlistOrder]);
+
+  const repeatModeRef = useRef(repeatMode);
+  useEffect(() => {
+    repeatModeRef.current = repeatMode;
+  }, [repeatMode]);
+
+  const autoNextRef = useRef(autoNext);
+  useEffect(() => {
+    autoNextRef.current = autoNext;
+  }, [autoNext]);
+
+  const activePlaylistRef = useRef<Playlist | null>(null);
+  useEffect(() => {
+    activePlaylistRef.current = activePlaylist;
+  }, [activePlaylist]);
+
+  const songsRef = useRef(songs);
+  useEffect(() => {
+    songsRef.current = songs;
+  }, [songs]);
+
   const songDurations = useMemo(() => {
     const map: Record<string, number> = {};
     songs.forEach((s) => {
@@ -135,6 +160,10 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     if (activeStored) {
       try {
         active = JSON.parse(activeStored);
+        if (active.name === 'default' || active.name === '전체 곡') {
+          active = { name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+          localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
+        }
       } catch {
         /* ignore */
       }
@@ -228,12 +257,19 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   }, [showPlaylistSongs, playlistOrder, song.slug, activePlaylist]);
 
   const handleSongDragStart = (index: number) => {
+    if (activePlaylistRef.current?.name === '전체 곡') return;
     setSongDragIndex(index);
     wasDraggingRef.current = true;
   };
 
   const handleSongDrop = (index: number) => {
-    if (songDragIndex === null || songDragIndex === index || !activePlaylist) return;
+    if (
+      songDragIndex === null ||
+      songDragIndex === index ||
+      !activePlaylist ||
+      activePlaylistRef.current?.name === '전체 곡'
+    )
+      return;
     setPlaylistOrder((prev) => {
       const updated = [...prev];
       const [moved] = updated.splice(songDragIndex, 1);
@@ -257,6 +293,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   };
 
   const handleSongTouchStart = (index: number) => {
+    if (activePlaylistRef.current?.name === '전체 곡') return;
     if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
     touchTimerRef.current = setTimeout(() => setSongDragIndex(index), 300);
   };
@@ -477,18 +514,18 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
           onStateChange: (e: { data: number }) => {
             setIsPlaying(e.data === 1);
             if (e.data === 0) {
-              if (repeatMode === 'one') {
+              if (repeatModeRef.current === 'one') {
                 playerRef.current?.seekTo?.(0, true);
                 playerRef.current?.playVideo?.();
               } else {
                 let targetSlug: string | undefined;
-                const playlistSlugs = playlistOrder.length
-                  ? playlistOrder
-                  : activePlaylist?.slugs || songs.map((s) => s.slug!);
+                const playlistSlugs = playlistOrderRef.current.length
+                  ? playlistOrderRef.current
+                  : activePlaylistRef.current?.slugs || songsRef.current.map((s) => s.slug!);
                 const idx = playlistSlugs.indexOf(song.slug!);
                 targetSlug = playlistSlugs[idx + 1];
-                if (!targetSlug && repeatMode === 'all') targetSlug = playlistSlugs[0];
-                if (autoNext && targetSlug) {
+                if (!targetSlug && repeatModeRef.current === 'all') targetSlug = playlistSlugs[0];
+                if (autoNextRef.current && targetSlug) {
                   router.push(`/call-guide/${targetSlug}`);
                 }
               }
@@ -525,7 +562,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       playerRef.current?.destroy?.();
       playerRef.current = null;
     };
-  }, [song, scrollToLine, repeatMode, playlistOrder, autoNext, router, activePlaylist, songs]);
+  }, [song, scrollToLine, router]);
 
   useEffect(() => {
     let frame: number;

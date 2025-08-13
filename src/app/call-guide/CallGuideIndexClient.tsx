@@ -40,6 +40,8 @@ export default function CallGuideIndexClient({ songs }: Props) {
   const [colorIndex, setColorIndex] = useState<number | null>(null);
   const [playlistColor, setPlaylistColor] = useState('rgba(255,255,255,0.1)');
   const previousActive = useRef<Playlist | null>(null);
+  const sortButtonRef = useRef<HTMLButtonElement | null>(null);
+  const [showSortButton, setShowSortButton] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('callGuidePlaylists');
@@ -53,8 +55,9 @@ export default function CallGuideIndexClient({ songs }: Props) {
     if (activeStored) {
       try {
         const parsed = JSON.parse(activeStored);
-        if (parsed.name === 'default') {
+        if (parsed.name === 'default' || parsed.name === '전체 곡') {
           parsed.name = '전체 곡';
+          parsed.slugs = songs.map((s) => s.slug!);
           localStorage.setItem('callGuideActivePlaylist', JSON.stringify(parsed));
         }
         setActivePlaylist(parsed);
@@ -142,6 +145,28 @@ export default function CallGuideIndexClient({ songs }: Props) {
       (slug, i) => slug === defaultSortedSlugs[i],
     );
   }, [activePlaylist, defaultSortedSlugs, isDefaultPlaylist]);
+
+  const shouldShowSort = !isDefaultPlaylist && !isSorted;
+
+  useEffect(() => {
+    const btn = sortButtonRef.current;
+    if (shouldShowSort) {
+      setShowSortButton(true);
+      requestAnimationFrame(() => {
+        btn?.classList.add('show');
+        btn?.classList.remove('hide');
+      });
+    } else if (btn) {
+      btn.classList.remove('show');
+      btn.classList.add('hide');
+      const t = setTimeout(() => {
+        setShowSortButton(false);
+      }, 300);
+      return () => clearTimeout(t);
+    } else {
+      setShowSortButton(false);
+    }
+  }, [shouldShowSort]);
 
   const openPlaylistModal = () => setShowPlaylistModal(true);
   const closePlaylistModal = () => {
@@ -347,9 +372,14 @@ export default function CallGuideIndexClient({ songs }: Props) {
           />
           <span className="button-text">새 재생목록</span>
         </button>
-        {!isDefaultPlaylist && !isSorted && (
-          <button className="glass-button" onClick={restoreSongOrder}>
-            정렬
+        {showSortButton && (
+          <button
+            ref={sortButtonRef}
+            className="glass-button sort-button"
+            onClick={restoreSongOrder}
+          >
+            <span className="sort-text-full">재생목록 정렬</span>
+            <span className="sort-text-short">정렬</span>
           </button>
         )}
       </div>
@@ -462,8 +492,8 @@ export default function CallGuideIndexClient({ songs }: Props) {
                     <Image
                       src="/images/drag.svg"
                       alt="drag"
-                      width={16}
-                      height={16}
+                      width={24}
+                      height={24}
                       className="song-drag-handle"
                     />
                   )}
