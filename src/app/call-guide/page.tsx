@@ -28,7 +28,7 @@ export default async function CallGuideIndex() {
     },
     include: {
       setlists: {
-        select: { order: true },
+        select: { order: true, higawari: true, locationgawari: true },
         orderBy: { order: 'asc' },
         take: 1,
       },
@@ -54,8 +54,13 @@ export default async function CallGuideIndex() {
         <section className="container call-section">
           <div className="call-list">
             {songs.map((song) => {
-              const order = song.setlists[0]?.order ?? 0;
-              const itemClass = 'call-item';
+              const first = song.setlists[0];
+              const order = first?.order ?? 0;
+              const itemClass = first?.higawari
+                ? 'call-item higawari'
+                : first?.locationgawari
+                ? 'call-item locationgawari'
+                : 'call-item';
 
               const colors = song.part
                 ? song.part
