@@ -26,6 +26,7 @@
   font-size: 1.1rem;
   border-radius: 12px;
   border-width: 2px;
+  color: #fff;
 }
 
 .glass-button {
@@ -188,11 +189,49 @@
   cursor: pointer;
   border-radius: 8px;
   transition: background 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #fff;
 }
 
 .playlist-modal-content li:hover {
   background: rgba(255, 255, 255, 0.2);
   box-shadow: 0 0 8px var(--accent-blue);
+}
+
+.playlist-item-name {
+  flex: 1;
+}
+
+.drag-handle {
+  cursor: grab;
+}
+
+.delete-icon {
+  cursor: pointer;
+}
+
+.playlist-divider {
+  width: 80%;
+  margin: 0.5rem auto;
+  border: none;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.playlist-delete-popup {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(20px);
+  padding: 1rem;
+  border-radius: 12px;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  text-align: center;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
 

@@ -37,6 +37,8 @@ export default function CallGuideIndexClient({ songs }: Props) {
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const [showNameModal, setShowNameModal] = useState(false);
   const [playlistName, setPlaylistName] = useState('');
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem('callGuidePlaylists');
@@ -94,6 +96,32 @@ export default function CallGuideIndexClient({ songs }: Props) {
         : pl;
     localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
     closePlaylistModal();
+  };
+
+  const handleDragStart = (index: number) => setDragIndex(index);
+
+  const handleDrop = (index: number) => {
+    if (dragIndex === null || dragIndex === index) return;
+    setPlaylists(prev => {
+      const updated = [...prev];
+      const [moved] = updated.splice(dragIndex, 1);
+      updated.splice(index, 0, moved);
+      localStorage.setItem('callGuidePlaylists', JSON.stringify(updated));
+      return updated;
+    });
+    setDragIndex(null);
+  };
+
+  const openDeleteModal = (index: number) => setDeleteIndex(index);
+  const cancelDelete = () => setDeleteIndex(null);
+  const confirmDelete = () => {
+    if (deleteIndex === null) return;
+    setPlaylists(prev => {
+      const updated = prev.filter((_, i) => i !== deleteIndex);
+      localStorage.setItem('callGuidePlaylists', JSON.stringify(updated));
+      return updated;
+    });
+    setDeleteIndex(null);
   };
 
   const handleSongClick = () => {
@@ -249,7 +277,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
           </div>
           <div className="selection-actions">
             <button className="confirm-button" onClick={confirmSelection}>
-              선택
+              선택 완료
             </button>
             <button className="cancel-button" onClick={cancelSelection}>
               취소
@@ -262,11 +290,40 @@ export default function CallGuideIndexClient({ songs }: Props) {
         <div className="playlist-modal" onClick={closePlaylistModal}>
           <div className="playlist-modal-content" onClick={(e) => e.stopPropagation()}>
             <h3>재생목록 선택</h3>
+            <hr className="playlist-divider" />
             <ul>
               <li onClick={() => selectPlaylist('default')}>전체 곡</li>
-              {playlists.map((pl) => (
-                <li key={pl.name} onClick={() => selectPlaylist(pl)}>
-                  {pl.name}
+              {playlists.map((pl, i) => (
+                <li
+                  key={pl.name}
+                  onClick={() => selectPlaylist(pl)}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={() => handleDrop(i)}
+                >
+                  <Image
+                    src="/images/drag.svg"
+                    alt="drag"
+                    width={16}
+                    height={16}
+                    className="drag-handle"
+                    draggable
+                    onDragStart={(e) => {
+                      e.stopPropagation();
+                      handleDragStart(i);
+                    }}
+                  />
+                  <span className="playlist-item-name">{pl.name}</span>
+                  <Image
+                    src="/images/minus-circle.svg"
+                    alt="삭제"
+                    width={20}
+                    height={20}
+                    className="delete-icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openDeleteModal(i);
+                    }}
+                  />
                 </li>
               ))}
             </ul>
@@ -294,6 +351,22 @@ export default function CallGuideIndexClient({ songs }: Props) {
               </button>
               <button className="cancel-button" onClick={cancelNameModal}>
                 취소
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteIndex !== null && (
+        <div className="playlist-modal" onClick={cancelDelete}>
+          <div className="playlist-delete-popup" onClick={(e) => e.stopPropagation()}>
+            <p>삭제하시겠습니까?</p>
+            <div className="name-modal-actions">
+              <button className="confirm-button" onClick={confirmDelete}>
+                예
+              </button>
+              <button className="cancel-button" onClick={cancelDelete}>
+                아니오
               </button>
             </div>
           </div>
