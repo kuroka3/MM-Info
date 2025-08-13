@@ -90,6 +90,8 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const [shuffle, setShuffle] = useState(false);
   const [volume, setVolume] = useState(100);
   const [muted, setMuted] = useState(false);
+  const [showPrevTooltip, setShowPrevTooltip] = useState(false);
+  const [showNextTooltip, setShowNextTooltip] = useState(false);
 
   useEffect(() => {
     const storedPlaylists = localStorage.getItem('callGuidePlaylists');
@@ -647,27 +649,46 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
               }, 200);
             }}
             style={{
-              background: `linear-gradient(to right, #555 0%, #555 ${progress}%, rgba(255,255,255,0.15) ${progress}%, rgba(255,255,255,0.15) 100%)`,
+              background: `linear-gradient(to right, #39c5bb 0%, #39c5bb ${progress}%, rgba(255,255,255,0.15) ${progress}%, rgba(255,255,255,0.15) 100%)`,
               boxShadow: progress > 0 ? '0 0 8px #39c5bb' : undefined,
             }}
           />
           </div>
           <div className="player-bottom-row">
             <div className="player-buttons">
-              <button
-                className="control-button"
-                disabled={!prevSong}
-                onClick={() => {
-                  if (!prevSong) return;
-                  autoScrollRef.current = true;
-                  router.push(`/call-guide/${prevSong.slug}`);
-                }}
-              >
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <polygon points="15,5 7,12 15,19" />
-                  <rect x="5" y="5" width="2" height="14" />
-                </svg>
-              </button>
+              <div className="tooltip-wrapper">
+                <button
+                  className="control-button"
+                  disabled={!prevSong}
+                  onMouseEnter={() => setShowPrevTooltip(true)}
+                  onMouseLeave={() => setShowPrevTooltip(false)}
+                  onClick={() => {
+                    if (!prevSong) return;
+                    setShowPrevTooltip(false);
+                    autoScrollRef.current = true;
+                    router.push(`/call-guide/${prevSong.slug}`);
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="15,5 7,12 15,19" />
+                    <rect x="5" y="5" width="2" height="14" />
+                  </svg>
+                </button>
+                {showPrevTooltip && prevSong && (
+                  <div className="song-tooltip">
+                    {prevSong.thumbnail && (
+                      <Image
+                        src={prevSong.thumbnail}
+                        alt={prevSong.title}
+                        width={80}
+                        height={80}
+                        className="song-tooltip-image"
+                      />
+                    )}
+                    <p className="song-tooltip-title">{prevSong.title}</p>
+                  </div>
+                )}
+              </div>
               <button
                 className="control-button"
                 onClick={() => {
@@ -689,20 +710,39 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                   </svg>
                 )}
               </button>
-              <button
-                className="control-button"
-                disabled={!nextSong}
-                onClick={() => {
-                  if (!nextSong) return;
-                  autoScrollRef.current = true;
-                  router.push(`/call-guide/${nextSong.slug}`);
-                }}
-              >
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <polygon points="9,5 17,12 9,19" />
-                  <rect x="17" y="5" width="2" height="14" />
-                </svg>
-              </button>
+              <div className="tooltip-wrapper">
+                <button
+                  className="control-button"
+                  disabled={!nextSong}
+                  onMouseEnter={() => setShowNextTooltip(true)}
+                  onMouseLeave={() => setShowNextTooltip(false)}
+                  onClick={() => {
+                    if (!nextSong) return;
+                    setShowNextTooltip(false);
+                    autoScrollRef.current = true;
+                    router.push(`/call-guide/${nextSong.slug}`);
+                  }}
+                >
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="9,5 17,12 9,19" />
+                    <rect x="17" y="5" width="2" height="14" />
+                  </svg>
+                </button>
+                {showNextTooltip && nextSong && (
+                  <div className="song-tooltip">
+                    {nextSong.thumbnail && (
+                      <Image
+                        src={nextSong.thumbnail}
+                        alt={nextSong.title}
+                        width={80}
+                        height={80}
+                        className="song-tooltip-image"
+                      />
+                    )}
+                    <p className="song-tooltip-title">{nextSong.title}</p>
+                  </div>
+                )}
+              </div>
             </div>
             <div className="volume-controls">
               <button className="control-button" onClick={toggleMute}>
@@ -730,6 +770,10 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                   setVolume(v);
                   playerRef.current?.setVolume?.(v);
                 }}
+                style={{
+                  background: `linear-gradient(to right, ${muted ? '#aaa' : '#39c5bb'} 0%, ${muted ? '#aaa' : '#39c5bb'} ${volume}%, rgba(255,255,255,0.1) ${volume}%, rgba(255,255,255,0.1) 100%)`,
+                  boxShadow: volume > 0 && !muted ? '0 0 8px #39c5bb' : undefined,
+                }}
               />
             </div>
           </div>
@@ -745,24 +789,22 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
               </svg>
             </button>
             <button
-              className={`small-glass-button${autoNext ? ' active' : ''}`}
+              className={`small-glass-button${autoNext ? ' active' : ' inactive'}`}
               onClick={toggleAutoNext}
             >
               {autoNext ? (
                 <svg viewBox="0 0 24 24" fill="currentColor">
-                  <text x="2" y="17" fontSize="12">AUTO</text>
-                  <polygon points="14,7 20,12 14,17" />
+                  <polygon points="8,5 16,12 8,19" />
                 </svg>
               ) : (
                 <svg viewBox="0 0 24 24" fill="currentColor">
-                  <text x="2" y="17" fontSize="12">A</text>
-                  <polygon points="10,7 16,12 10,17" />
-                  <line x1="2" y1="7" x2="22" y2="17" stroke="currentColor" strokeWidth="2" />
+                  <polygon points="8,5 16,12 8,19" />
+                  <line x1="5" y1="5" x2="19" y2="19" stroke="currentColor" strokeWidth="2" />
                 </svg>
               )}
             </button>
             <button
-              className={`small-glass-button repeat-${repeatMode}`}
+              className={`small-glass-button${repeatMode !== 'off' ? ' active' : ' inactive'}`}
               onClick={cycleRepeat}
             >
               {repeatMode === 'one' ? (
@@ -771,7 +813,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                   <path d="M3 11v-3a6 6 0 016-6h8" stroke="currentColor" strokeWidth="2" fill="none" />
                   <path d="M7 23l-4-4 4-4" />
                   <path d="M21 13v3a6 6 0 01-6 6H7" stroke="currentColor" strokeWidth="2" fill="none" />
-                  <text x="11" y="17" fontSize="8">1</text>
+                  <text x="12" y="17" fontSize="8" textAnchor="middle">1</text>
                 </svg>
               ) : repeatMode === 'all' ? (
                 <svg viewBox="0 0 24 24" fill="currentColor">
@@ -788,7 +830,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
               )}
             </button>
             <button
-              className={`small-glass-button${shuffle ? ' active' : ''}`}
+              className={`small-glass-button${shuffle ? ' active' : ' inactive'}`}
               onClick={toggleShuffle}
             >
               <svg viewBox="0 0 24 24" fill="currentColor">
