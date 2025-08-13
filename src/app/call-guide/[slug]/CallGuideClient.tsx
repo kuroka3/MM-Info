@@ -1,32 +1,20 @@
 'use client';
 
-import React, {
-  useEffect,
-  useRef,
-  useState,
-  useMemo,
-  useLayoutEffect,
-  useCallback,
-} from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo, type CSSProperties } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import SpoilerGate from '@/components/SpoilerGate';
-import ScrollTopButton from '@/components/ScrollTopButton';
-import type { Song } from '@prisma/client';
-import type { Call, LyricLine } from '@/types/call-guide';
+import type { Prisma } from '@prisma/client';
 
-interface Token {
-  text: string;
-  time?: number;
-}
+const partColors = {
+  MIKU: '#39c5bbaa',
+  RIN: '#ffa500aa',
+  LEN: '#ffe211aa',
+  LUKA: '#ffc0cbaa',
+  KAITO: '#0000ffaa',
+  MEIKO: '#d80000aa',
+} as const;
 
-interface ProcessedLine {
-  jp: Token[];
-  pron: Token[];
-  ko: Token[];
-  call?: Call;
-}
+type SongWithSetlist = Prisma.SongGetPayload<{ include: { setlists: { select: { order: true; higawari: true; locationgawari: true }; orderBy: { order: 'asc' }; take: 1 } } }>;
 
 interface Playlist {
   name: string;
@@ -34,1072 +22,857 @@ interface Playlist {
   color?: string;
 }
 
-interface YTPlayer {
-  getCurrentTime: () => number;
-  getDuration: () => number;
-  playVideo: () => void;
-  pauseVideo: () => void;
-  seekTo: (seconds: number, allowSeekAhead?: boolean) => void;
-  destroy: () => void;
-  getVolume: () => number;
-  setVolume: (volume: number) => void;
-  mute: () => void;
-  unMute: () => void;
-  isMuted: () => boolean;
-  getIframe?: () => HTMLIFrameElement;
+interface Props {
+  songs: SongWithSetlist[];
 }
 
-declare global {
-  interface Window {
-    YT: { Player: new (...args: unknown[]) => YTPlayer };
-    onYouTubeIframeAPIReady: () => void;
-  }
-}
-
-interface CallGuideClientProps {
-  song: Song;
-  songs: Song[];
-}
-
-export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
-  const router = useRouter();
-  const [prevSong, setPrevSong] = useState<Song | null>(null);
-  const [nextSong, setNextSong] = useState<Song | null>(null);
-  const playerRef = useRef<YTPlayer | null>(null);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [displayTime, setDisplayTime] = useState(0);
-  const currentTimeRef = useRef(0);
-  const [duration, setDuration] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const tokenRefs = useRef<HTMLSpanElement[][]>([]);
-  const lineRefs = useRef<HTMLDivElement[]>([]);
-  const [callPositions, setCallPositions] = useState<number[]>([]);
-  const autoScrollRef = useRef(true);
-  const programmaticScrollRef = useRef(false);
-  const programmaticScrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const seekingRef = useRef(false);
-  const [activeLine, setActiveLine] = useState(0);
-  const activeLineRef = useRef(0);
-  const pendingSeekRef = useRef<number | null>(null);
-  const [skipGap, setSkipGap] = useState<{ target: number; showAt: number; end: number } | null>(null);
+export default function CallGuideIndexClient({ songs }: Props) {
+  const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
-  const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null);
-  const [playlistOrder, setPlaylistOrder] = useState<string[]>([]);
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
-  const [showPlaylistSongs, setShowPlaylistSongs] = useState(false);
-  const [extraOpen, setExtraOpen] = useState(false);
-  const [autoNext, setAutoNext] = useState(true);
-  const [repeatMode, setRepeatMode] = useState<'off' | 'all' | 'one'>('off');
-  const [shuffle, setShuffle] = useState(false);
-  const [volume, setVolume] = useState(100);
-  const [muted, setMuted] = useState(false);
-  const [showPrevTooltip, setShowPrevTooltip] = useState(false);
-  const [showNextTooltip, setShowNextTooltip] = useState(false);
+  const [showNameModal, setShowNameModal] = useState(false);
+  const [playlistName, setPlaylistName] = useState('');
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [songDragIndex, setSongDragIndex] = useState<number | null>(null);
+  const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
+  const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null);
+  const [colorIndex, setColorIndex] = useState<number | null>(null);
+  const [playlistColor, setPlaylistColor] = useState('rgba(255,255,255,0.1)');
+  const previousActive = useRef<Playlist | null>(null);
+  const sortButtonRef = useRef<HTMLButtonElement | null>(null);
+  const [showSortButton, setShowSortButton] = useState(false);
+  const touchTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const dragItemRef = useRef<HTMLElement | null>(null);
+  const touchStartY = useRef(0);
+  const swappingRef = useRef(false);
+  const swapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem('callGuideAutoNext');
-    if (stored !== null) {
-      setAutoNext(stored === 'true');
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('callGuideAutoNext', String(autoNext));
-  }, [autoNext]);
-
-  const playlistOrderRef = useRef<string[]>([]);
-  useEffect(() => {
-    playlistOrderRef.current = playlistOrder;
-  }, [playlistOrder]);
-
-  const repeatModeRef = useRef(repeatMode);
-  useEffect(() => {
-    repeatModeRef.current = repeatMode;
-  }, [repeatMode]);
-
-  const autoNextRef = useRef(autoNext);
-  useEffect(() => {
-    autoNextRef.current = autoNext;
-  }, [autoNext]);
-
-  const activePlaylistRef = useRef<Playlist | null>(null);
-  useEffect(() => {
-    activePlaylistRef.current = activePlaylist;
-  }, [activePlaylist]);
-
-  const songsRef = useRef(songs);
-  useEffect(() => {
-    songsRef.current = songs;
-  }, [songs]);
-
-  useEffect(() => {
-    const handleVisibility = () => {
-      if (document.visibilityState === 'hidden' && isPlaying) {
-        playerRef.current?.playVideo?.();
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibility);
-    return () => document.removeEventListener('visibilitychange', handleVisibility);
-  }, [isPlaying]);
-
-  const songDurations = useMemo(() => {
-    const map: Record<string, number> = {};
-    songs.forEach((s) => {
-      const lyrics = (s.lyrics as { times?: Record<string, number> }[] | null) || [];
-      let max = 0;
-      lyrics.forEach((line) => {
-        if (line.times) {
-          Object.values(line.times).forEach((v) => {
-            const num = Number(v);
-            if (num > max) max = num;
-          });
-        }
-      });
-      map[s.slug!] = max;
-    });
-    return map;
-  }, [songs]);
-
-  const formatTime = (t: number) => {
-    const m = Math.floor(t / 60);
-    const s = Math.floor(t % 60)
-      .toString()
-      .padStart(2, '0');
-    return `${m}:${s}`;
-  };
-
-  useEffect(() => {
-    const storedPlaylists = localStorage.getItem('callGuidePlaylists');
-    if (storedPlaylists) {
+    const stored = localStorage.getItem('callGuidePlaylists');
+    if (stored) {
       try {
-        setPlaylists(JSON.parse(storedPlaylists));
-      } catch {
-        /* ignore */
-      }
+        setPlaylists(JSON.parse(stored));
+      } catch { }
     }
+
     const activeStored = localStorage.getItem('callGuideActivePlaylist');
-    let active: Playlist | null = null;
     if (activeStored) {
       try {
-        active = JSON.parse(activeStored);
-        if (active?.name === 'default' || active?.name === '전체 곡') {
-          active = { name: '전체 곡', slugs: songs.map((s) => s.slug!) };
-          localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
+        const parsed = JSON.parse(activeStored);
+        if (parsed.name === 'default' || parsed.name === '전체 곡') {
+          parsed.name = '전체 곡';
+          parsed.slugs = songs.map((s) => s.slug!);
+          localStorage.setItem('callGuideActivePlaylist', JSON.stringify(parsed));
         }
+        setActivePlaylist(parsed);
       } catch {
         /* ignore */
       }
+    } else {
+      const def = { name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(def));
+      setActivePlaylist(def);
     }
-    if (!active || !Array.isArray(active.slugs)) {
-      active = { name: '전체 곡', slugs: songs.map((s) => s.slug!) };
-      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
-    }
-    setActivePlaylist(active);
   }, [songs]);
 
-  useEffect(() => {
-    const base = activePlaylist?.slugs || songs.map((s) => s.slug!);
-    if (shuffle) {
-      const k = base.indexOf(song.slug!);
-      const before = base.slice(0, k);
-      const after = base.slice(k + 1);
-      const shuffledBefore = [...before].sort(() => Math.random() - 0.5);
-      const shuffledAfter = [...after].sort(() => Math.random() - 0.5);
-      setPlaylistOrder([...shuffledBefore, song.slug!, ...shuffledAfter]);
-    } else {
-      setPlaylistOrder(base);
+  const toggleSelect = useCallback((slug: string) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(slug)) next.delete(slug); else next.add(slug);
+      return next;
+    });
+  }, []);
+
+  const confirmSelection = () => {
+    if (selected.size === 0) return;
+    setShowNameModal(true);
+  };
+
+  const restorePrevious = () => {
+    if (previousActive.current) {
+      setActivePlaylist(previousActive.current);
+      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(previousActive.current));
+      previousActive.current = null;
     }
-  }, [activePlaylist, songs, shuffle, song.slug]);
+  };
+
+  const createPlaylist = () => {
+    if (!playlistName.trim()) return;
+    const color =
+      playlistColor === 'rgba(255,255,255,0.1)' ? undefined : playlistColor;
+    const newPlaylist = {
+      name: playlistName.trim(),
+      slugs: Array.from(selected),
+      color,
+    };
+    const updated = [...playlists, newPlaylist];
+    setPlaylists(updated);
+    localStorage.setItem('callGuidePlaylists', JSON.stringify(updated));
+    setActivePlaylist(newPlaylist);
+    localStorage.setItem('callGuideActivePlaylist', JSON.stringify(newPlaylist));
+    setSelected(new Set());
+    setSelectMode(false);
+    setPlaylistName('');
+    setPlaylistColor('rgba(255,255,255,0.1)');
+    setShowNameModal(false);
+    previousActive.current = null;
+  };
+
+  const cancelNameModal = () => {
+    setPlaylistName('');
+    setShowNameModal(false);
+  };
+
+  const cancelSelection = () => {
+    setSelected(new Set());
+    setSelectMode(false);
+    restorePrevious();
+  };
+
+  const isDefaultPlaylist = activePlaylist?.name === '전체 곡';
+
+  const getSongOrder = useCallback(
+    (slug: string) => songs.findIndex((s) => s.slug === slug),
+    [songs],
+  );
+
+  const defaultSortedSlugs = useMemo(() => {
+    if (!activePlaylist || isDefaultPlaylist) return [] as string[];
+    return [...activePlaylist.slugs].sort(
+      (a, b) => getSongOrder(a) - getSongOrder(b),
+    );
+  }, [activePlaylist, getSongOrder, isDefaultPlaylist]);
+
+  const isSorted = useMemo(() => {
+    if (!activePlaylist || isDefaultPlaylist) return true;
+    return activePlaylist.slugs.every(
+      (slug, i) => slug === defaultSortedSlugs[i],
+    );
+  }, [activePlaylist, defaultSortedSlugs, isDefaultPlaylist]);
+
+  const shouldShowSort = !isDefaultPlaylist && !isSorted;
 
   useEffect(() => {
-    const idx = playlistOrder.indexOf(song.slug!);
-    const prevSlug = playlistOrder[idx - 1];
-    const nextSlug = playlistOrder[idx + 1];
-    setPrevSong(songs.find((s) => s.slug === prevSlug) || null);
-    setNextSong(songs.find((s) => s.slug === nextSlug) || null);
-  }, [song, songs, playlistOrder]);
+    if (shouldShowSort) {
+      setShowSortButton(true);
+    } else {
+      const btn = sortButtonRef.current;
+      if (btn) {
+        btn.classList.remove('show');
+        btn.classList.add('hide');
+      }
+      const t = setTimeout(() => setShowSortButton(false), 300);
+      return () => clearTimeout(t);
+    }
+  }, [shouldShowSort]);
+
+  useEffect(() => {
+    if (showSortButton) {
+      const btn = sortButtonRef.current;
+      requestAnimationFrame(() => {
+        btn?.classList.add('show');
+        btn?.classList.remove('hide');
+      });
+    }
+  }, [showSortButton]);
 
   const openPlaylistModal = () => setShowPlaylistModal(true);
-  const closePlaylistModal = () => setShowPlaylistModal(false);
+  const closePlaylistModal = () => {
+    setShowPlaylistModal(false);
+    setColorIndex(null);
+  };
+
+  const startNewPlaylist = () => {
+    previousActive.current = activePlaylist;
+    const def = { name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+    setActivePlaylist(def);
+    localStorage.setItem('callGuideActivePlaylist', JSON.stringify(def));
+    setSelected(new Set());
+    setPlaylistColor('rgba(255,255,255,0.1)');
+    setSelectMode(true);
+  };
 
   const selectPlaylist = (pl: Playlist | 'default') => {
-    const selected =
+    const active =
       pl === 'default'
         ? { name: '전체 곡', slugs: songs.map((s) => s.slug!) }
         : pl;
-    setActivePlaylist(selected);
-    localStorage.setItem('callGuideActivePlaylist', JSON.stringify(selected));
+    localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
+    setActivePlaylist(active);
     closePlaylistModal();
-    if (!selected.slugs.includes(song.slug!)) {
-      const firstSlug = selected.slugs[0];
-      const firstSong = songs.find((s) => s.slug === firstSlug);
-      if (firstSong) router.push(`/call-guide/${firstSong.slug}`);
-    }
   };
 
-  const openPlaylistSongs = () => setShowPlaylistSongs((p) => !p);
-  const closePlaylistSongs = () => setShowPlaylistSongs(false);
+  const handleDragStart = (index: number) => setDragIndex(index);
 
-  const toggleAutoNext = () => {
-    setAutoNext((prev) => {
-      const next = !prev;
-      if (!next) setRepeatMode('off');
-      return next;
-    });
-  };
-  const cycleRepeat = () => {
-    setRepeatMode((prev) => {
-      const next = prev === 'off' ? 'all' : prev === 'all' ? 'one' : 'off';
-      if (next !== 'off') setAutoNext(true);
-      return next;
-    });
-  };
-  const toggleShuffle = () => setShuffle((prev) => !prev);
-
-  const songListRef = useRef<HTMLUListElement | null>(null);
-  const [songDragIndex, setSongDragIndex] = useState<number | null>(null);
-  const touchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const wasDraggingRef = useRef(false);
-  const originalOrderRef = useRef<string[]>([]);
-  const prevPlaylistNameRef = useRef<string | null>(null);
-  const playerButtonsRef = useRef<HTMLDivElement | null>(null);
-  const volumeControlsRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (activePlaylist && activePlaylist.name !== prevPlaylistNameRef.current) {
-      originalOrderRef.current = [...activePlaylist.slugs];
-      prevPlaylistNameRef.current = activePlaylist.name;
-    }
-  }, [activePlaylist]);
-
-  useEffect(() => {
-    if (showPlaylistSongs && songListRef.current && activePlaylist) {
-      const idx = playlistOrder.indexOf(song.slug!);
-      const item = songListRef.current.children[idx] as HTMLElement | undefined;
-      item?.scrollIntoView({ block: 'center' });
-    }
-  }, [showPlaylistSongs, playlistOrder, song.slug, activePlaylist]);
-
-  useEffect(() => {
-    const adjust = () => {
-      const buttons = playerButtonsRef.current;
-      const volume = volumeControlsRef.current;
-      const container = buttons?.parentElement;
-      if (!buttons || !volume || !container) return;
-      const gap = 0;
-      const total = buttons.offsetWidth + gap + volume.offsetWidth;
-      if (total > container.offsetWidth) volume.classList.add('compact');
-      else volume.classList.remove('compact');
-    };
-    adjust();
-    window.addEventListener('resize', adjust);
-    return () => window.removeEventListener('resize', adjust);
-  }, []);
-
-  const handleSongDragStart = (index: number) => {
-    if (activePlaylistRef.current?.name === '전체 곡') return;
-    setSongDragIndex(index);
-    wasDraggingRef.current = true;
-  };
-
-  const handleSongDrop = (index: number) => {
-    if (
-      songDragIndex === null ||
-      songDragIndex === index ||
-      !activePlaylist ||
-      activePlaylistRef.current?.name === '전체 곡'
-    )
-      return;
-    setPlaylistOrder((prev) => {
+  const handleDrop = (index: number) => {
+    if (dragIndex === null || dragIndex === index) return;
+    setPlaylists(prev => {
       const updated = [...prev];
-      const [moved] = updated.splice(songDragIndex, 1);
+      const [moved] = updated.splice(dragIndex, 1);
       updated.splice(index, 0, moved);
-      const newActive = { ...activePlaylist, slugs: updated };
-      setActivePlaylist(newActive);
-      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(newActive));
-      setPlaylists((pls) => {
-        const updatedPls = pls.map((pl) =>
-          pl.name === activePlaylist.name ? newActive : pl,
-        );
-        localStorage.setItem('callGuidePlaylists', JSON.stringify(updatedPls));
-        return updatedPls;
-      });
+      localStorage.setItem('callGuidePlaylists', JSON.stringify(updated));
       return updated;
     });
-    setSongDragIndex(null);
-    setTimeout(() => {
-      wasDraggingRef.current = false;
-    }, 0);
+    setDragIndex(null);
   };
 
-  const handleSongTouchStart = (index: number) => {
-    if (activePlaylistRef.current?.name === '전체 곡') return;
-    if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
-    touchTimerRef.current = setTimeout(() => setSongDragIndex(index), 300);
+  const openDeleteModal = (index: number) => setDeleteIndex(index);
+  const cancelDelete = () => setDeleteIndex(null);
+  const confirmDelete = () => {
+    if (deleteIndex === null) return;
+    setPlaylists(prev => {
+      const updated = prev.filter((_, i) => i !== deleteIndex);
+      localStorage.setItem('callGuidePlaylists', JSON.stringify(updated));
+      return updated;
+    });
+    setDeleteIndex(null);
   };
 
-  const handleSongTouchMove = (e: React.TouchEvent) => {
-    if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
-    if (songDragIndex !== null) e.preventDefault();
+  const handleSongClick = () => {
+    if (!activePlaylist) {
+      const def = { name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(def));
+      setActivePlaylist(def);
+    }
   };
 
-  const handleSongTouchEnd = (e: React.TouchEvent) => {
-    if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
-    if (songDragIndex === null) return;
+  const handlePlaylistTouchEnd = (e: React.TouchEvent) => {
+    if (dragIndex === null) return;
     const touch = e.changedTouches[0];
     const target = document.elementFromPoint(touch.clientX, touch.clientY);
     const li = target?.closest('li[data-index]') as HTMLElement | null;
     if (li) {
       const dropIndex = parseInt(li.dataset.index || '', 10);
-      if (!isNaN(dropIndex)) handleSongDrop(dropIndex);
+      if (!isNaN(dropIndex) && dropIndex !== dragIndex) {
+        handleDrop(dropIndex);
+      }
     }
-    e.preventDefault();
-    setSongDragIndex(null);
-    setTimeout(() => {
-      wasDraggingRef.current = false;
-    }, 0);
+    setDragIndex(null);
   };
 
-  const resetOrder = () => {
-    if (!activePlaylist || !songListRef.current) return;
-    const oldPositions: Record<string, DOMRect> = {};
-    Array.from(songListRef.current.children).forEach((child) => {
-      const el = child as HTMLElement;
-      oldPositions[el.dataset.slug!] = el.getBoundingClientRect();
+  const handleSongDragStart = (index: number) => {
+    if (isDefaultPlaylist) return;
+    setSongDragIndex(index);
+  };
+
+  const handleSongTouchStart = (index: number, e: React.TouchEvent) => {
+    if (isDefaultPlaylist) return;
+    if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+    const startY = e.touches[0].clientY;
+    const currentTarget = e.currentTarget as HTMLElement;
+    touchTimerRef.current = setTimeout(() => {
+      setSongDragIndex(index);
+      touchStartY.current = startY;
+      const item = currentTarget.closest('.call-item') as HTMLElement | null;
+      if (item) {
+        dragItemRef.current = item;
+        item.classList.add('dragging');
+        item.style.transition = 'none';
+        document.body.style.overflow = 'hidden';
+        document.body.style.touchAction = 'none';
+      }
+    }, 300);
+  };
+
+  const swapSong = (from: number, to: number) => {
+    if (!activePlaylist || isDefaultPlaylist) return;
+    if (swapTimeoutRef.current) clearTimeout(swapTimeoutRef.current);
+    swappingRef.current = true;
+    const container = document.querySelector('.call-list');
+    if (!container) return;
+    const rectMap = new Map<string, DOMRect>();
+    const children = Array.from(container.children) as HTMLElement[];
+    activePlaylist.slugs.forEach((slug, i) => {
+      const el = children[i];
+      if (el) rectMap.set(slug, el.getBoundingClientRect());
     });
-    const newOrder = [...originalOrderRef.current];
-    setPlaylistOrder(newOrder);
-    const newActive = { ...activePlaylist, slugs: newOrder };
-    setActivePlaylist(newActive);
-    setPlaylists((pls) => {
-      const updatedPls = pls.map((pl) =>
-        pl.name === activePlaylist.name ? newActive : pl,
-      );
-      localStorage.setItem('callGuidePlaylists', JSON.stringify(updatedPls));
-      return updatedPls;
+
+    const updatedSlugs = [...activePlaylist.slugs];
+    const [moved] = updatedSlugs.splice(from, 1);
+    updatedSlugs.splice(to, 0, moved);
+
+    setActivePlaylist(prev => {
+      if (!prev) return prev;
+      const updated = { ...prev, slugs: updatedSlugs };
+      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(updated));
+      setPlaylists(pls => {
+        const idx = pls.findIndex(p => p.name === prev.name);
+        if (idx >= 0) {
+          const newPls = [...pls];
+          newPls[idx] = { ...newPls[idx], slugs: updatedSlugs };
+          localStorage.setItem('callGuidePlaylists', JSON.stringify(newPls));
+          return newPls;
+        }
+        return pls;
+      });
+      return updated;
     });
-    localStorage.setItem('callGuideActivePlaylist', JSON.stringify(newActive));
+
     requestAnimationFrame(() => {
-      Array.from(songListRef.current!.children).forEach((child) => {
-        const el = child as HTMLElement;
-        const slug = el.dataset.slug!;
-        const first = oldPositions[slug];
-        const last = el.getBoundingClientRect();
-        const invertX = first.left - last.left;
-        const invertY = first.top - last.top;
-        el.animate(
-          [
-            { transform: `translate(${invertX}px, ${invertY}px)` },
-            { transform: 'translate(0,0)' },
-          ],
-          {
-            duration: 500,
-            easing: 'cubic-bezier(0.455, 0.03, 0.515, 0.955)',
-          },
-        );
+      const newChildren = Array.from(container.children) as HTMLElement[];
+      updatedSlugs.forEach((slug, i) => {
+        const el = newChildren[i];
+        const prevRect = rectMap.get(slug);
+        if (el && prevRect) {
+          const newRect = el.getBoundingClientRect();
+          const dy = prevRect.top - newRect.top;
+          if (dy) {
+            el.animate(
+              [
+                { transform: `translateY(${dy}px)` },
+                { transform: 'translateY(0)' },
+              ],
+              { duration: 500, easing: 'ease-in-out' },
+            );
+          }
+        }
+      });
+    });
+    swapTimeoutRef.current = setTimeout(() => {
+      swappingRef.current = false;
+    }, 550);
+  };
+
+  const handleSongTouchMove = (e: React.TouchEvent) => {
+    if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+    if (swappingRef.current) return;
+    if (songDragIndex !== null) {
+      const touch = e.touches[0];
+      const y = touch.clientY;
+      const deltaY = y - touchStartY.current;
+      if (dragItemRef.current) {
+        dragItemRef.current.style.transform = `translateY(${deltaY}px) scale(1.05)`;
+      }
+      const target = document.elementFromPoint(window.innerWidth / 2, y);
+      const item = target?.closest('[data-song-index]') as HTMLElement | null;
+      if (item) {
+        const overIndex = parseInt(item.dataset.songIndex || '', 10);
+        if (!isNaN(overIndex) && overIndex !== songDragIndex) {
+          swapSong(songDragIndex, overIndex);
+          setSongDragIndex(overIndex);
+          touchStartY.current = y;
+          if (dragItemRef.current) {
+            dragItemRef.current.style.transform = 'scale(1.05)';
+          }
+        }
+      }
+      const threshold = 50;
+      if (y < threshold) window.scrollBy({ top: -10, behavior: 'smooth' });
+      else if (y > window.innerHeight - threshold) window.scrollBy({ top: 10, behavior: 'smooth' });
+    }
+  };
+
+  const handleSongDrop = (index: number) => {
+    if (songDragIndex === null || songDragIndex === index || !activePlaylist || isDefaultPlaylist) return;
+    if (swapTimeoutRef.current) clearTimeout(swapTimeoutRef.current);
+    swappingRef.current = true;
+    const container = document.querySelector('.call-list');
+    if (!container) return;
+    const rectMap = new Map<string, DOMRect>();
+    const children = Array.from(container.children) as HTMLElement[];
+    activePlaylist.slugs.forEach((slug, i) => {
+      const el = children[i];
+      if (el) rectMap.set(slug, el.getBoundingClientRect());
+    });
+
+    const updatedSlugs = [...activePlaylist.slugs];
+    const [moved] = updatedSlugs.splice(songDragIndex, 1);
+    updatedSlugs.splice(index, 0, moved);
+
+    setActivePlaylist(prev => {
+      if (!prev) return prev;
+      const updated = { ...prev, slugs: updatedSlugs };
+      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(updated));
+      setPlaylists(pls => {
+        const idx = pls.findIndex(p => p.name === prev.name);
+        if (idx >= 0) {
+          const newPls = [...pls];
+          newPls[idx] = { ...newPls[idx], slugs: updatedSlugs };
+          localStorage.setItem('callGuidePlaylists', JSON.stringify(newPls));
+          return newPls;
+        }
+        return pls;
+      });
+      return updated;
+    });
+
+    requestAnimationFrame(() => {
+      const newChildren = Array.from(container.children) as HTMLElement[];
+      updatedSlugs.forEach((slug, i) => {
+        const el = newChildren[i];
+        const prevRect = rectMap.get(slug);
+        if (el && prevRect) {
+          const newRect = el.getBoundingClientRect();
+          const dy = prevRect.top - newRect.top;
+          if (dy) {
+            el.animate(
+              [
+                { transform: `translateY(${dy}px)` },
+                { transform: 'translateY(0)' },
+              ],
+              { duration: 500, easing: 'ease-in-out' },
+            );
+          }
+        }
+      });
+    });
+
+    if (dragItemRef.current) {
+      dragItemRef.current.style.transform = '';
+      dragItemRef.current.classList.remove('dragging');
+      dragItemRef.current = null;
+    }
+    document.body.style.overflow = '';
+    document.body.style.touchAction = '';
+    setSongDragIndex(null);
+    swapTimeoutRef.current = setTimeout(() => {
+      swappingRef.current = false;
+    }, 550);
+  };
+
+  const handleSongTouchEnd = (e: React.TouchEvent) => {
+    if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+    if (songDragIndex === null) return;
+    if (dragItemRef.current) {
+      dragItemRef.current.style.transform = '';
+      dragItemRef.current.classList.remove('dragging');
+      dragItemRef.current = null;
+    }
+    document.body.style.overflow = '';
+    document.body.style.touchAction = '';
+    const touch = e.changedTouches[0];
+    const target = document.elementFromPoint(window.innerWidth / 2, touch.clientY);
+    const item = target?.closest('[data-song-index]') as HTMLElement | null;
+    if (item) {
+      const dropIndex = parseInt(item.dataset.songIndex || '', 10);
+      if (!isNaN(dropIndex) && dropIndex !== songDragIndex) {
+        handleSongDrop(dropIndex);
+      }
+    }
+    setSongDragIndex(null);
+  };
+
+  const handleSongDragEnd = (e: React.DragEvent) => {
+    if (songDragIndex === null) return;
+    const target = document.elementFromPoint(window.innerWidth / 2, e.clientY);
+    const item = target?.closest('[data-song-index]') as HTMLElement | null;
+    if (item) {
+      const dropIndex = parseInt(item.dataset.songIndex || '', 10);
+      if (!isNaN(dropIndex) && dropIndex !== songDragIndex) {
+        handleSongDrop(dropIndex);
+      }
+    }
+    document.body.style.overflow = '';
+    document.body.style.touchAction = '';
+    setSongDragIndex(null);
+  };
+
+  const restoreSongOrder = () => {
+    if (!activePlaylist || isDefaultPlaylist) return;
+    const container = document.querySelector('.call-list');
+    if (!container) return;
+    const rectMap = new Map<string, DOMRect>();
+    const children = Array.from(container.children) as HTMLElement[];
+    activePlaylist.slugs.forEach((slug, i) => {
+      const el = children[i];
+      if (el) rectMap.set(slug, el.getBoundingClientRect());
+    });
+    const sortedSlugs = defaultSortedSlugs;
+    setActivePlaylist(prev => {
+      if (!prev) return prev;
+      const updated = { ...prev, slugs: sortedSlugs };
+      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(updated));
+      setPlaylists(pls => {
+        const idx = pls.findIndex(p => p.name === prev.name);
+        if (idx >= 0) {
+          const newPls = [...pls];
+          newPls[idx] = { ...newPls[idx], slugs: sortedSlugs };
+          localStorage.setItem('callGuidePlaylists', JSON.stringify(newPls));
+          return newPls;
+        }
+        return pls;
+      });
+      return updated;
+    });
+    requestAnimationFrame(() => {
+      const newChildren = Array.from(container.children) as HTMLElement[];
+      sortedSlugs.forEach((slug, i) => {
+        const el = newChildren[i];
+        const prevRect = rectMap.get(slug);
+        if (el && prevRect) {
+          const newRect = el.getBoundingClientRect();
+          const dy = prevRect.top - newRect.top;
+          if (dy) {
+            el.animate(
+              [
+                { transform: `translateY(${dy}px)` },
+                { transform: 'translateY(0)' },
+              ],
+              {
+                duration: 500,
+                easing: 'cubic-bezier(0.455, 0.03, 0.515, 0.955)',
+              },
+            );
+          }
+        }
       });
     });
   };
 
-  const toggleMute = () => {
-    if (muted) {
-      playerRef.current?.unMute?.();
-      playerRef.current?.setVolume?.(volume);
-      setMuted(false);
-    } else {
-      playerRef.current?.mute?.();
-      setMuted(true);
-    }
-  };
-
-  const interpolateTokens = (tokens: Token[]): Token[] => {
-    const res = tokens.map((t) => ({ ...t }));
-    let last = -1;
-    for (let i = 0; i < res.length; i++) {
-      if (res[i].time != null) {
-        if (last >= 0 && i - last > 1) {
-          const start = res[last].time ?? 0;
-          const end = res[i].time ?? start;
-          const step = (end - start) / (i - last);
-          for (let j = last + 1; j < i; j++) {
-            res[j].time = start + step * (j - last);
-          }
-        }
-        last = i;
-      }
-    }
-    if (last < 0) return res as Token[];
-
-    const lastTime = res[last].time ?? 0;
-    for (let j = last + 1; j < res.length; j++) res[j].time = lastTime;
-
-    if (res[0].time == null) res[0].time = 0;
-    for (let i = 1; i < res.length; i++) {
-      if (res[i].time == null) res[i].time = res[i - 1].time ?? 0;
-    }
-    return res as Token[];
-  };
-
-  const lyrics = useMemo<ProcessedLine[]>(() => {
-    if (!song || !song.lyrics) return [];
-    const parsedLyrics = song.lyrics as unknown as LyricLine[];
-    return parsedLyrics.map((line: LyricLine) => {
-      const jpChars = Array.from(line.jp);
-      const pronChars = Array.from(line.pron);
-      const koChars = Array.from(line.ko);
-      const jp = jpChars.map<Token>((text) => ({ text }));
-      const pron = pronChars.map<Token>((text) => ({ text }));
-      const ko = koChars.map<Token>((text) => ({ text }));
-
-      if (line.times) {
-        Object.entries(line.times).forEach(([key, time]) => {
-          const [ji, pi, ki] = key.split('-').map((n) => parseInt(n, 10));
-          if (!isNaN(ji) && jp[ji]) jp[ji].time = time;
-          if (!isNaN(pi) && pron[pi]) pron[pi].time = time;
-          if (!isNaN(ki) && ko[ki]) ko[ki].time = time;
-        });
-      }
-
-      return {
-        jp: interpolateTokens(jp),
-        pron: interpolateTokens(pron),
-        ko: interpolateTokens(ko),
-        call: line.call,
-      };
-    });
-  }, [song]);
-
-  const gaps = useMemo(() => {
-    const res: { start: number; showAt: number; end: number; target: number }[] = [];
-    const firstStart = lyrics[0]?.jp[0]?.time ?? 0;
-    if (firstStart >= 10) {
-      res.push({ start: 0, showAt: 2, end: firstStart, target: firstStart });
-    }
-    for (let i = 0; i < lyrics.length - 1; i++) {
-      const line = lyrics[i];
-      const nextLine = lyrics[i + 1];
-      const end = Math.max(
-        line.jp[line.jp.length - 1]?.time ?? 0,
-        line.pron[line.pron.length - 1]?.time ?? 0,
-        line.ko[line.ko.length - 1]?.time ?? 0
-      );
-      const nextStart = nextLine.jp[0]?.time ?? 0;
-      if (nextStart - end >= 10) {
-        res.push({ start: end, showAt: end + 1, end: nextStart, target: nextStart });
-      }
-    }
-    return res;
-  }, [lyrics]);
-
-  const scrollToLine = useCallback((idx: number) => {
-    const el = lineRefs.current[idx];
-    if (el) {
-      programmaticScrollRef.current = true;
-      if (programmaticScrollTimeout.current) clearTimeout(programmaticScrollTimeout.current);
-      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-      programmaticScrollTimeout.current = setTimeout(() => {
-        programmaticScrollRef.current = false;
-      }, 500);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!song) return;
-    tokenRefs.current = [];
-    lineRefs.current = [];
-    setCallPositions([]);
-
-    const update = () => {
-      if (seekingRef.current) return;
-      let t = playerRef.current?.getCurrentTime?.() ?? 0;
-      if (pendingSeekRef.current != null) {
-        if (Math.abs(t - pendingSeekRef.current) > 0.3) {
-          playerRef.current?.seekTo?.(pendingSeekRef.current, true);
-          t = pendingSeekRef.current;
-        } else {
-          pendingSeekRef.current = null;
-        }
-      }
-      currentTimeRef.current = t;
-      setCurrentTime(t);
-    };
-
-    update();
-    const interval = window.setInterval(update, 100);
-
-    const createPlayer = () => {
-      playerRef.current = new window.YT.Player('player', {
-        videoId: song.videoId!,
-        host: 'https://www.youtube-nocookie.com',
-        playerVars: {
-          controls: 0,
-          disablekb: 1,
-          iv_load_policy: 3,
-          rel: 0,
-          modestbranding: 1,
-          playsinline: 1,
-          autoplay: autoNextRef.current ? 1 : 0,
-        },
-        events: {
-          onReady: (e: { target: YTPlayer }) => {
-            playerRef.current = e.target;
-            setDuration(e.target.getDuration?.() ?? 0);
-            setVolume(e.target.getVolume?.() ?? 100);
-            const m = e.target.isMuted?.() ?? false;
-            setMuted(m);
-            const iframe = e.target.getIframe?.();
-            iframe?.setAttribute('allow', 'autoplay');
-            iframe?.setAttribute('playsinline', '1');
-            autoScrollRef.current = true;
-            scrollToLine(activeLineRef.current);
-            if (pendingSeekRef.current != null) {
-              playerRef.current?.seekTo?.(pendingSeekRef.current, true);
-            }
-            if (autoNextRef.current) {
-              e.target.playVideo?.();
-            }
-          },
-          onStateChange: (e: { data: number }) => {
-            setIsPlaying(e.data === 1);
-            if (e.data === 0) {
-              if (repeatModeRef.current === 'one') {
-                playerRef.current?.seekTo?.(0, true);
-                playerRef.current?.playVideo?.();
-              } else {
-                let targetSlug: string | undefined;
-                const playlistSlugs = playlistOrderRef.current.length
-                  ? playlistOrderRef.current
-                  : activePlaylistRef.current?.slugs || songsRef.current.map((s) => s.slug!);
-                const idx = playlistSlugs.indexOf(song.slug!);
-                targetSlug = playlistSlugs[idx + 1];
-                if (!targetSlug && repeatModeRef.current === 'all') targetSlug = playlistSlugs[0];
-                if (autoNextRef.current && targetSlug) {
-                  router.push(`/call-guide/${targetSlug}`);
-                }
-              }
-            }
-            if (e.data === 1 || e.data === 3) {
-              autoScrollRef.current = true;
-              scrollToLine(activeLineRef.current);
-              if (pendingSeekRef.current != null) {
-                playerRef.current?.seekTo?.(pendingSeekRef.current, true);
-              }
-            }
-          },
-        },
-      }) as unknown as YTPlayer;
-    };
-
-    if (window.YT && window.YT.Player) {
-      createPlayer();
-    } else {
-      window.onYouTubeIframeAPIReady = createPlayer;
-      if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
-        const tag = document.createElement('script');
-        tag.src = 'https://www.youtube.com/iframe_api';
-        document.body.appendChild(tag);
-      }
-    }
-
-    setCurrentTime(0);
-    setDisplayTime(0);
-    currentTimeRef.current = 0;
-
-    return () => {
-      clearInterval(interval);
-      playerRef.current?.destroy?.();
-      playerRef.current = null;
-    };
-  }, [song, scrollToLine, router]);
-
-  useEffect(() => {
-    let frame: number;
-    const smooth = () => {
-      setDisplayTime((prev) => prev + (currentTimeRef.current - prev) * 0.2);
-      frame = requestAnimationFrame(smooth);
-    };
-    frame = requestAnimationFrame(smooth);
-    return () => cancelAnimationFrame(frame);
-  }, []);
-
-  const timeToLine = useCallback(
-    (t: number) => {
-      for (let i = lyrics.length - 1; i >= 0; i--) {
-        const start = lyrics[i].jp[0]?.time ?? 0;
-        if (t >= start) return i;
-      }
-      return 0;
-    },
-    [lyrics]
-  );
-
-  useEffect(() => {
-    const baseTime = seekingRef.current ? displayTime : currentTime;
-    const idx = timeToLine(baseTime);
-    if (idx !== activeLine) setActiveLine(idx);
-  }, [currentTime, displayTime, timeToLine, activeLine]);
-
-  useEffect(() => {
-    activeLineRef.current = activeLine;
-  }, [activeLine]);
-
-  const computeCallPositions = useCallback(() => {
-    setCallPositions(
-      lyrics.map((line, idx) => {
-        const pos = line.call?.pos;
-        if (pos == null) return 0;
-        const charEl = tokenRefs.current[idx]?.[pos];
-        const lineEl = lineRefs.current[idx];
-        if (!charEl || !lineEl) return 0;
-        const charRect = charEl.getBoundingClientRect();
-        const lineRect = lineEl.getBoundingClientRect();
-        return charRect.left - lineRect.left;
-      })
-    );
-  }, [lyrics]);
-  useLayoutEffect(computeCallPositions, [computeCallPositions]);
-  useEffect(() => {
-    document.fonts?.ready.then(computeCallPositions);
-    window.addEventListener('resize', computeCallPositions);
-    return () => window.removeEventListener('resize', computeCallPositions);
-  }, [computeCallPositions]);
-
-  useEffect(() => {
-    const gap = gaps.find((g) => currentTime >= g.start && currentTime < g.end);
-    if (gap && currentTime >= gap.showAt) setSkipGap(gap);
-    else setSkipGap(null);
-  }, [currentTime, gaps]);
-
-  useEffect(() => {
-    if (!autoScrollRef.current) return;
-    scrollToLine(activeLine);
-  }, [activeLine, scrollToLine]);
-
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (!playerRef.current) return;
-      if (e.code === 'Space') {
-        e.preventDefault();
-        if (isPlaying) playerRef.current.pauseVideo?.();
-        else playerRef.current.playVideo?.();
-        autoScrollRef.current = true;
-        scrollToLine(activeLine);
-      } else if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
-        e.preventDefault();
-        const delta = e.code === 'ArrowLeft' ? -5 : 5;
-        const t = Math.max(0, Math.min((playerRef.current.getDuration?.() ?? 0), currentTime + delta));
-        pendingSeekRef.current = t;
-        playerRef.current?.seekTo?.(t, true);
-        currentTimeRef.current = t;
-        setCurrentTime(t);
-        setDisplayTime(t);
-        autoScrollRef.current = true;
-        const idx = timeToLine(t);
-        setTimeout(() => scrollToLine(idx), 100);
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [isPlaying, currentTime, scrollToLine, timeToLine, activeLine]);
-
-  useEffect(() => {
-    const onScroll = () => {
-      if (programmaticScrollRef.current) return;
-      autoScrollRef.current = false;
-    };
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  const callActive = (line: ProcessedLine) =>
-    line.call ? currentTime >= line.call.start && currentTime <= line.call.end : false;
-  const charActive = (token: Token) =>
-    token.time != null && currentTime >= token.time;
-
-  const progress = duration ? (displayTime / duration) * 100 : 0;
-
-  if (!song) return <main>노래를 찾을 수 없습니다.</main>;
+  const playlistSongs = useMemo(() => {
+    if (!activePlaylist) return songs;
+    return activePlaylist.slugs
+      .map((slug) => songs.find((s) => s.slug === slug))
+      .filter(Boolean) as SongWithSetlist[];
+  }, [activePlaylist, songs]);
 
   return (
-    <SpoilerGate>
-      <main>
-        <div id="player" className="video-background" />
-        <header className="header">
-          <Link href="/call-guide" className="container header-content" style={{ textDecoration: 'none' }}>
-            <h1 className="header-title">콜 가이드</h1>
-            <p className="header-subtitle">{song.krtitle || song.title}</p>
-          </Link>
-        </header>
-
-        <section className="container call-section">
-          <div className="call-song-jacket">
-            <Image
-              src={song.thumbnail!}
-              alt={song.krtitle || song.title}
-              width={200}
-              height={200}
-              className="song-jacket"
-            />
-          </div>
-          <div className="glass-effect call-summary-box">
-            <h3 className="call-summary-title">콜 정리</h3>
-            {song.summary!.split('\n').map((line, i) => (
-              <p key={i}>{line}</p>
-            ))}
-          </div>
-
-          <div className="lyrics">
-            {lyrics.map((line, idx) => (
-              <div
-                key={idx}
-                className={`lyric-line${idx === activeLine ? ' focused' : ''}`}
-                ref={(el) => {
-                  lineRefs.current[idx] = el!;
-                }}
-                onClick={() => {
-                  const t = line.jp[0]?.time ?? 0;
-                  pendingSeekRef.current = t;
-                  playerRef.current?.seekTo?.(t, true);
-                  currentTimeRef.current = t;
-                  setCurrentTime(t);
-                  setDisplayTime(t);
-                  autoScrollRef.current = true;
-                  scrollToLine(idx);
-                }}
-              >
-                <div
-                  className={`lyric-call${callActive(line) ? ' active' : ''}`}
-                  style={
-                    line.call?.pos != null
-                      ? { left: callPositions[idx], transform: 'none' }
-                      : undefined
-                  }
-                >
-                  {line.call?.text ?? ''}
-                </div>
-                <div className="lyric-row">
-                  {line.jp.map((token, i) => (
-                    <span
-                      key={i}
-                      ref={(el) => {
-                        if (!tokenRefs.current[idx]) tokenRefs.current[idx] = [];
-                        tokenRefs.current[idx][i] = el!;
-                      }}
-                      className={`lyric-char${charActive(token) ? ' active' : ''}`}
-                    >
-                      {token.text}
-                    </span>
-                  ))}
-                </div>
-                <div className="lyric-row">
-                  {line.pron.map((token, i) => (
-                    <span
-                      key={i}
-                      className={`lyric-char${charActive(token) ? ' active' : ''}`}
-                    >
-                      {token.text}
-                    </span>
-                  ))}
-                </div>
-                <div className="lyric-row">
-                  {line.ko.map((token, i) => (
-                    <span
-                      key={i}
-                      className={`lyric-char${charActive(token) ? ' active' : ''}`}
-                    >
-                      {token.text}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-        <div className="player-controls">
-          <div className="seek-container">
-            {skipGap && (
-              <button
-                className="skip-button glass-effect"
-                onClick={() => {
-                  const t = skipGap.target;
-                  pendingSeekRef.current = t;
-                  playerRef.current?.seekTo?.(t, true);
-                  currentTimeRef.current = t;
-                  setCurrentTime(t);
-                  setDisplayTime(t);
-                  autoScrollRef.current = true;
-                  const idx = timeToLine(t);
-                  scrollToLine(idx);
-                  setSkipGap(null);
-                }}
-              >
-                간주 스킵
-              </button>
-            )}
-            <input
-              suppressHydrationWarning
-              className="player-seek"
-              type="range"
-              min={0}
-              max={duration || 0}
-              step={0.1}
-              value={displayTime}
-              onPointerDown={() => {
-                seekingRef.current = true;
-                autoScrollRef.current = false;
-              }}
-              onChange={(e) => {
-                const t = Number(e.target.value);
-                pendingSeekRef.current = t;
-                playerRef.current?.seekTo?.(t, true);
-                currentTimeRef.current = t;
-                setCurrentTime(t);
-                setDisplayTime(t);
-              }}
-              onPointerUp={(e) => {
-                const t = Number(e.currentTarget.value);
-                pendingSeekRef.current = t;
-                playerRef.current?.seekTo?.(t, true);
-                currentTimeRef.current = t;
-                setCurrentTime(t);
-                setDisplayTime(t);
-                autoScrollRef.current = true;
-                const idx = timeToLine(t);
-                scrollToLine(idx);
-                setTimeout(() => {
-                  seekingRef.current = false;
-                }, 200);
-              }}
-              onPointerCancel={(e) => {
-                const t = Number(e.currentTarget.value);
-                pendingSeekRef.current = t;
-                playerRef.current?.seekTo?.(t, true);
-                currentTimeRef.current = t;
-                setCurrentTime(t);
-                setDisplayTime(t);
-                autoScrollRef.current = true;
-                const idx = timeToLine(t);
-                scrollToLine(idx);
-                setTimeout(() => {
-                  seekingRef.current = false;
-                }, 200);
-              }}
-              style={{
-                background: `linear-gradient(to right, #39c5bb 0%, #39c5bb ${progress}%, rgba(255,255,255,0.15) ${progress}%, rgba(255,255,255,0.15) 100%)`,
-                boxShadow: progress > 0 ? '0 0 8px #39c5bb' : undefined,
-              }}
-            />
-          </div>
-          <div className="player-bottom-row">
-            <div className="player-buttons" ref={playerButtonsRef}>
-              <div className="tooltip-wrapper">
-                <button
-                  className="control-button"
-                  disabled={!prevSong}
-                  onMouseEnter={() => setShowPrevTooltip(true)}
-                  onMouseLeave={() => setShowPrevTooltip(false)}
-                  onClick={() => {
-                    if (!prevSong) return;
-                    setShowPrevTooltip(false);
-                    autoScrollRef.current = true;
-                    router.push(`/call-guide/${prevSong.slug}`);
-                  }}
-                >
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <polygon points="15,5 7,12 15,19" />
-                    <rect x="5" y="5" width="2" height="14" />
-                  </svg>
-                </button>
-                {showPrevTooltip && prevSong && (
-                  <div className="song-tooltip">
-                    {prevSong.thumbnail && (
-                      <Image
-                        src={prevSong.thumbnail}
-                        alt={prevSong.krtitle || prevSong.title}
-                        width={80}
-                        height={80}
-                        className="song-tooltip-image"
-                      />
-                    )}
-                    <p className="song-tooltip-title">{prevSong.krtitle || prevSong.title}</p>
-                  </div>
-                )}
-              </div>
-              <button
-                className="control-button"
-                onClick={() => {
-                  if (!playerRef.current) return;
-                  if (isPlaying) playerRef.current.pauseVideo?.();
-                  else playerRef.current.playVideo?.();
-                  autoScrollRef.current = true;
-                  scrollToLine(activeLine);
-                }}
-              >
-                {isPlaying ? (
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <rect x="6" y="5" width="4" height="14" />
-                    <rect x="14" y="5" width="4" height="14" />
-                  </svg>
-                ) : (
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <polygon points="8,5 19,12 8,19" />
-                  </svg>
-                )}
-              </button>
-              <div className="tooltip-wrapper">
-                <button
-                  className="control-button"
-                  disabled={!nextSong}
-                  onMouseEnter={() => setShowNextTooltip(true)}
-                  onMouseLeave={() => setShowNextTooltip(false)}
-                  onClick={() => {
-                    if (!nextSong) return;
-                    setShowNextTooltip(false);
-                    autoScrollRef.current = true;
-                    router.push(`/call-guide/${nextSong.slug}`);
-                  }}
-                >
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <polygon points="9,5 17,12 9,19" />
-                    <rect x="17" y="5" width="2" height="14" />
-                  </svg>
-                </button>
-                {showNextTooltip && nextSong && (
-                  <div className="song-tooltip">
-                    {nextSong.thumbnail && (
-                      <Image
-                        src={nextSong.thumbnail}
-                        alt={nextSong.krtitle || nextSong.title}
-                        width={80}
-                        height={80}
-                        className="song-tooltip-image"
-                      />
-                    )}
-                    <p className="song-tooltip-title">{nextSong.krtitle || nextSong.title}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-            <div
-              ref={volumeControlsRef}
-              className={`volume-controls${muted ? ' disabled' : ''}`}
-            >
-              <button className={`control-button${muted ? ' muted' : ''}`} onClick={toggleMute}>
-                {muted ? (
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <polygon points="3,9 7,9 12,4 12,20 7,15 3,15" />
-                    <line x1="4" y1="4" x2="20" y2="20" stroke="currentColor" strokeWidth="2" />
-                  </svg>
-                ) : (
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <polygon points="3,9 7,9 12,4 12,20 7,15 3,15" />
-                    <path d="M16 8a5 5 0 010 8" stroke="currentColor" strokeWidth="2" fill="none" />
-                  </svg>
-                )}
-              </button>
-              <input
-                className={`volume-bar${muted ? ' muted' : ''}`}
-                type="range"
-                min={0}
-                max={100}
-                value={volume}
-                onChange={(e) => {
-                  const v = Number(e.target.value);
-                  setVolume(v);
-                  playerRef.current?.setVolume?.(v);
-                }}
-                style={{
-                  background: `linear-gradient(to right, ${muted ? '#aaa' : '#39c5bb'} 0%, ${muted ? '#aaa' : '#39c5bb'} ${volume}%, rgba(255,255,255,0.1) ${volume}%, rgba(255,255,255,0.1) 100%)`,
-                  boxShadow: volume > 0 && !muted ? '0 0 8px #39c5bb' : undefined,
-                }}
-                suppressHydrationWarning
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className={`extra-toggle${extraOpen ? ' open' : ''}`}>
-          <div className="extra-buttons">
-            <button className="small-glass-button" onClick={openPlaylistSongs}>
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <rect x="4" y="5" width="16" height="2" />
-                <rect x="4" y="11" width="16" height="2" />
-                <rect x="4" y="17" width="16" height="2" />
-              </svg>
-            </button>
-            <button
-              className={`small-glass-button${autoNext ? ' active' : ' inactive'}`}
-              onClick={toggleAutoNext}
-            >
-              {autoNext ? (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="4" y1="12" x2="14" y2="12" />
-                  <polyline points="14,6 20,12 14,18" />
-                </svg>
-              ) : (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="4" y1="12" x2="14" y2="12" />
-                  <polyline points="14,6 20,12 14,18" />
-                  <line x1="6" y1="8" x2="10" y2="16" />
-                </svg>
-              )}
-            </button>
-            <button
-              className={`small-glass-button${repeatMode !== 'off' ? ' active' : ' inactive'}`}
-              onClick={cycleRepeat}
-            >
-              {repeatMode === 'one' ? (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M17 1l4 4-4 4" />
-                  <path d="M3 11v-3a6 6 0 016-6h8" />
-                  <path d="M7 23l-4-4 4-4" />
-                  <path d="M21 13v3a6 6 0 01-6 6H7" />
-                  <path d="M12 9v6" strokeLinecap="round" />
-                  <path d="M11 9h2" strokeLinecap="round" />
-                </svg>
-              ) : repeatMode === 'all' ? (
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M17 1l4 4-4 4" />
-                  <path d="M3 11v-3a6 6 0 016-6h8" stroke="currentColor" strokeWidth="2" fill="none" />
-                  <path d="M7 23l-4-4 4-4" />
-                  <path d="M21 13v3a6 6 0 01-6 6H7" stroke="currentColor" strokeWidth="2" fill="none" />
-                </svg>
-              ) : (
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M17 1l4 4-4 4" />
-                  <path d="M3 11v-3a6 6 0 016-6h8" stroke="currentColor" strokeWidth="2" fill="none" />
-                </svg>
-              )}
-            </button>
-            <button
-              className={`small-glass-button${shuffle ? ' active' : ' inactive'}`}
-              onClick={toggleShuffle}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M4 4h4l5 8 5-8" />
-                <polyline points="18,4 22,4 20,6" />
-                <path d="M4 20h4l5-8 5 8" />
-                <polyline points="18,20 22,20 20,18" />
-              </svg>
-            </button>
-          </div>
-          <button className="triangle-toggle" onClick={() => setExtraOpen((p) => !p)}>
-            {extraOpen ? '▼' : '▲'}
+    <>
+      <div className="call-guide-actions">
+        <button className="glass-button" onClick={openPlaylistModal}>
+          <Image
+            src="/images/list.svg"
+            alt="목록 리스트"
+            width={24}
+            height={24}
+            className="button-icon"
+          />
+          <span className="button-text">목록 리스트</span>
+        </button>
+        <button
+          className="glass-button"
+          onClick={startNewPlaylist}
+        >
+          <Image
+            src="/images/plus.svg"
+            alt="새 재생목록"
+            width={28}
+            height={28}
+            className="button-icon plus-icon"
+          />
+          <span className="button-text">새 재생목록</span>
+        </button>
+        {showSortButton && (
+          <button
+            ref={sortButtonRef}
+            className="glass-button sort-button"
+            onClick={restoreSongOrder}
+          >
+            <span className="sort-text-full">재생목록 정렬</span>
+            <span className="sort-text-short">정렬</span>
           </button>
-        </div>
+        )}
+      </div>
 
-      </main>
-      <ScrollTopButton className="between-bar" />
-      {activePlaylist && (
+      <div className="call-list">
+        {playlistSongs.map((song, index) => {
+          const first = song.setlists[0];
+          const order = first?.order ?? 0;
+          const itemClass = first?.higawari
+            ? 'call-item higawari'
+            : first?.locationgawari
+              ? 'call-item locationgawari'
+              : 'call-item';
+
+          const colors = song.part
+            ? song.part
+              .map((name) => partColors[name as keyof typeof partColors])
+              .filter(Boolean)
+            : [];
+
+          const borderStyle: React.CSSProperties | undefined =
+            colors.length > 0
+              ? ({
+                position: 'absolute' as const,
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                borderRadius: '24px',
+                padding: '2px',
+                background:
+                  colors.length === 1
+                    ? colors[0]
+                    : `linear-gradient(to bottom right, ${colors.join(', ')})`,
+                WebkitMask:
+                  'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                WebkitMaskComposite: 'xor',
+                maskComposite: 'exclude',
+                pointerEvents: 'none' as React.CSSProperties['pointerEvents'],
+              } satisfies CSSProperties)
+              : undefined;
+
+          if (selectMode) {
+            return (
+                <div
+                  key={song.slug!}
+                  className={itemClass}
+                  onClick={() => toggleSelect(song.slug!)}
+                  style={{ textDecoration: 'none', cursor: 'pointer' }}
+                >
+                  {colors.length > 0 && <div style={borderStyle} />}
+                  <div className="song-index-wrapper">
+                    <span className="song-index">{order}</span>
+                  </div>
+                  <div className="call-info-link">
+                  <Image
+                    src={song.thumbnail!}
+                    alt={song.title}
+                    width={80}
+                    height={80}
+                    className="song-jacket"
+                  />
+                  <div className="song-text-info">
+                    <p className="song-title">
+                      {song.krtitle ? song.krtitle : song.title}
+                    </p>
+                    <p className="song-artist">{song.artist}</p>
+                  </div>
+                </div>
+                <div className="call-item-summary">
+                  {song.summary!.split('\n').map((line, i) => (
+                    <p key={i}>{line}</p>
+                  ))}
+                </div>
+                <div className="select-marker">
+                  {selected.has(song.slug!) && <div className="select-marker-inner" />}
+                </div>
+              </div>
+            );
+          }
+
+            return (
+              <Link
+                key={song.slug!}
+                href={`/call-guide/${song.slug}`}
+                className={itemClass}
+                style={{ textDecoration: 'none' }}
+                onClick={handleSongClick}
+                data-song-index={index}
+                onDragOver={(e) => {
+                }}
+              >
+                {colors.length > 0 && <div style={borderStyle} />}
+                <div className="song-index-wrapper">
+                  <span className="song-index">{order}</span>
+                  {!isDefaultPlaylist && (
+                    <Image
+                      src="/images/drag.svg"
+                      alt="drag"
+                      width={24}
+                      height={24}
+                      className="song-drag-handle"
+                      draggable
+                      onDragStart={(e) => {
+                        handleSongDragStart(index);
+                        e.dataTransfer?.setDragImage(
+                          e.currentTarget,
+                          e.currentTarget.clientWidth / 2,
+                          e.currentTarget.clientHeight / 2,
+                        );
+                      }}
+                      onDragEnd={handleSongDragEnd}
+                      onTouchStart={(e) => {
+                        handleSongTouchStart(index, e);
+                      }}
+                      onTouchMove={handleSongTouchMove}
+                      onTouchEnd={handleSongTouchEnd}
+                    />
+                  )}
+                </div>
+                <div className="call-info-link">
+                  <Image
+                    src={song.thumbnail!}
+                    alt={song.title}
+                    width={80}
+                    height={80}
+                    className="song-jacket"
+                  />
+                  <div className="song-text-info">
+                    <p className="song-title">
+                      {song.krtitle ? song.krtitle : song.title}
+                    </p>
+                    <p className="song-artist">{song.artist}</p>
+                  </div>
+                </div>
+                <div className="call-item-summary">
+                  {song.summary!.split('\n').map((line, i) => (
+                    <p key={i}>{line}</p>
+                  ))}
+                </div>
+              </Link>
+            );
+          })}
+      </div>
+
+      {selectMode && (
+        <>
+          <div className="selection-info">
+            {selected.size}곡 선택됨
+          </div>
+          <div className="selection-actions">
+            <button className="confirm-button" onClick={confirmSelection}>
+              선택 완료
+            </button>
+            <button className="cancel-button" onClick={cancelSelection}>
+              취소
+            </button>
+          </div>
+        </>
+      )}
+
+      {showPlaylistModal && (
+        <div className="playlist-modal" onClick={closePlaylistModal}>
+          <div className="playlist-modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3>재생목록 선택</h3>
+            <hr className="playlist-divider" />
+            <ul>
+              <li onClick={() => selectPlaylist('default')}>전체 곡</li>
+              {playlists.map((pl, i) => (
+                <li
+                  key={pl.name}
+                  data-index={i}
+                  onClick={() => selectPlaylist(pl)}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={() => handleDrop(i)}
+                  draggable
+                  onDragStart={(e) => {
+                    handleDragStart(i);
+                    e.dataTransfer?.setDragImage(
+                      e.currentTarget,
+                      e.currentTarget.clientWidth / 2,
+                      e.currentTarget.clientHeight / 2,
+                    );
+                  }}
+                  onTouchStart={() => handleDragStart(i)}
+                    onTouchEnd={handlePlaylistTouchEnd}
+                >
+                  <Image
+                    src="/images/drag.svg"
+                    alt="drag"
+                    width={16}
+                    height={16}
+                    className="drag-handle"
+                  />
+                  <span className="playlist-item-name">{pl.name}</span>
+                  <span
+                    className="playlist-color"
+                    style={{ background: pl.color || 'rgba(255,255,255,0.3)' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setColorIndex(colorIndex === i ? null : i);
+                    }}
+                  />
+                  {colorIndex === i && (
+                    <div className="color-palette" onClick={(e) => e.stopPropagation()}>
+                      {['rgba(255,255,255,0.1)', '#39c5bbaa', '#ffa500aa', '#ffe211aa', '#ffc0cbaa', '#0000ffaa', '#d80000aa'].map((c) => (
+                        <span
+                          key={c}
+                          className="palette-color"
+                          style={{ background: c }}
+                          onClick={() => {
+                            setPlaylists(prev => {
+                              const updated = [...prev];
+                              const color = c === 'rgba(255,255,255,0.1)' ? undefined : c;
+                              updated[i] = { ...updated[i], color };
+                              localStorage.setItem('callGuidePlaylists', JSON.stringify(updated));
+                              return updated;
+                            });
+                            if (activePlaylist?.name === pl.name) {
+                              const active = { ...pl, color: c === 'rgba(255,255,255,0.1)' ? undefined : c };
+                              setActivePlaylist(active);
+                              localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
+                            }
+                            setColorIndex(null);
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  <Image
+                    src="/images/minus-circle.svg"
+                    alt="삭제"
+                    width={20}
+                    height={20}
+                    className="delete-icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openDeleteModal(i);
+                    }}
+                  />
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
+      {showNameModal && (
+        <div className="playlist-modal" onClick={cancelNameModal}>
+          <div
+            className="playlist-name-popup"
+            onClick={(e) => e.stopPropagation()}
+          >
+          <h3>재생목록 이름</h3>
+          <input
+            type="text"
+            value={playlistName}
+            onChange={(e) => setPlaylistName(e.target.value)}
+            placeholder="이름 입력"
+            autoFocus
+          />
+          <div className="color-palette">
+            {['rgba(255,255,255,0.1)', '#39c5bbaa', '#ffa500aa', '#ffe211aa', '#ffc0cbaa', '#0000ffaa', '#d80000aa'].map((c) => (
+              <span
+                key={c}
+                className={`palette-color${playlistColor === c ? ' selected' : ''}`}
+                style={{ background: c }}
+                onClick={() => setPlaylistColor(c)}
+              />
+            ))}
+          </div>
+          <div className="name-modal-actions">
+            <button className="confirm-button" onClick={createPlaylist}>
+              선택
+            </button>
+            <button className="cancel-button" onClick={cancelNameModal}>
+              취소
+            </button>
+          </div>
+          </div>
+        </div>
+      )}
+
+      {deleteIndex !== null && (
+        <div className="playlist-modal" onClick={cancelDelete}>
+          <div className="playlist-delete-popup" onClick={(e) => e.stopPropagation()}>
+            <p>
+              &apos;<span className="delete-playlist-name">{playlists[deleteIndex].name}</span>&apos; 재생목록을
+            </p>
+            <p>삭제하시겠습니까?</p>
+            <div className="name-modal-actions">
+              <button className="confirm-button" onClick={confirmDelete}>
+                예
+              </button>
+              <button className="cancel-button" onClick={cancelDelete}>
+                아니오
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {!selectMode && activePlaylist && (
         <div
           className="current-playlist-bar"
           onClick={openPlaylistModal}
           style={
             activePlaylist.color
               ? {
-                background: activePlaylist.color,
-                borderTop: `1px solid ${activePlaylist.color}`,
-              }
+                  background: activePlaylist.color,
+                  borderTop: `1px solid ${activePlaylist.color}`,
+                }
               : undefined
           }
         >
@@ -1115,74 +888,6 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
           </button>
         </div>
       )}
-      {showPlaylistModal && (
-        <div className="playlist-modal" onClick={closePlaylistModal}>
-          <div className="playlist-modal-content" onClick={(e) => e.stopPropagation()}>
-            <ul>
-              <li onClick={() => selectPlaylist('default')}>전체 곡</li>
-              {playlists.map((pl, i) => (
-                <li key={i} onClick={() => selectPlaylist(pl)}>{pl.name}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
-      {showPlaylistSongs && activePlaylist && (
-        <div className="playlist-modal" onClick={closePlaylistSongs}>
-          <div
-            className="playlist-songs-popup"
-            onClick={(e) => e.stopPropagation()}
-            style={
-              activePlaylist.color
-                ? ({ '--playlist-color': activePlaylist.color } as React.CSSProperties)
-                : undefined
-            }
-          >
-            {activePlaylist.name !== '전체 곡' && (
-              <button className="reset-order-button" onClick={resetOrder}>
-                원래대로
-              </button>
-            )}
-            <ul ref={songListRef}>
-              {playlistOrder.map((slug, i) => {
-                const s = songs.find((song) => song.slug === slug);
-                if (!s) return null;
-                const draggable = activePlaylist.name !== '전체 곡';
-                return (
-                  <li
-                    key={slug}
-                    data-index={i}
-                    data-slug={slug}
-                    className={`playlist-song-item${slug === song.slug ? ' active' : ''}${draggable ? ' draggable' : ''}`}
-                    draggable={draggable}
-                    onDragStart={() => draggable && handleSongDragStart(i)}
-                    onDragOver={(e) => {
-                      if (draggable) e.preventDefault();
-                    }}
-                    onDrop={(e) => {
-                      if (draggable) {
-                        e.preventDefault();
-                        handleSongDrop(i);
-                      }
-                    }}
-                    onTouchStart={draggable ? () => handleSongTouchStart(i) : undefined}
-                    onTouchMove={draggable ? handleSongTouchMove : undefined}
-                    onTouchEnd={draggable ? handleSongTouchEnd : undefined}
-                    onClick={() => {
-                      if (wasDraggingRef.current) return;
-                      router.push(`/call-guide/${slug}`);
-                      closePlaylistSongs();
-                    }}
-                  >
-                    <span className="playlist-song-title">{s.krtitle || s.title}</span>
-                    <span className="song-duration">{formatTime(songDurations[slug] || 0)}</span>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        </div>
-      )}
-    </SpoilerGate>
+    </>
   );
 }

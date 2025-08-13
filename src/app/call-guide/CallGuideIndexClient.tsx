@@ -246,7 +246,6 @@ export default function CallGuideIndexClient({ songs }: Props) {
       const dropIndex = parseInt(li.dataset.index || '', 10);
       if (!isNaN(dropIndex) && dropIndex !== dragIndex) {
         handleDrop(dropIndex);
-        e.preventDefault();
       }
     }
     setDragIndex(null);
@@ -271,6 +270,8 @@ export default function CallGuideIndexClient({ songs }: Props) {
         item.classList.add('dragging');
         item.style.transition = 'none';
         document.body.style.overflow = 'hidden';
+        document.body.style.touchAction = 'none';
+        item.scrollIntoView({ block: 'center' });
       }
     }, 300);
   };
@@ -334,6 +335,19 @@ export default function CallGuideIndexClient({ songs }: Props) {
     }, 550);
   };
 
+  const getDropIndex = (y: number) => {
+    const container = document.querySelector('.call-list');
+    if (!container) return null;
+    const items = Array.from(
+      container.querySelectorAll('[data-song-index]'),
+    ) as HTMLElement[];
+    for (let i = 0; i < items.length; i++) {
+      const rect = items[i].getBoundingClientRect();
+      if (y < rect.top + rect.height / 2) return i;
+    }
+    return items.length;
+  };
+
   const handleSongTouchMove = (e: React.TouchEvent) => {
     if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
     if (swappingRef.current) return;
@@ -358,9 +372,13 @@ export default function CallGuideIndexClient({ songs }: Props) {
         }
       }
       const threshold = 50;
-      if (y < threshold) window.scrollBy({ top: -10, behavior: 'smooth' });
-      else if (y > window.innerHeight - threshold) window.scrollBy({ top: 10, behavior: 'smooth' });
-      e.preventDefault();
+      if (y < threshold)
+        window.scrollBy({ top: y - threshold, behavior: 'smooth' });
+      else if (y > window.innerHeight - threshold)
+        window.scrollBy({
+          top: y - (window.innerHeight - threshold),
+          behavior: 'smooth',
+        });
     }
   };
 
@@ -425,6 +443,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
       dragItemRef.current = null;
     }
     document.body.style.overflow = '';
+    document.body.style.touchAction = '';
     setSongDragIndex(null);
     swapTimeoutRef.current = setTimeout(() => {
       swappingRef.current = false;
@@ -440,31 +459,23 @@ export default function CallGuideIndexClient({ songs }: Props) {
       dragItemRef.current = null;
     }
     document.body.style.overflow = '';
+    document.body.style.touchAction = '';
     const touch = e.changedTouches[0];
-    const target = document.elementFromPoint(window.innerWidth / 2, touch.clientY);
-    const item = target?.closest('[data-song-index]') as HTMLElement | null;
-    if (item) {
-      const dropIndex = parseInt(item.dataset.songIndex || '', 10);
-      if (!isNaN(dropIndex) && dropIndex !== songDragIndex) {
-        handleSongDrop(dropIndex);
-        e.preventDefault();
-      }
+    const dropIndex = getDropIndex(touch.clientY);
+    if (dropIndex !== null && dropIndex !== songDragIndex) {
+      handleSongDrop(dropIndex);
     }
     setSongDragIndex(null);
   };
 
   const handleSongDragEnd = (e: React.DragEvent) => {
-    e.preventDefault();
     if (songDragIndex === null) return;
-    const target = document.elementFromPoint(window.innerWidth / 2, e.clientY);
-    const item = target?.closest('[data-song-index]') as HTMLElement | null;
-    if (item) {
-      const dropIndex = parseInt(item.dataset.songIndex || '', 10);
-      if (!isNaN(dropIndex) && dropIndex !== songDragIndex) {
-        handleSongDrop(dropIndex);
-      }
+    const dropIndex = getDropIndex(e.clientY);
+    if (dropIndex !== null && dropIndex !== songDragIndex) {
+      handleSongDrop(dropIndex);
     }
     document.body.style.overflow = '';
+    document.body.style.touchAction = '';
     setSongDragIndex(null);
   };
 
@@ -675,7 +686,6 @@ export default function CallGuideIndexClient({ songs }: Props) {
                       }}
                       onDragEnd={handleSongDragEnd}
                       onTouchStart={(e) => {
-                        e.preventDefault();
                         handleSongTouchStart(index, e);
                       }}
                       onTouchMove={handleSongTouchMove}

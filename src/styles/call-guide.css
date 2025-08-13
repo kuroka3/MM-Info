@@ -646,8 +646,11 @@
 
 .call-item {
   display: flex;
+  flex-direction: row;
   align-items: flex-start;
+  width: 100%;
   gap: 1rem;
+  margin: 0;
   padding: 1rem;
   padding-left: calc(1rem + 40px);
   background: var(--glass-bg);
@@ -1049,6 +1052,24 @@
 }
 
 @media (max-width: 480px) {
+  .call-item {
+    flex-direction: column;
+    padding: 16px !important;
+  }
+
+  .song-index-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    width: 100%;
+  }
+  .song-index {
+    grid-column: 1;
+    justify-self: start;
+  }
+  .song-drag-handle {
+    grid-column: 1;
+    justify-self: center;
+  }
   .control-button {
     width: 40px;
     height: 40px;
