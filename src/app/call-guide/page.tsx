@@ -19,24 +19,27 @@ export const metadata: Metadata = { title: '콜 가이드' };
 export const revalidate = 60;
 
 export default async function CallGuideIndex() {
-  const setlist = await prisma.setlist.findFirst({
+  const songs = await prisma.song.findMany({
+    where: {
+      slug: { not: null },
+      thumbnail: { not: null },
+      summary: { not: null },
+      lyrics: { not: Prisma.JsonNull },
+    },
     include: {
-      songs: {
-        where: {
-          song: {
-            slug: { not: null },
-            thumbnail: { not: null },
-            summary: { not: null },
-            lyrics: { not: Prisma.JsonNull },
-          },
-        },
-        include: { song: true },
+      setlists: {
+        select: { order: true, higawari: true, locationgawari: true },
         orderBy: { order: 'asc' },
+        take: 1,
       },
     },
   });
 
-  const songs = setlist?.songs ?? [];
+  songs.sort((a, b) => {
+    const orderA = a.setlists[0]?.order ?? Number.MAX_SAFE_INTEGER;
+    const orderB = b.setlists[0]?.order ?? Number.MAX_SAFE_INTEGER;
+    return orderA - orderB;
+  });
 
   return (
     <SpoilerGate>
@@ -50,10 +53,12 @@ export default async function CallGuideIndex() {
 
         <section className="container call-section">
           <div className="call-list">
-            {songs.map(({ song, order, higawari, locationgawari }) => {
-              const itemClass = higawari
+            {songs.map((song) => {
+              const first = song.setlists[0];
+              const order = first?.order ?? 0;
+              const itemClass = first?.higawari
                 ? 'call-item higawari'
-                : locationgawari
+                : first?.locationgawari
                 ? 'call-item locationgawari'
                 : 'call-item';
 
