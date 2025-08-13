@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, type CSSProperties, } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Prisma } from '@prisma/client';

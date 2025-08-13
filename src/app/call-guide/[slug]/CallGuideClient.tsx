@@ -149,9 +149,12 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   useEffect(() => {
     const base = activePlaylist?.slugs || songs.map((s) => s.slug!);
     if (shuffle) {
-      const rest = base.filter((s) => s !== song.slug);
-      const shuffled = [...rest].sort(() => Math.random() - 0.5);
-      setPlaylistOrder([song.slug!, ...shuffled]);
+      const k = base.indexOf(song.slug!);
+      const before = base.slice(0, k);
+      const after = base.slice(k + 1);
+      const shuffledBefore = [...before].sort(() => Math.random() - 0.5);
+      const shuffledAfter = [...after].sort(() => Math.random() - 0.5);
+      setPlaylistOrder([...shuffledBefore, song.slug!, ...shuffledAfter]);
     } else {
       setPlaylistOrder(base);
     }
@@ -183,7 +186,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     }
   };
 
-  const openPlaylistSongs = () => setShowPlaylistSongs(true);
+  const openPlaylistSongs = () => setShowPlaylistSongs((p) => !p);
   const closePlaylistSongs = () => setShowPlaylistSongs(false);
 
   const toggleAutoNext = () => {
@@ -200,20 +203,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       return next;
     });
   };
-  const toggleShuffle = () => {
-    setShuffle((prev) => {
-      const next = !prev;
-      const base = activePlaylist?.slugs || songs.map((s) => s.slug!);
-      if (next) {
-        const rest = base.filter((s) => s !== song.slug);
-        const shuffled = [...rest].sort(() => Math.random() - 0.5);
-        setPlaylistOrder([song.slug!, ...shuffled]);
-      } else {
-        setPlaylistOrder(base);
-      }
-      return next;
-    });
-  };
+  const toggleShuffle = () => setShuffle((prev) => !prev);
 
   const songListRef = useRef<HTMLUListElement | null>(null);
 
@@ -796,13 +786,12 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                 )}
               </div>
             </div>
-            <div className="volume-controls">
-              <button className="control-button" onClick={toggleMute}>
+            <div className={`volume-controls${muted ? ' disabled' : ''}`}>
+              <button className={`control-button${muted ? ' muted' : ''}`} onClick={toggleMute}>
                 {muted ? (
                   <svg viewBox="0 0 24 24" fill="currentColor">
                     <polygon points="3,9 7,9 12,4 12,20 7,15 3,15" />
-                    <line x1="16" y1="8" x2="22" y2="16" stroke="currentColor" strokeWidth="2" />
-                    <line x1="22" y1="8" x2="16" y2="16" stroke="currentColor" strokeWidth="2" />
+                    <line x1="4" y1="4" x2="20" y2="20" stroke="currentColor" strokeWidth="2" />
                   </svg>
                 ) : (
                   <svg viewBox="0 0 24 24" fill="currentColor">
@@ -826,6 +815,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                   background: `linear-gradient(to right, ${muted ? '#aaa' : '#39c5bb'} 0%, ${muted ? '#aaa' : '#39c5bb'} ${volume}%, rgba(255,255,255,0.1) ${volume}%, rgba(255,255,255,0.1) 100%)`,
                   boxShadow: volume > 0 && !muted ? '0 0 8px #39c5bb' : undefined,
                 }}
+                suppressHydrationWarning
               />
             </div>
           </div>

@@ -324,6 +324,10 @@
   gap: 0.5rem;
 }
 
+.volume-controls.disabled {
+  opacity: 0.5;
+}
+
 .volume-bar {
   width: 80px;
   -webkit-appearance: none;
@@ -338,6 +342,10 @@
 
 .volume-bar.muted {
   background: rgba(200, 200, 200, 0.15);
+}
+
+.control-button.muted {
+  color: #aaa;
 }
 
 .volume-bar::-webkit-slider-thumb {
@@ -355,6 +363,15 @@
   border-radius: 50%;
   background: #39c5bb;
   border: none;
+}
+
+@media (min-width: 800px) {
+  .volume-controls {
+    right: 4rem;
+  }
+  .volume-bar {
+    width: 120px;
+  }
 }
 
 .extra-toggle {
@@ -877,6 +894,22 @@
   .small-glass-button svg {
     width: 16px;
     height: 16px;
+  }
+  .player-controls {
+    left: 0;
+    transform: none;
+    align-items: flex-start;
+  }
+  .player-bottom-row {
+    justify-content: flex-start;
+    padding-right: 80px;
+  }
+  .player-buttons {
+    margin-left: 0;
+    gap: 0.75rem;
+  }
+  .playlist-songs-popup {
+    margin-bottom: 4rem;
   }
   .scroll-top.between-bar {
     bottom: 2.8rem;
