@@ -352,6 +352,7 @@
 
 @media (max-width: 600px) {
   .song-index-wrapper {
+    width: 100%;
     justify-content: center;
     align-items: flex-start;
   }
@@ -361,8 +362,9 @@
   }
   .song-drag-handle {
     top: 0;
-    left: 100%;
-    transform: translate(-100%, 0);
+    right: 0;
+    left: auto;
+    transform: none;
   }
 }
 
@@ -404,7 +406,10 @@
 
 .player-bottom-row {
   position: relative;
-  width: 100vw;
+  width: 90vw;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -413,7 +418,7 @@
 
 .volume-controls {
   position: absolute;
-  right: 1rem;
+  right: 0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -624,6 +629,11 @@
   transition: box-shadow 0.3s ease, transform 0.3s ease;
   position: relative;
   overflow: hidden;
+}
+
+.call-item.dragging {
+  z-index: 1000;
+  box-shadow: 0 0 10px var(--accent-blue);
 }
 
 .call-item:hover {
@@ -1031,7 +1041,8 @@
     align-items: center;
   }
   .player-bottom-row {
-    width: 100%;
+    width: 90vw;
+    max-width: 1000px;
     justify-content: center;
     margin: 0 auto;
   }
@@ -1061,7 +1072,8 @@
     margin-right: auto;
   }
   .player-bottom-row {
-    width: 100%;
+    width: 90vw;
+    max-width: 1000px;
     justify-content: center;
     margin: 0 auto;
   }

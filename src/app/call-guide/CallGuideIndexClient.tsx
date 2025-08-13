@@ -43,6 +43,8 @@ export default function CallGuideIndexClient({ songs }: Props) {
   const sortButtonRef = useRef<HTMLButtonElement | null>(null);
   const [showSortButton, setShowSortButton] = useState(false);
   const touchTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const dragItemRef = useRef<HTMLElement | null>(null);
+  const touchStartY = useRef(0);
 
   useEffect(() => {
     const stored = localStorage.getItem('callGuidePlaylists');
@@ -253,10 +255,20 @@ export default function CallGuideIndexClient({ songs }: Props) {
     setSongDragIndex(index);
   };
 
-  const handleSongTouchStart = (index: number) => {
+  const handleSongTouchStart = (index: number, e: React.TouchEvent) => {
     if (isDefaultPlaylist) return;
     if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
-    touchTimerRef.current = setTimeout(() => setSongDragIndex(index), 300);
+    const startY = e.touches[0].clientY;
+    touchTimerRef.current = setTimeout(() => {
+      setSongDragIndex(index);
+      touchStartY.current = startY;
+      const item = (e.currentTarget as HTMLElement).closest('.call-item') as HTMLElement | null;
+      if (item) {
+        dragItemRef.current = item;
+        item.classList.add('dragging');
+        item.style.transition = 'none';
+      }
+    }, 300);
   };
 
   const handleSongTouchMove = (e: React.TouchEvent) => {
@@ -264,6 +276,10 @@ export default function CallGuideIndexClient({ songs }: Props) {
     if (songDragIndex !== null) {
       const touch = e.touches[0];
       const y = touch.clientY;
+      const deltaY = y - touchStartY.current;
+      if (dragItemRef.current) {
+        dragItemRef.current.style.transform = `translateY(${deltaY}px) scale(1.05)`;
+      }
       const threshold = 50;
       if (y < threshold) window.scrollBy({ top: -10, behavior: 'smooth' });
       else if (y > window.innerHeight - threshold) window.scrollBy({ top: 10, behavior: 'smooth' });
@@ -273,11 +289,21 @@ export default function CallGuideIndexClient({ songs }: Props) {
 
   const handleSongDrop = (index: number) => {
     if (songDragIndex === null || songDragIndex === index || !activePlaylist || isDefaultPlaylist) return;
+    const container = document.querySelector('.call-list');
+    if (!container) return;
+    const rectMap = new Map<string, DOMRect>();
+    const children = Array.from(container.children) as HTMLElement[];
+    activePlaylist.slugs.forEach((slug, i) => {
+      const el = children[i];
+      if (el) rectMap.set(slug, el.getBoundingClientRect());
+    });
+
+    const updatedSlugs = [...activePlaylist.slugs];
+    const [moved] = updatedSlugs.splice(songDragIndex, 1);
+    updatedSlugs.splice(index, 0, moved);
+
     setActivePlaylist(prev => {
       if (!prev) return prev;
-      const updatedSlugs = [...prev.slugs];
-      const [moved] = updatedSlugs.splice(songDragIndex, 1);
-      updatedSlugs.splice(index, 0, moved);
       const updated = { ...prev, slugs: updatedSlugs };
       localStorage.setItem('callGuideActivePlaylist', JSON.stringify(updated));
       setPlaylists(pls => {
@@ -292,12 +318,44 @@ export default function CallGuideIndexClient({ songs }: Props) {
       });
       return updated;
     });
+
+    requestAnimationFrame(() => {
+      const newChildren = Array.from(container.children) as HTMLElement[];
+      updatedSlugs.forEach((slug, i) => {
+        const el = newChildren[i];
+        const prevRect = rectMap.get(slug);
+        if (el && prevRect) {
+          const newRect = el.getBoundingClientRect();
+          const dy = prevRect.top - newRect.top;
+          if (dy) {
+            el.animate(
+              [
+                { transform: `translateY(${dy}px)` },
+                { transform: 'translateY(0)' },
+              ],
+              { duration: 300, easing: 'cubic-bezier(0.455, 0.03, 0.515, 0.955)' },
+            );
+          }
+        }
+      });
+    });
+
+    if (dragItemRef.current) {
+      dragItemRef.current.style.transform = '';
+      dragItemRef.current.classList.remove('dragging');
+      dragItemRef.current = null;
+    }
     setSongDragIndex(null);
   };
 
   const handleSongTouchEnd = (e: React.TouchEvent) => {
     if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
     if (songDragIndex === null) return;
+    if (dragItemRef.current) {
+      dragItemRef.current.style.transform = '';
+      dragItemRef.current.classList.remove('dragging');
+      dragItemRef.current = null;
+    }
     const touch = e.changedTouches[0];
     const target = document.elementFromPoint(window.innerWidth / 2, touch.clientY);
     const item = target?.closest('[data-song-index]') as HTMLElement | null;
@@ -533,7 +591,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
                       onDragEnd={handleSongDragEnd}
                       onTouchStart={(e) => {
                         e.preventDefault();
-                        handleSongTouchStart(index);
+                        handleSongTouchStart(index, e);
                       }}
                       onTouchMove={handleSongTouchMove}
                       onTouchEnd={handleSongTouchEnd}
