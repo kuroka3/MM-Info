@@ -50,7 +50,7 @@
 }
 .booth-day.sat{background:#1e90ff;}
 .booth-day.sun{background:#ff4d4f;}
-.booth-day.mon{background:#6b7280;}
+.booth-day.fri{background:#6b7280;}
 
 @media (max-width:768px){
   .row-nav{
