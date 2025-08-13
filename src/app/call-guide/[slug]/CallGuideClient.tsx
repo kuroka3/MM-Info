@@ -46,6 +46,7 @@ interface YTPlayer {
   mute: () => void;
   unMute: () => void;
   isMuted: () => boolean;
+  getIframe?: () => HTMLIFrameElement;
 }
 
 declare global {
@@ -257,12 +258,12 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
 
   const songListRef = useRef<HTMLUListElement | null>(null);
   const [songDragIndex, setSongDragIndex] = useState<number | null>(null);
-const touchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-const wasDraggingRef = useRef(false);
-const originalOrderRef = useRef<string[]>([]);
-const prevPlaylistNameRef = useRef<string | null>(null);
-const playerButtonsRef = useRef<HTMLDivElement | null>(null);
-const volumeControlsRef = useRef<HTMLDivElement | null>(null);
+  const touchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wasDraggingRef = useRef(false);
+  const originalOrderRef = useRef<string[]>([]);
+  const prevPlaylistNameRef = useRef<string | null>(null);
+  const playerButtonsRef = useRef<HTMLDivElement | null>(null);
+  const volumeControlsRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (activePlaylist && activePlaylist.name !== prevPlaylistNameRef.current) {
@@ -466,7 +467,7 @@ const volumeControlsRef = useRef<HTMLDivElement | null>(null);
         call: line.call,
       };
     });
-    }, [song]);
+  }, [song]);
 
   const gaps = useMemo(() => {
     const res: { start: number; showAt: number; end: number; target: number }[] = [];
@@ -839,55 +840,55 @@ const volumeControlsRef = useRef<HTMLDivElement | null>(null);
               suppressHydrationWarning
               className="player-seek"
               type="range"
-            min={0}
-            max={duration || 0}
-            step={0.1}
-            value={displayTime}
-            onPointerDown={() => {
-              seekingRef.current = true;
-              autoScrollRef.current = false;
-            }}
-            onChange={(e) => {
-              const t = Number(e.target.value);
-              pendingSeekRef.current = t;
-              playerRef.current?.seekTo?.(t, true);
-              currentTimeRef.current = t;
-              setCurrentTime(t);
-              setDisplayTime(t);
-            }}
-            onPointerUp={(e) => {
-              const t = Number(e.currentTarget.value);
-              pendingSeekRef.current = t;
-              playerRef.current?.seekTo?.(t, true);
-              currentTimeRef.current = t;
-              setCurrentTime(t);
-              setDisplayTime(t);
-              autoScrollRef.current = true;
-              const idx = timeToLine(t);
-              scrollToLine(idx);
-              setTimeout(() => {
-                seekingRef.current = false;
-              }, 200);
-            }}
-            onPointerCancel={(e) => {
-              const t = Number(e.currentTarget.value);
-              pendingSeekRef.current = t;
-              playerRef.current?.seekTo?.(t, true);
-              currentTimeRef.current = t;
-              setCurrentTime(t);
-              setDisplayTime(t);
-              autoScrollRef.current = true;
-              const idx = timeToLine(t);
-              scrollToLine(idx);
-              setTimeout(() => {
-                seekingRef.current = false;
-              }, 200);
-            }}
-            style={{
-              background: `linear-gradient(to right, #39c5bb 0%, #39c5bb ${progress}%, rgba(255,255,255,0.15) ${progress}%, rgba(255,255,255,0.15) 100%)`,
-              boxShadow: progress > 0 ? '0 0 8px #39c5bb' : undefined,
-            }}
-          />
+              min={0}
+              max={duration || 0}
+              step={0.1}
+              value={displayTime}
+              onPointerDown={() => {
+                seekingRef.current = true;
+                autoScrollRef.current = false;
+              }}
+              onChange={(e) => {
+                const t = Number(e.target.value);
+                pendingSeekRef.current = t;
+                playerRef.current?.seekTo?.(t, true);
+                currentTimeRef.current = t;
+                setCurrentTime(t);
+                setDisplayTime(t);
+              }}
+              onPointerUp={(e) => {
+                const t = Number(e.currentTarget.value);
+                pendingSeekRef.current = t;
+                playerRef.current?.seekTo?.(t, true);
+                currentTimeRef.current = t;
+                setCurrentTime(t);
+                setDisplayTime(t);
+                autoScrollRef.current = true;
+                const idx = timeToLine(t);
+                scrollToLine(idx);
+                setTimeout(() => {
+                  seekingRef.current = false;
+                }, 200);
+              }}
+              onPointerCancel={(e) => {
+                const t = Number(e.currentTarget.value);
+                pendingSeekRef.current = t;
+                playerRef.current?.seekTo?.(t, true);
+                currentTimeRef.current = t;
+                setCurrentTime(t);
+                setDisplayTime(t);
+                autoScrollRef.current = true;
+                const idx = timeToLine(t);
+                scrollToLine(idx);
+                setTimeout(() => {
+                  seekingRef.current = false;
+                }, 200);
+              }}
+              style={{
+                background: `linear-gradient(to right, #39c5bb 0%, #39c5bb ${progress}%, rgba(255,255,255,0.15) ${progress}%, rgba(255,255,255,0.15) 100%)`,
+                boxShadow: progress > 0 ? '0 0 8px #39c5bb' : undefined,
+              }}
+            />
           </div>
           <div className="player-bottom-row">
             <div className="player-buttons" ref={playerButtonsRef}>
@@ -1096,9 +1097,9 @@ const volumeControlsRef = useRef<HTMLDivElement | null>(null);
           style={
             activePlaylist.color
               ? {
-                  background: activePlaylist.color,
-                  borderTop: `1px solid ${activePlaylist.color}`,
-                }
+                background: activePlaylist.color,
+                borderTop: `1px solid ${activePlaylist.color}`,
+              }
               : undefined
           }
         >
