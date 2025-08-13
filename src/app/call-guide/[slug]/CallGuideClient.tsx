@@ -31,6 +31,7 @@ interface ProcessedLine {
 interface Playlist {
   name: string;
   slugs: string[];
+  color?: string;
 }
 
 interface YTPlayer {
@@ -82,6 +83,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const [skipGap, setSkipGap] = useState<{ target: number; showAt: number; end: number } | null>(null);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null);
+  const [playlistOrder, setPlaylistOrder] = useState<string[]>([]);
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const [showPlaylistSongs, setShowPlaylistSongs] = useState(false);
   const [extraOpen, setExtraOpen] = useState(false);
@@ -92,6 +94,32 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const [muted, setMuted] = useState(false);
   const [showPrevTooltip, setShowPrevTooltip] = useState(false);
   const [showNextTooltip, setShowNextTooltip] = useState(false);
+
+  const songDurations = useMemo(() => {
+    const map: Record<string, number> = {};
+    songs.forEach((s) => {
+      const lyrics = (s.lyrics as { times?: Record<string, number> }[] | null) || [];
+      let max = 0;
+      lyrics.forEach((line) => {
+        if (line.times) {
+          Object.values(line.times).forEach((v) => {
+            const num = Number(v);
+            if (num > max) max = num;
+          });
+        }
+      });
+      map[s.slug!] = max;
+    });
+    return map;
+  }, [songs]);
+
+  const formatTime = (t: number) => {
+    const m = Math.floor(t / 60);
+    const s = Math.floor(t % 60)
+      .toString()
+      .padStart(2, '0');
+    return `${m}:${s}`;
+  };
 
   useEffect(() => {
     const storedPlaylists = localStorage.getItem('callGuidePlaylists');
@@ -119,13 +147,23 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   }, [songs]);
 
   useEffect(() => {
-    const playlistSlugs = activePlaylist?.slugs || songs.map((s) => s.slug!);
-    const idx = playlistSlugs.indexOf(song.slug!);
-    const prevSlug = playlistSlugs[idx - 1];
-    const nextSlug = playlistSlugs[idx + 1];
+    const base = activePlaylist?.slugs || songs.map((s) => s.slug!);
+    if (shuffle) {
+      const rest = base.filter((s) => s !== song.slug);
+      const shuffled = [...rest].sort(() => Math.random() - 0.5);
+      setPlaylistOrder([song.slug!, ...shuffled]);
+    } else {
+      setPlaylistOrder(base);
+    }
+  }, [activePlaylist, songs, shuffle, song.slug]);
+
+  useEffect(() => {
+    const idx = playlistOrder.indexOf(song.slug!);
+    const prevSlug = playlistOrder[idx - 1];
+    const nextSlug = playlistOrder[idx + 1];
     setPrevSong(songs.find((s) => s.slug === prevSlug) || null);
     setNextSong(songs.find((s) => s.slug === nextSlug) || null);
-  }, [song, songs, activePlaylist]);
+  }, [song, songs, playlistOrder]);
 
   const openPlaylistModal = () => setShowPlaylistModal(true);
   const closePlaylistModal = () => setShowPlaylistModal(false);
@@ -156,19 +194,36 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     });
   };
   const cycleRepeat = () => {
-    setRepeatMode((prev) => (prev === 'off' ? 'all' : prev === 'all' ? 'one' : 'off'));
+    setRepeatMode((prev) => {
+      const next = prev === 'off' ? 'all' : prev === 'all' ? 'one' : 'off';
+      if (next !== 'off') setAutoNext(true);
+      return next;
+    });
   };
-  const toggleShuffle = () => setShuffle((prev) => !prev);
+  const toggleShuffle = () => {
+    setShuffle((prev) => {
+      const next = !prev;
+      const base = activePlaylist?.slugs || songs.map((s) => s.slug!);
+      if (next) {
+        const rest = base.filter((s) => s !== song.slug);
+        const shuffled = [...rest].sort(() => Math.random() - 0.5);
+        setPlaylistOrder([song.slug!, ...shuffled]);
+      } else {
+        setPlaylistOrder(base);
+      }
+      return next;
+    });
+  };
 
   const songListRef = useRef<HTMLUListElement | null>(null);
 
   useEffect(() => {
     if (showPlaylistSongs && songListRef.current && activePlaylist) {
-      const idx = activePlaylist.slugs.indexOf(song.slug!);
+      const idx = playlistOrder.indexOf(song.slug!);
       const item = songListRef.current.children[idx] as HTMLElement | undefined;
       item?.scrollIntoView({ block: 'center' });
     }
-  }, [showPlaylistSongs, activePlaylist, song.slug]);
+  }, [showPlaylistSongs, playlistOrder, song.slug, activePlaylist]);
 
   const toggleMute = () => {
     if (muted) {
@@ -328,15 +383,12 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                 playerRef.current?.playVideo?.();
               } else {
                 let targetSlug: string | undefined;
-                const playlistSlugs = activePlaylist?.slugs || songs.map((s) => s.slug!);
-                if (shuffle) {
-                  const others = playlistSlugs.filter((s) => s !== song.slug);
-                  targetSlug = others[Math.floor(Math.random() * others.length)];
-                } else {
-                  const idx = playlistSlugs.indexOf(song.slug!);
-                  targetSlug = playlistSlugs[idx + 1];
-                  if (!targetSlug && repeatMode === 'all') targetSlug = playlistSlugs[0];
-                }
+                const playlistSlugs = playlistOrder.length
+                  ? playlistOrder
+                  : activePlaylist?.slugs || songs.map((s) => s.slug!);
+                const idx = playlistSlugs.indexOf(song.slug!);
+                targetSlug = playlistSlugs[idx + 1];
+                if (!targetSlug && repeatMode === 'all') targetSlug = playlistSlugs[0];
                 if (autoNext && targetSlug) {
                   router.push(`/call-guide/${targetSlug}`);
                 }
@@ -374,7 +426,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       playerRef.current?.destroy?.();
       playerRef.current = null;
     };
-  }, [song, scrollToLine, repeatMode, activePlaylist, songs, shuffle, autoNext, router]);
+  }, [song, scrollToLine, repeatMode, playlistOrder, autoNext, router, activePlaylist, songs]);
 
   useEffect(() => {
     let frame: number;
@@ -852,7 +904,18 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       </main>
       <ScrollTopButton className="between-bar" />
       {activePlaylist && (
-        <div className="current-playlist-bar" onClick={openPlaylistModal}>
+        <div
+          className="current-playlist-bar"
+          onClick={openPlaylistModal}
+          style={
+            activePlaylist.color
+              ? {
+                  background: activePlaylist.color,
+                  borderTop: `1px solid ${activePlaylist.color}`,
+                }
+              : undefined
+          }
+        >
           <span className="current-playlist-name">{activePlaylist.name}</span>
           <button
             className="glass-button"
@@ -879,9 +942,17 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       )}
       {showPlaylistSongs && activePlaylist && (
         <div className="playlist-modal" onClick={closePlaylistSongs}>
-          <div className="playlist-songs-popup" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="playlist-songs-popup"
+            onClick={(e) => e.stopPropagation()}
+            style={
+              activePlaylist.color
+                ? ({ '--playlist-color': activePlaylist.color } as React.CSSProperties)
+                : undefined
+            }
+          >
             <ul ref={songListRef}>
-              {activePlaylist.slugs.map((slug) => {
+              {playlistOrder.map((slug) => {
                 const s = songs.find((song) => song.slug === slug);
                 if (!s) return null;
                 return (
@@ -893,7 +964,8 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                       closePlaylistSongs();
                     }}
                   >
-                    {s.krtitle || s.title}
+                    <span className="playlist-song-title">{s.krtitle || s.title}</span>
+                    <span className="song-duration">{formatTime(songDurations[slug] || 0)}</span>
                   </li>
                 );
               })}

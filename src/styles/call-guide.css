@@ -195,6 +195,7 @@
   gap: 0.5rem;
   color: #fff;
   touch-action: none;
+  position: relative;
 }
 
 .playlist-modal-content li:hover {
@@ -204,6 +205,36 @@
 
 .playlist-item-name {
   flex: 1;
+}
+
+.playlist-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+}
+
+.color-palette {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  transform: translateY(4px);
+  z-index: 10;
+}
+
+.palette-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  cursor: pointer;
 }
 
 .drag-handle {
@@ -405,24 +436,46 @@
 }
 
 .playlist-songs-popup {
-  background: rgba(0, 0, 0, 0.7);
-  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--playlist-color, var(--glass-border));
   backdrop-filter: blur(8px);
-  padding: 1rem;
+  padding: 0.5rem;
   border-radius: 12px;
-  width: 80vw;
+  width: 60vw;
+  max-width: 300px;
   max-height: 60vh;
   overflow-y: auto;
 }
 
+.playlist-songs-popup ul {
+  display: flex;
+  flex-direction: column;
+}
+
 .playlist-song-item {
-  padding: 0.5rem;
-  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
   color: #fff;
+  border-bottom: 1px solid var(--playlist-color, var(--glass-border));
+}
+
+.playlist-song-item:last-child {
+  border-bottom: none;
 }
 
 .playlist-song-item.active {
-  color: var(--accent-blue);
+  background: var(--playlist-color, rgba(255, 255, 255, 0.2));
+}
+
+.playlist-song-title {
+  flex: 1;
+}
+
+.song-duration {
+  color: #bbb;
+  margin-left: 0.5rem;
 }
 
 
@@ -674,8 +727,8 @@
 
 .seek-container {
   position: relative;
-  width: 80vw;
-  max-width: 600px;
+  width: 90vw;
+  max-width: 800px;
 }
 
 .skip-button {
@@ -839,11 +892,12 @@
     align-items: flex-start;
   }
   .seek-container {
-    width: calc(100vw - 120px);
+    width: calc(100vw - 100px);
     margin-left: 0;
   }
   .player-bottom-row {
     justify-content: flex-start;
+    padding-right: 80px;
   }
   .player-buttons {
     margin-left: 0;

@@ -1,11 +1,6 @@
 'use client';
 
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  type CSSProperties,
-} from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Prisma } from '@prisma/client';
@@ -24,6 +19,7 @@ type SongWithSetlist = Prisma.SongGetPayload<{ include: { setlists: { select: { 
 interface Playlist {
   name: string;
   slugs: string[];
+  color?: string;
 }
 
 interface Props {
@@ -40,6 +36,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
   const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null);
+  const [colorIndex, setColorIndex] = useState<number | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem('callGuidePlaylists');
@@ -104,7 +101,10 @@ export default function CallGuideIndexClient({ songs }: Props) {
   };
 
   const openPlaylistModal = () => setShowPlaylistModal(true);
-  const closePlaylistModal = () => setShowPlaylistModal(false);
+  const closePlaylistModal = () => {
+    setShowPlaylistModal(false);
+    setColorIndex(null);
+  };
 
   const selectPlaylist = (pl: Playlist | 'default') => {
     const active =
@@ -356,6 +356,40 @@ export default function CallGuideIndexClient({ songs }: Props) {
                     className="drag-handle"
                   />
                   <span className="playlist-item-name">{pl.name}</span>
+                  <span
+                    className="playlist-color"
+                    style={{ background: pl.color || 'rgba(255,255,255,0.3)' }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setColorIndex(colorIndex === i ? null : i);
+                    }}
+                  />
+                  {colorIndex === i && (
+                    <div className="color-palette" onClick={(e) => e.stopPropagation()}>
+                      {['rgba(255,255,255,0.1)', '#39c5bbaa', '#ffa500aa', '#ffe211aa', '#ffc0cbaa', '#0000ffaa', '#d80000aa'].map((c) => (
+                        <span
+                          key={c}
+                          className="palette-color"
+                          style={{ background: c }}
+                          onClick={() => {
+                            setPlaylists(prev => {
+                              const updated = [...prev];
+                              const color = c === 'rgba(255,255,255,0.1)' ? undefined : c;
+                              updated[i] = { ...updated[i], color };
+                              localStorage.setItem('callGuidePlaylists', JSON.stringify(updated));
+                              return updated;
+                            });
+                            if (activePlaylist?.name === pl.name) {
+                              const active = { ...pl, color: c === 'rgba(255,255,255,0.1)' ? undefined : c };
+                              setActivePlaylist(active);
+                              localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
+                            }
+                            setColorIndex(null);
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
                   <Image
                     src="/images/minus-circle.svg"
                     alt="삭제"
@@ -418,7 +452,18 @@ export default function CallGuideIndexClient({ songs }: Props) {
       )}
 
       {!selectMode && activePlaylist && (
-        <div className="current-playlist-bar" onClick={openPlaylistModal}>
+        <div
+          className="current-playlist-bar"
+          onClick={openPlaylistModal}
+          style={
+            activePlaylist.color
+              ? {
+                  background: activePlaylist.color,
+                  borderTop: `1px solid ${activePlaylist.color}`,
+                }
+              : undefined
+          }
+        >
           <span className="current-playlist-name">{activePlaylist.name}</span>
           <button
             className="glass-button"
