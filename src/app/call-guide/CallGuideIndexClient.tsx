@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef, type CSSProperties } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo, type CSSProperties } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Prisma } from '@prisma/client';
@@ -34,6 +34,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
   const [showNameModal, setShowNameModal] = useState(false);
   const [playlistName, setPlaylistName] = useState('');
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [songDragIndex, setSongDragIndex] = useState<number | null>(null);
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
   const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null);
   const [colorIndex, setColorIndex] = useState<number | null>(null);
@@ -100,12 +101,14 @@ export default function CallGuideIndexClient({ songs }: Props) {
     const updated = [...playlists, newPlaylist];
     setPlaylists(updated);
     localStorage.setItem('callGuidePlaylists', JSON.stringify(updated));
+    setActivePlaylist(newPlaylist);
+    localStorage.setItem('callGuideActivePlaylist', JSON.stringify(newPlaylist));
     setSelected(new Set());
     setSelectMode(false);
     setPlaylistName('');
     setPlaylistColor('rgba(255,255,255,0.1)');
     setShowNameModal(false);
-    restorePrevious();
+    previousActive.current = null;
   };
 
   const cancelNameModal = () => {
@@ -118,6 +121,27 @@ export default function CallGuideIndexClient({ songs }: Props) {
     setSelectMode(false);
     restorePrevious();
   };
+
+  const isDefaultPlaylist = activePlaylist?.name === '전체 곡';
+
+  const getSongOrder = useCallback(
+    (slug: string) => songs.findIndex((s) => s.slug === slug),
+    [songs],
+  );
+
+  const defaultSortedSlugs = useMemo(() => {
+    if (!activePlaylist || isDefaultPlaylist) return [] as string[];
+    return [...activePlaylist.slugs].sort(
+      (a, b) => getSongOrder(a) - getSongOrder(b),
+    );
+  }, [activePlaylist, getSongOrder, isDefaultPlaylist]);
+
+  const isSorted = useMemo(() => {
+    if (!activePlaylist || isDefaultPlaylist) return true;
+    return activePlaylist.slugs.every(
+      (slug, i) => slug === defaultSortedSlugs[i],
+    );
+  }, [activePlaylist, defaultSortedSlugs, isDefaultPlaylist]);
 
   const openPlaylistModal = () => setShowPlaylistModal(true);
   const closePlaylistModal = () => {
@@ -179,7 +203,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
     }
   };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
+  const handlePlaylistTouchEnd = (e: React.TouchEvent) => {
     if (dragIndex === null) return;
     const touch = e.changedTouches[0];
     const target = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -193,6 +217,109 @@ export default function CallGuideIndexClient({ songs }: Props) {
     }
     setDragIndex(null);
   };
+
+  const handleSongDragStart = (index: number) => {
+    if (isDefaultPlaylist) return;
+    setSongDragIndex(index);
+  };
+
+  const handleSongDrop = (index: number) => {
+    if (songDragIndex === null || songDragIndex === index || !activePlaylist || isDefaultPlaylist) return;
+    setActivePlaylist(prev => {
+      if (!prev) return prev;
+      const updatedSlugs = [...prev.slugs];
+      const [moved] = updatedSlugs.splice(songDragIndex, 1);
+      updatedSlugs.splice(index, 0, moved);
+      const updated = { ...prev, slugs: updatedSlugs };
+      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(updated));
+      setPlaylists(pls => {
+        const idx = pls.findIndex(p => p.name === prev.name);
+        if (idx >= 0) {
+          const newPls = [...pls];
+          newPls[idx] = { ...newPls[idx], slugs: updatedSlugs };
+          localStorage.setItem('callGuidePlaylists', JSON.stringify(newPls));
+          return newPls;
+        }
+        return pls;
+      });
+      return updated;
+    });
+    setSongDragIndex(null);
+  };
+
+  const handleSongTouchEnd = (e: React.TouchEvent) => {
+    if (songDragIndex === null) return;
+    const touch = e.changedTouches[0];
+    const target = document.elementFromPoint(touch.clientX, touch.clientY);
+    const item = target?.closest('[data-song-index]') as HTMLElement | null;
+    if (item) {
+      const dropIndex = parseInt(item.dataset.songIndex || '', 10);
+      if (!isNaN(dropIndex) && dropIndex !== songDragIndex) {
+        handleSongDrop(dropIndex);
+        e.preventDefault();
+      }
+    }
+    setSongDragIndex(null);
+  };
+
+  const restoreSongOrder = () => {
+    if (!activePlaylist || isDefaultPlaylist) return;
+    const container = document.querySelector('.call-list');
+    if (!container) return;
+    const rectMap = new Map<string, DOMRect>();
+    const children = Array.from(container.children) as HTMLElement[];
+    activePlaylist.slugs.forEach((slug, i) => {
+      const el = children[i];
+      if (el) rectMap.set(slug, el.getBoundingClientRect());
+    });
+    const sortedSlugs = defaultSortedSlugs;
+    setActivePlaylist(prev => {
+      if (!prev) return prev;
+      const updated = { ...prev, slugs: sortedSlugs };
+      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(updated));
+      setPlaylists(pls => {
+        const idx = pls.findIndex(p => p.name === prev.name);
+        if (idx >= 0) {
+          const newPls = [...pls];
+          newPls[idx] = { ...newPls[idx], slugs: sortedSlugs };
+          localStorage.setItem('callGuidePlaylists', JSON.stringify(newPls));
+          return newPls;
+        }
+        return pls;
+      });
+      return updated;
+    });
+    requestAnimationFrame(() => {
+      const newChildren = Array.from(container.children) as HTMLElement[];
+      sortedSlugs.forEach((slug, i) => {
+        const el = newChildren[i];
+        const prevRect = rectMap.get(slug);
+        if (el && prevRect) {
+          const newRect = el.getBoundingClientRect();
+          const dy = prevRect.top - newRect.top;
+          if (dy) {
+            el.animate(
+              [
+                { transform: `translateY(${dy}px)` },
+                { transform: 'translateY(0)' },
+              ],
+              {
+                duration: 500,
+                easing: 'cubic-bezier(0.455, 0.03, 0.515, 0.955)',
+              },
+            );
+          }
+        }
+      });
+    });
+  };
+
+  const playlistSongs = useMemo(() => {
+    if (!activePlaylist) return songs;
+    return activePlaylist.slugs
+      .map((slug) => songs.find((s) => s.slug === slug))
+      .filter(Boolean) as SongWithSetlist[];
+  }, [activePlaylist, songs]);
 
   return (
     <>
@@ -220,13 +347,15 @@ export default function CallGuideIndexClient({ songs }: Props) {
           />
           <span className="button-text">새 재생목록</span>
         </button>
+        {!isDefaultPlaylist && !isSorted && (
+          <button className="glass-button" onClick={restoreSongOrder}>
+            정렬
+          </button>
+        )}
       </div>
 
       <div className="call-list">
-        {(activePlaylist
-          ? songs.filter((s) => activePlaylist.slugs.includes(s.slug!))
-          : songs
-        ).map((song) => {
+        {playlistSongs.map((song, index) => {
           const first = song.setlists[0];
           const order = first?.order ?? 0;
           const itemClass = first?.higawari
@@ -265,15 +394,17 @@ export default function CallGuideIndexClient({ songs }: Props) {
 
           if (selectMode) {
             return (
-              <div
-                key={song.slug!}
-                className={itemClass}
-                onClick={() => toggleSelect(song.slug!)}
-                style={{ textDecoration: 'none', cursor: 'pointer' }}
-              >
-                {colors.length > 0 && <div style={borderStyle} />}
-                <span className="song-index">{order}</span>
-                <div className="call-info-link">
+                <div
+                  key={song.slug!}
+                  className={itemClass}
+                  onClick={() => toggleSelect(song.slug!)}
+                  style={{ textDecoration: 'none', cursor: 'pointer' }}
+                >
+                  {colors.length > 0 && <div style={borderStyle} />}
+                  <div className="song-index-wrapper">
+                    <span className="song-index">{order}</span>
+                  </div>
+                  <div className="call-info-link">
                   <Image
                     src={song.thumbnail!}
                     alt={song.title}
@@ -300,39 +431,66 @@ export default function CallGuideIndexClient({ songs }: Props) {
             );
           }
 
-          return (
-            <Link
-              key={song.slug!}
-              href={`/call-guide/${song.slug}`}
-              className={itemClass}
-              style={{ textDecoration: 'none' }}
-              onClick={handleSongClick}
-            >
-              {colors.length > 0 && <div style={borderStyle} />}
-              <span className="song-index">{order}</span>
-              <div className="call-info-link">
-                <Image
-                  src={song.thumbnail!}
-                  alt={song.title}
-                  width={80}
-                  height={80}
-                  className="song-jacket"
-                />
-                <div className="song-text-info">
-                  <p className="song-title">
-                    {song.krtitle ? song.krtitle : song.title}
-                  </p>
-                  <p className="song-artist">{song.artist}</p>
+            return (
+              <Link
+                key={song.slug!}
+                href={`/call-guide/${song.slug}`}
+                className={itemClass}
+                style={{ textDecoration: 'none' }}
+                onClick={handleSongClick}
+                data-song-index={index}
+                draggable={!isDefaultPlaylist}
+                onDragStart={(e) => {
+                  handleSongDragStart(index);
+                  e.dataTransfer?.setDragImage(
+                    e.currentTarget,
+                    e.currentTarget.clientWidth / 2,
+                    e.currentTarget.clientHeight / 2,
+                  );
+                }}
+                onDragOver={(e) => {
+                  if (!isDefaultPlaylist) e.preventDefault();
+                }}
+                onDrop={() => handleSongDrop(index)}
+                onTouchStart={() => handleSongDragStart(index)}
+                onTouchEnd={handleSongTouchEnd}
+              >
+                {colors.length > 0 && <div style={borderStyle} />}
+                <div className="song-index-wrapper">
+                  <span className="song-index">{order}</span>
+                  {!isDefaultPlaylist && (
+                    <Image
+                      src="/images/drag.svg"
+                      alt="drag"
+                      width={16}
+                      height={16}
+                      className="song-drag-handle"
+                    />
+                  )}
                 </div>
-              </div>
-              <div className="call-item-summary">
-                {song.summary!.split('\n').map((line, i) => (
-                  <p key={i}>{line}</p>
-                ))}
-              </div>
-            </Link>
-          );
-        })}
+                <div className="call-info-link">
+                  <Image
+                    src={song.thumbnail!}
+                    alt={song.title}
+                    width={80}
+                    height={80}
+                    className="song-jacket"
+                  />
+                  <div className="song-text-info">
+                    <p className="song-title">
+                      {song.krtitle ? song.krtitle : song.title}
+                    </p>
+                    <p className="song-artist">{song.artist}</p>
+                  </div>
+                </div>
+                <div className="call-item-summary">
+                  {song.summary!.split('\n').map((line, i) => (
+                    <p key={i}>{line}</p>
+                  ))}
+                </div>
+              </Link>
+            );
+          })}
       </div>
 
       {selectMode && (
@@ -375,7 +533,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
                     );
                   }}
                   onTouchStart={() => handleDragStart(i)}
-                  onTouchEnd={handleTouchEnd}
+                    onTouchEnd={handlePlaylistTouchEnd}
                 >
                   <Image
                     src="/images/drag.svg"
