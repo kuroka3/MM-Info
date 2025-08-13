@@ -28,7 +28,6 @@ export interface BoothMapHandle {
   scrollToMapBooth: (id: string) => Promise<void>;
 }
 
-const COLS_REVERSED = [...COLS].reverse();
 const BOOTHS_MAP: Record<string, Record<number, Booth>> = {};
 for (const b of BOOTHS) (BOOTHS_MAP[b.row] ??= {})[b.col] = b;
 
@@ -61,7 +60,6 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
     );
     const activeTooltip = useRef<HTMLButtonElement | null>(null);
     const disableScrollHide = useRef(false);
-    const [gutter, setGutter] = useState(0);
 
     useLayoutEffect(() => {
       const wrapper = wrapperRef.current;
@@ -124,18 +122,6 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
         window.visualViewport?.removeEventListener('resize', schedule);
         window.removeEventListener('pageshow', schedule);
       };
-    }, []);
-
-    useLayoutEffect(() => {
-      function updateGutter() {
-        if (wrapperRef.current) {
-          const { width, height } = wrapperRef.current.getBoundingClientRect();
-          setGutter(Math.min(width, height) * 0.15);
-        }
-      }
-      updateGutter();
-      window.addEventListener('resize', updateGutter);
-      return () => window.removeEventListener('resize', updateGutter);
     }, []);
 
     useEffect(() => {
@@ -355,7 +341,7 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
       if (prevDay === selectedDay) return;
       const changed = new Set<string>();
       ROWS.forEach(row => {
-        COLS_REVERSED.forEach(col => {
+        COLS.forEach(col => {
           const prevBooth = findBooth(row, col, prevDay);
           const nextBooth = findBooth(row, col, selectedDay);
           const prevActive = !!(prevBooth && !prevBooth.hidden);
@@ -496,19 +482,11 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
 
     return (
       <div className="cm-map-wrapper" ref={wrapperRef}>
-        <div className="entrance-label">입구</div>
         <div className="map-inner" ref={rotatorRef}>
           <div className="cm-grid">
             {ROWS.map(row => (
               <Fragment key={row}>
-                {COLS_REVERSED.map(col => {
-                  if (row === 'A' && col === 12) {
-                    return (
-                      <div key="exit-cell" className="exit-label-cell">
-                        출구
-                      </div>
-                    );
-                  }
+                {COLS.map(col => {
                   const key = `${row}-${col}`;
                   const flipping = flippedCells.has(key);
                   const front = renderCell(row, col, prevDay, false);
@@ -533,18 +511,11 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
                     </div>
                   );
                 })}
-                {(row === 'A' || row === 'C' || row === 'E') && <div className="walk-gap" />}
+                {(row === 'B' || row === 'D') && <div className="walk-gap" />}
               </Fragment>
             ))}
           </div>
         </div>
-        <div
-          className="bottom-left-mask-box"
-          style={{
-            width: `calc(100% - ${gutter}px)`,
-            height: `calc(100% - ${gutter}px)`,
-          }}
-        />
       </div>
     );
   },
