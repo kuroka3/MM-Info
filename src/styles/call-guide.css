@@ -193,6 +193,7 @@
   align-items: center;
   gap: 0.5rem;
   color: #fff;
+  touch-action: none;
 }
 
 .playlist-modal-content li:hover {
@@ -232,6 +233,32 @@
   gap: 1rem;
   text-align: center;
   transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.current-playlist-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(20px);
+  z-index: 40;
+}
+
+.current-playlist-name {
+  flex: 1;
+  text-align: center;
+}
+
+.current-playlist-bar .glass-button {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.9rem;
 }
 
 

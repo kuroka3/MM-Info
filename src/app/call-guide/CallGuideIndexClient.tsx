@@ -19,7 +19,7 @@ const partColors = {
   MEIKO: '#d80000aa',
 } as const;
 
- type SongWithSetlist = Prisma.SongGetPayload<{ include: { setlists: { select: { order: true; higawari: true; locationgawari: true }; orderBy: { order: 'asc' }; take: 1 } } }>;
+type SongWithSetlist = Prisma.SongGetPayload<{ include: { setlists: { select: { order: true; higawari: true; locationgawari: true }; orderBy: { order: 'asc' }; take: 1 } } }>;
 
 interface Playlist {
   name: string;
@@ -39,17 +39,29 @@ export default function CallGuideIndexClient({ songs }: Props) {
   const [playlistName, setPlaylistName] = useState('');
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
+  const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem('callGuidePlaylists');
     if (stored) {
       try {
         setPlaylists(JSON.parse(stored));
+      } catch { }
+    }
+
+    const activeStored = localStorage.getItem('callGuideActivePlaylist');
+    if (activeStored) {
+      try {
+        setActivePlaylist(JSON.parse(activeStored));
       } catch {
         /* ignore */
       }
+    } else {
+      const def = { name: 'default', slugs: songs.map((s) => s.slug!) };
+      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(def));
+      setActivePlaylist(def);
     }
-  }, []);
+  }, [songs]);
 
   const toggleSelect = useCallback((slug: string) => {
     setSelected(prev => {
@@ -95,6 +107,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
         ? { name: 'default', slugs: songs.map((s) => s.slug!) }
         : pl;
     localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
+    setActivePlaylist(active);
     closePlaylistModal();
   };
 
@@ -125,11 +138,26 @@ export default function CallGuideIndexClient({ songs }: Props) {
   };
 
   const handleSongClick = () => {
-    const active = localStorage.getItem('callGuideActivePlaylist');
-    if (!active) {
+    if (!activePlaylist) {
       const def = { name: 'default', slugs: songs.map((s) => s.slug!) };
       localStorage.setItem('callGuideActivePlaylist', JSON.stringify(def));
+      setActivePlaylist(def);
     }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (dragIndex === null) return;
+    const touch = e.changedTouches[0];
+    const target = document.elementFromPoint(touch.clientX, touch.clientY);
+    const li = target?.closest('li[data-index]') as HTMLElement | null;
+    if (li) {
+      const dropIndex = parseInt(li.dataset.index || '', 10);
+      if (!isNaN(dropIndex) && dropIndex !== dragIndex) {
+        handleDrop(dropIndex);
+        e.preventDefault();
+      }
+    }
+    setDragIndex(null);
   };
 
   return (
@@ -161,41 +189,44 @@ export default function CallGuideIndexClient({ songs }: Props) {
       </div>
 
       <div className="call-list">
-        {songs.map((song) => {
+        {(activePlaylist
+          ? songs.filter((s) => activePlaylist.slugs.includes(s.slug!))
+          : songs
+        ).map((song) => {
           const first = song.setlists[0];
           const order = first?.order ?? 0;
           const itemClass = first?.higawari
             ? 'call-item higawari'
             : first?.locationgawari
-            ? 'call-item locationgawari'
-            : 'call-item';
+              ? 'call-item locationgawari'
+              : 'call-item';
 
           const colors = song.part
             ? song.part
-                .map((name) => partColors[name as keyof typeof partColors])
-                .filter(Boolean)
+              .map((name) => partColors[name as keyof typeof partColors])
+              .filter(Boolean)
             : [];
 
           const borderStyle: React.CSSProperties | undefined =
             colors.length > 0
               ? ({
-                  position: 'absolute' as const,
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  borderRadius: '24px',
-                  padding: '2px',
-                  background:
-                    colors.length === 1
-                      ? colors[0]
-                      : `linear-gradient(to bottom right, ${colors.join(', ')})`,
-                  WebkitMask:
-                    'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-                  WebkitMaskComposite: 'xor',
-                  maskComposite: 'exclude',
-                  pointerEvents: 'none' as React.CSSProperties['pointerEvents'],
-                } satisfies CSSProperties)
+                position: 'absolute' as const,
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                borderRadius: '24px',
+                padding: '2px',
+                background:
+                  colors.length === 1
+                    ? colors[0]
+                    : `linear-gradient(to bottom right, ${colors.join(', ')})`,
+                WebkitMask:
+                  'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                WebkitMaskComposite: 'xor',
+                maskComposite: 'exclude',
+                pointerEvents: 'none' as React.CSSProperties['pointerEvents'],
+              } satisfies CSSProperties)
               : undefined;
 
           if (selectMode) {
@@ -296,9 +327,21 @@ export default function CallGuideIndexClient({ songs }: Props) {
               {playlists.map((pl, i) => (
                 <li
                   key={pl.name}
+                  data-index={i}
                   onClick={() => selectPlaylist(pl)}
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={() => handleDrop(i)}
+                  draggable
+                  onDragStart={(e) => {
+                    handleDragStart(i);
+                    e.dataTransfer?.setDragImage(
+                      e.currentTarget,
+                      e.currentTarget.clientWidth / 2,
+                      e.currentTarget.clientHeight / 2,
+                    );
+                  }}
+                  onTouchStart={() => handleDragStart(i)}
+                  onTouchEnd={handleTouchEnd}
                 >
                   <Image
                     src="/images/drag.svg"
@@ -306,11 +349,6 @@ export default function CallGuideIndexClient({ songs }: Props) {
                     width={16}
                     height={16}
                     className="drag-handle"
-                    draggable
-                    onDragStart={(e) => {
-                      e.stopPropagation();
-                      handleDragStart(i);
-                    }}
                   />
                   <span className="playlist-item-name">{pl.name}</span>
                   <Image
@@ -370,6 +408,15 @@ export default function CallGuideIndexClient({ songs }: Props) {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {!selectMode && activePlaylist && (
+        <div className="current-playlist-bar">
+          <span className="current-playlist-name">{activePlaylist.name}</span>
+          <button className="glass-button" onClick={() => selectPlaylist('default')}>
+            전체 곡
+          </button>
         </div>
       )}
     </>
