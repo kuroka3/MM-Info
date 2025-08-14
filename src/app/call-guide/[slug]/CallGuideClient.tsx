@@ -88,24 +88,67 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const [showPlaylistSongs, setShowPlaylistSongs] = useState(false);
   const [extraOpen, setExtraOpen] = useState(false);
-  const [autoNext, setAutoNext] = useState(true);
-  const [repeatMode, setRepeatMode] = useState<'off' | 'all' | 'one'>('off');
-  const [shuffle, setShuffle] = useState(false);
-  const [volume, setVolume] = useState(100);
-  const [muted, setMuted] = useState(false);
+  const [toggleRotation, setToggleRotation] = useState(0);
+  const [autoNext, setAutoNext] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('callGuideAutoNext');
+      if (stored !== null) return stored === 'true';
+    }
+    return true;
+  });
+  const [repeatMode, setRepeatMode] = useState<'off' | 'all' | 'one'>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('callGuideRepeatMode');
+      if (stored === 'off' || stored === 'all' || stored === 'one') return stored as 'off' | 'all' | 'one';
+    }
+    return 'off';
+  });
+  const [shuffle, setShuffle] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('callGuideShuffle');
+      if (stored !== null) return stored === 'true';
+    }
+    return false;
+  });
+  const [volume, setVolume] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('callGuideVolume');
+      if (stored !== null) return Number(stored);
+    }
+    return 100;
+  });
+  const [muted, setMuted] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('callGuideMuted');
+      if (stored !== null) return stored === 'true';
+    }
+    return false;
+  });
   const [showPrevTooltip, setShowPrevTooltip] = useState(false);
   const [showNextTooltip, setShowNextTooltip] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem('callGuideAutoNext');
-    if (stored !== null) {
-      setAutoNext(stored === 'true');
-    }
-  }, []);
-
-  useEffect(() => {
     localStorage.setItem('callGuideAutoNext', String(autoNext));
   }, [autoNext]);
+
+  useEffect(() => {
+    localStorage.setItem('callGuideRepeatMode', repeatMode);
+  }, [repeatMode]);
+
+  useEffect(() => {
+    localStorage.setItem('callGuideShuffle', String(shuffle));
+  }, [shuffle]);
+
+  useEffect(() => {
+    localStorage.setItem('callGuideVolume', String(volume));
+    playerRef.current?.setVolume?.(volume);
+  }, [volume]);
+
+  useEffect(() => {
+    localStorage.setItem('callGuideMuted', String(muted));
+    if (muted) playerRef.current?.mute?.();
+    else playerRef.current?.unMute?.();
+  }, [muted]);
 
   const playlistOrderRef = useRef<string[]>([]);
   useEffect(() => {
@@ -121,6 +164,21 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   useEffect(() => {
     autoNextRef.current = autoNext;
   }, [autoNext]);
+
+  const shuffleRef = useRef(shuffle);
+  useEffect(() => {
+    shuffleRef.current = shuffle;
+  }, [shuffle]);
+
+  const volumeRef = useRef(volume);
+  useEffect(() => {
+    volumeRef.current = volume;
+  }, [volume]);
+
+  const mutedRef = useRef(muted);
+  useEffect(() => {
+    mutedRef.current = muted;
+  }, [muted]);
 
   const activePlaylistRef = useRef<Playlist | null>(null);
   useEffect(() => {
@@ -237,7 +295,20 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     }
   };
 
-  const openPlaylistSongs = () => setShowPlaylistSongs((p) => !p);
+  const toggleExtra = () => {
+    setExtraOpen((prev) => {
+      setToggleRotation((r) => (r + 180) % 360);
+      return !prev;
+    });
+  };
+
+  const openPlaylistSongs = () => {
+    setShowPlaylistSongs((p) => !p);
+    if (extraOpen) {
+      setExtraOpen(false);
+      setToggleRotation((r) => (r + 180) % 360);
+    }
+  };
   const closePlaylistSongs = () => setShowPlaylistSongs(false);
 
   const toggleAutoNext = () => {
@@ -544,9 +615,9 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
           onReady: (e: { target: YTPlayer }) => {
             playerRef.current = e.target;
             setDuration(e.target.getDuration?.() ?? 0);
-            setVolume(e.target.getVolume?.() ?? 100);
-            const m = e.target.isMuted?.() ?? false;
-            setMuted(m);
+            e.target.setVolume?.(volumeRef.current);
+            if (mutedRef.current) e.target.mute?.();
+            else e.target.unMute?.();
             const iframe = e.target.getIframe?.();
             iframe?.setAttribute('allow', 'autoplay');
             iframe?.setAttribute('playsinline', '1');
@@ -572,7 +643,17 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                   : activePlaylistRef.current?.slugs || songsRef.current.map((s) => s.slug!);
                 const idx = playlistSlugs.indexOf(song.slug!);
                 targetSlug = playlistSlugs[idx + 1];
-                if (!targetSlug && repeatModeRef.current === 'all') targetSlug = playlistSlugs[0];
+                if (!targetSlug && repeatModeRef.current === 'all') {
+                  if (shuffleRef.current) {
+                    const base = activePlaylistRef.current?.slugs || songsRef.current.map((s) => s.slug!);
+                    const newOrder = [...base].sort(() => Math.random() - 0.5);
+                    setPlaylistOrder(newOrder);
+                    playlistOrderRef.current = newOrder;
+                    targetSlug = newOrder[0];
+                  } else {
+                    targetSlug = playlistSlugs[0];
+                  }
+                }
                 if (autoNextRef.current && targetSlug) {
                   router.push(`/call-guide/${targetSlug}`);
                 }
@@ -1083,8 +1164,14 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
               </svg>
             </button>
           </div>
-          <button className="triangle-toggle" onClick={() => setExtraOpen((p) => !p)}>
-            {extraOpen ? '▼' : '▲'}
+          <button
+            className="triangle-toggle"
+            onClick={toggleExtra}
+            style={{ transform: `rotate(${toggleRotation}deg)` }}
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="12,8 18,16 6,16" />
+            </svg>
           </button>
         </div>
 
