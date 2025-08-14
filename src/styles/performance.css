@@ -1,0 +1,9 @@
+@media (max-width: 480px) and (orientation: portrait) {
+  [class*='blur'],
+  [class*='glass'],
+  .glass-effect,
+  .glass-button {
+    backdrop-filter: none !important;
+    filter: none !important;
+  }
+}
