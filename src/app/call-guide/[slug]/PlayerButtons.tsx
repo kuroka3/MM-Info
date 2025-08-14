@@ -24,6 +24,7 @@ interface PlayerButtonsProps {
   scrollToLine: (line: number) => void;
   activeLine: number;
   router: RouterType;
+  currentSlug: string;
   shuffle: boolean;
   activePlaylist: Playlist | null;
   songs: Song[];
@@ -45,6 +46,7 @@ export default function PlayerButtons({
   scrollToLine,
   activeLine,
   router,
+  currentSlug,
   shuffle,
   activePlaylist,
   songs,
@@ -69,6 +71,7 @@ export default function PlayerButtons({
       />
       <NextButton
         song={nextSong}
+        currentSlug={currentSlug}
         showTooltip={showNextTooltip}
         setShowTooltip={setShowNextTooltip}
         router={router}

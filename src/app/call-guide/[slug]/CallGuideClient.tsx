@@ -235,11 +235,16 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
 
   useEffect(() => {
     const idx = playlistOrder.indexOf(song.slug!);
-    const prevSlug = playlistOrder[idx - 1];
-    const nextSlug = playlistOrder[idx + 1];
+    const lastIdx = playlistOrder.length - 1;
+    let prevSlug = playlistOrder[idx - 1];
+    let nextSlug = playlistOrder[idx + 1];
+    if (repeatMode === 'all') {
+      if (!prevSlug) prevSlug = playlistOrder[lastIdx];
+      if (!nextSlug) nextSlug = playlistOrder[0];
+    }
     setPrevSong(songs.find((s) => s.slug === prevSlug) || null);
     setNextSong(songs.find((s) => s.slug === nextSlug) || null);
-  }, [song, songs, playlistOrder]);
+  }, [song, songs, playlistOrder, repeatMode]);
 
   const openPlaylistModal = () => setShowPlaylistModal(true);
   const closePlaylistModal = () => setShowPlaylistModal(false);
@@ -612,7 +617,14 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                 if (!targetSlug && repeatModeRef.current === 'all') {
                   if (shuffleRef.current) {
                     const base = activePlaylistRef.current?.slugs || songsRef.current.map((s) => s.slug!);
-                    const newOrder = [...base].sort(() => Math.random() - 0.5);
+                    let newOrder = [...base];
+                    if (newOrder.length > 1) {
+                      do {
+                        newOrder = [...base].sort(() => Math.random() - 0.5);
+                      } while (newOrder[0] === song.slug);
+                    } else {
+                      newOrder = [...base];
+                    }
                     setPlaylistOrder(newOrder);
                     playlistOrderRef.current = newOrder;
                     localStorage.setItem('callGuidePlaylistOrder', JSON.stringify(newOrder));
@@ -904,6 +916,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                   scrollToLine={scrollToLine}
                   activeLine={activeLine}
                   router={router}
+                  currentSlug={song.slug!}
                   shuffle={shuffle}
                   activePlaylist={activePlaylist}
                   songs={songs}
