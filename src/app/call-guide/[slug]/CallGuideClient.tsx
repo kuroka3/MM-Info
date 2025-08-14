@@ -18,40 +18,16 @@ import type { LyricLine } from '@/types/call-guide';
 import PlaylistSelectModal from '@/components/call-guide/PlaylistSelectModal';
 import useStoredState from '@/hooks/useStoredState';
 import LyricsDisplay from './LyricsDisplay';
-import type { Token, ProcessedLine } from './types';
-
-interface Playlist {
-  name: string;
-  slugs: string[];
-  color?: string;
-}
-
-interface YTPlayer {
-  getCurrentTime: () => number;
-  getDuration: () => number;
-  playVideo: () => void;
-  pauseVideo: () => void;
-  seekTo: (seconds: number, allowSeekAhead?: boolean) => void;
-  destroy: () => void;
-  getVolume: () => number;
-  setVolume: (volume: number) => void;
-  mute: () => void;
-  unMute: () => void;
-  isMuted: () => boolean;
-  getIframe?: () => HTMLIFrameElement;
-}
-
-declare global {
-  interface Window {
-    YT: { Player: new (...args: unknown[]) => YTPlayer };
-    onYouTubeIframeAPIReady: () => void;
-  }
-}
-
-interface CallGuideClientProps {
-  song: Song;
-  songs: Song[];
-}
+import VolumeControls from './VolumeControls';
+import ExtraControls from './ExtraControls';
+import PlayerButtons from './PlayerButtons';
+import type {
+  Token,
+  ProcessedLine,
+  Playlist,
+  YTPlayer,
+  CallGuideClientProps,
+} from './types';
 
 export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const router = useRouter();
@@ -892,220 +868,51 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
             />
           </div>
           <div className="player-bottom-row">
-            <div className="player-buttons" ref={playerButtonsRef}>
-              <div className="tooltip-wrapper">
-                <button
-                  className="control-button"
-                  disabled={!prevSong}
-                  onMouseEnter={() => setShowPrevTooltip(true)}
-                  onMouseLeave={() => setShowPrevTooltip(false)}
-                  onClick={() => {
-                    if (!prevSong) return;
-                    setShowPrevTooltip(false);
-                    autoScrollRef.current = true;
-                    router.push(`/call-guide/${prevSong.slug}`);
-                  }}
-                >
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <polygon points="15,5 7,12 15,19" />
-                    <rect x="5" y="5" width="2" height="14" />
-                  </svg>
-                </button>
-                {showPrevTooltip && prevSong && (
-                  <div className="song-tooltip">
-                    {prevSong.thumbnail && (
-                      <Image
-                        src={prevSong.thumbnail}
-                        alt={prevSong.krtitle || prevSong.title}
-                        width={80}
-                        height={80}
-                        className="song-tooltip-image"
-                      />
-                    )}
-                    <p className="song-tooltip-title">{prevSong.krtitle || prevSong.title}</p>
-                  </div>
-                )}
-              </div>
-              <button
-                className="control-button"
-                onClick={() => {
-                  if (!playerRef.current) return;
-                  if (isPlaying) playerRef.current.pauseVideo?.();
-                  else playerRef.current.playVideo?.();
-                  autoScrollRef.current = true;
-                  scrollToLine(activeLine);
-                }}
-              >
-                {isPlaying ? (
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <rect x="6" y="5" width="4" height="14" />
-                    <rect x="14" y="5" width="4" height="14" />
-                  </svg>
-                ) : (
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <polygon points="8,5 19,12 8,19" />
-                  </svg>
-                )}
-              </button>
-              <div className="tooltip-wrapper">
-                <button
-                  className="control-button"
-                  disabled={!nextSong && !shuffle}
-                  onMouseEnter={() => setShowNextTooltip(true)}
-                  onMouseLeave={() => setShowNextTooltip(false)}
-                  onClick={() => {
-                    if (nextSong) {
-                      setShowNextTooltip(false);
-                      autoScrollRef.current = true;
-                      router.push(`/call-guide/${nextSong.slug}`);
-                    } else if (shuffle) {
-                      const base = activePlaylist?.slugs || songs.map((s) => s.slug!);
-                      const newOrder = [...base].sort(() => Math.random() - 0.5);
-                      setPlaylistOrder(newOrder);
-                      playlistOrderRef.current = newOrder;
-                      localStorage.setItem('callGuidePlaylistOrder', JSON.stringify(newOrder));
-                      setShowNextTooltip(false);
-                      autoScrollRef.current = true;
-                      router.push(`/call-guide/${newOrder[0]}`);
-                    }
-                  }}
-                >
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <polygon points="9,5 17,12 9,19" />
-                    <rect x="17" y="5" width="2" height="14" />
-                  </svg>
-                </button>
-                {showNextTooltip && nextSong && (
-                  <div className="song-tooltip">
-                    {nextSong.thumbnail && (
-                      <Image
-                        src={nextSong.thumbnail}
-                        alt={nextSong.krtitle || nextSong.title}
-                        width={80}
-                        height={80}
-                        className="song-tooltip-image"
-                      />
-                    )}
-                    <p className="song-tooltip-title">{nextSong.krtitle || nextSong.title}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-            <div
+            <PlayerButtons
+              prevSong={prevSong}
+              nextSong={nextSong}
+              showPrevTooltip={showPrevTooltip}
+              setShowPrevTooltip={setShowPrevTooltip}
+              showNextTooltip={showNextTooltip}
+              setShowNextTooltip={setShowNextTooltip}
+              playerButtonsRef={playerButtonsRef}
+              isPlaying={isPlaying}
+              playerRef={playerRef}
+              autoScrollRef={autoScrollRef}
+              scrollToLine={scrollToLine}
+              activeLine={activeLine}
+              router={router}
+              shuffle={shuffle}
+              activePlaylist={activePlaylist}
+              songs={songs}
+              setPlaylistOrder={setPlaylistOrder}
+              playlistOrderRef={playlistOrderRef}
+            />
+            <VolumeControls
               ref={volumeControlsRef}
-              className={`volume-controls${muted ? ' disabled' : ''}`}
-            >
-              <button className={`control-button${muted ? ' muted' : ''}`} onClick={toggleMute}>
-                {muted ? (
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <polygon points="3,9 7,9 12,4 12,20 7,15 3,15" />
-                    <line x1="4" y1="4" x2="20" y2="20" stroke="currentColor" strokeWidth="2" />
-                  </svg>
-                ) : (
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <polygon points="3,9 7,9 12,4 12,20 7,15 3,15" />
-                    <path d="M16 8a5 5 0 010 8" stroke="currentColor" strokeWidth="2" fill="none" />
-                  </svg>
-                )}
-              </button>
-              <input
-                className={`volume-bar${muted ? ' muted' : ''}`}
-                type="range"
-                min={0}
-                max={100}
-                value={volume}
-                onChange={(e) => {
-                  const v = Number(e.target.value);
-                  setVolume(v);
-                  playerRef.current?.setVolume?.(v);
-                }}
-                style={{
-                  background: `linear-gradient(to right, ${muted ? '#aaa' : '#39c5bb'} 0%, ${muted ? '#aaa' : '#39c5bb'} ${volume}%, rgba(255,255,255,0.1) ${volume}%, rgba(255,255,255,0.1) 100%)`,
-                  boxShadow: volume > 0 && !muted ? '0 0 8px #39c5bb' : undefined,
-                }}
-                suppressHydrationWarning
-              />
-            </div>
+              muted={muted}
+              volume={volume}
+              toggleMute={toggleMute}
+              onVolumeChange={(v) => {
+                setVolume(v);
+                playerRef.current?.setVolume?.(v);
+              }}
+            />
           </div>
         </div>
 
-        <div className={`extra-toggle${extraOpen ? ' open' : ''}`}>
-          <div className="extra-buttons">
-            <button className="small-glass-button" onClick={openPlaylistSongs}>
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <rect x="4" y="5" width="16" height="2" />
-                <rect x="4" y="11" width="16" height="2" />
-                <rect x="4" y="17" width="16" height="2" />
-              </svg>
-            </button>
-            <button
-              className={`small-glass-button${autoNext ? ' active' : ' inactive'}`}
-              onClick={toggleAutoNext}
-            >
-              {autoNext ? (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="4" y1="12" x2="14" y2="12" />
-                  <polyline points="14,6 20,12 14,18" />
-                </svg>
-              ) : (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="4" y1="12" x2="14" y2="12" />
-                  <polyline points="14,6 20,12 14,18" />
-                  <line x1="6" y1="8" x2="10" y2="16" />
-                </svg>
-              )}
-            </button>
-            <button
-              className={`small-glass-button${repeatMode !== 'off' ? ' active' : ' inactive'}`}
-              onClick={cycleRepeat}
-            >
-              {repeatMode === 'one' ? (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M17 1l4 4-4 4" />
-                  <path d="M3 11v-3a6 6 0 016-6h8" />
-                  <path d="M7 23l-4-4 4-4" />
-                  <path d="M21 13v3a6 6 0 01-6 6H7" />
-                  <path d="M12 9v6" strokeLinecap="round" />
-                  <path d="M11 9h2" strokeLinecap="round" />
-                </svg>
-              ) : repeatMode === 'all' ? (
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M17 1l4 4-4 4" />
-                  <path d="M3 11v-3a6 6 0 016-6h8" stroke="currentColor" strokeWidth="2" fill="none" />
-                  <path d="M7 23l-4-4 4-4" />
-                  <path d="M21 13v3a6 6 0 01-6 6H7" stroke="currentColor" strokeWidth="2" fill="none" />
-                </svg>
-              ) : (
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M17 1l4 4-4 4" />
-                  <path d="M3 11v-3a6 6 0 016-6h8" stroke="currentColor" strokeWidth="2" fill="none" />
-                </svg>
-              )}
-            </button>
-            <button
-              className={`small-glass-button${shuffle ? ' active' : ' inactive'}`}
-              onClick={toggleShuffle}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M4 4h4l5 8 5-8" />
-                <polyline points="18,4 22,4 20,6" />
-                <path d="M4 20h4l5-8 5 8" />
-                <polyline points="18,20 22,20 20,18" />
-              </svg>
-            </button>
-          </div>
-          <button
-            className="triangle-toggle"
-            onClick={toggleExtra}
-          >
-            <span
-              className="triangle-icon"
-              style={{ transform: `rotate(${toggleRotation}deg)` }}
-            >
-              ▲
-            </span>
-          </button>
-        </div>
+        <ExtraControls
+          extraOpen={extraOpen}
+          openPlaylistSongs={openPlaylistSongs}
+          autoNext={autoNext}
+          toggleAutoNext={toggleAutoNext}
+          repeatMode={repeatMode}
+          cycleRepeat={cycleRepeat}
+          shuffle={shuffle}
+          toggleShuffle={toggleShuffle}
+          toggleExtra={toggleExtra}
+          toggleRotation={toggleRotation}
+        />
 
       </main>
       <ScrollTopButton className="between-bar" />
