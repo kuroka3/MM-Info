@@ -48,9 +48,6 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
     const flipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const boothRefs = useRef<Record<string, HTMLButtonElement | null>>({});
     const wrapperRef = useRef<HTMLDivElement | null>(null);
-    const rotatorRef = useRef<HTMLDivElement | null>(null);
-    const raf = useRef<number | null>(null);
-    const prevViewportWidth = useRef(0);
 
     const tooltipRootRef = useRef<HTMLDivElement | null>(null);
     const tooltipMap = useRef(
@@ -69,73 +66,6 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
     const [gutter, setGutter] = useState(0);
     const prevWrapperWidth = useRef(0);
     const prevGutterViewportWidth = useRef(0);
-
-    useLayoutEffect(() => {
-      const wrapper = wrapperRef.current;
-      const rotator = rotatorRef.current;
-      if (!wrapper || !rotator) return;
-
-      const applyRotation = () => {
-        const vv = window.visualViewport;
-        const vw = vv?.width ?? window.innerWidth;
-        const vh = vv?.height ?? window.innerHeight;
-        const isNarrow = vw <= 480;
-
-        if (isNarrow) {
-          const container = (wrapper.closest('.cm-main') as HTMLElement) || document.body;
-          const ww = container.clientWidth || vw;
-          const ratio = vh / vw;
-          const margin = ww * 0.08;
-
-          wrapper.style.position = 'relative';
-          wrapper.style.left = '';
-          wrapper.style.top = '';
-          wrapper.style.transform = '';
-          wrapper.style.margin = '0 auto';
-          wrapper.style.width = `${ww}px`;
-          wrapper.style.height = `${ww * ratio}px`;
-          wrapper.style.padding = `${margin}px`;
-          wrapper.style.overflow = 'hidden';
-
-          rotator.style.position = 'absolute';
-          rotator.style.left = '50%';
-          rotator.style.top = '50%';
-          rotator.style.width = `${ww * ratio - margin * 2}px`;
-          rotator.style.height = `${ww - margin * 2}px`;
-          rotator.style.transformOrigin = 'center';
-          rotator.style.transform = 'translate(-50%, -50%) rotate(90deg)';
-          rotator.setAttribute('data-rotated', '1');
-        } else {
-          wrapper.removeAttribute('style');
-          rotator.removeAttribute('style');
-          rotator.removeAttribute('data-rotated');
-        }
-      };
-
-      const schedule = () => {
-        const vv = window.visualViewport;
-        const vw = vv?.width ?? window.innerWidth;
-        if (Math.abs(prevViewportWidth.current - vw) < 1) return;
-        prevViewportWidth.current = vw;
-        if (raf.current) cancelAnimationFrame(raf.current);
-        raf.current = requestAnimationFrame(applyRotation);
-      };
-
-      schedule();
-
-      window.addEventListener('resize', schedule);
-      window.addEventListener('orientationchange', schedule);
-      window.visualViewport?.addEventListener('resize', schedule);
-      window.addEventListener('pageshow', schedule);
-
-      return () => {
-        if (raf.current) cancelAnimationFrame(raf.current);
-        window.removeEventListener('resize', schedule);
-        window.removeEventListener('orientationchange', schedule);
-        window.visualViewport?.removeEventListener('resize', schedule);
-        window.removeEventListener('pageshow', schedule);
-      };
-    }, []);
 
     const updateGutter = useCallback(() => {
       const vw = window.innerWidth;
@@ -461,7 +391,8 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
         const [labelRow, labelCol] = displayId.split('-');
         const labelNode = (
           <span className="booth-label">
-            <span>{labelRow}-</span>
+            <span>{labelRow}</span>
+            <span>-</span>
             <span>{labelCol}</span>
           </span>
         );
@@ -515,7 +446,7 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
     return (
       <div className="cm-map-wrapper" ref={wrapperRef}>
         <div className="entrance-label">입구</div>
-        <div className="map-inner" ref={rotatorRef}>
+        <div className="map-inner">
           <div className="cm-grid">
             {ROWS.map(row => (
               <Fragment key={row}>

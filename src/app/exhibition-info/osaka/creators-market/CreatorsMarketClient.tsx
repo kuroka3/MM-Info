@@ -27,7 +27,7 @@ export default function CreatorsMarketClient() {
   };
 
   return (
-    <main className="cm-scope">
+    <main className="cm-scope cm-osaka">
       {scrollLock && <div className="scroll-blocker" />}
       <header className="header">
         <div className="container header-content">
