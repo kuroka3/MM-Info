@@ -60,24 +60,26 @@ export default function ExtraControls({
         >
           {repeatMode === 'one' ? (
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M17 1l4 4-4 4" />
-              <path d="M3 11v-3a6 6 0 016-6h8" />
-              <path d="M7 23l-4-4 4-4" />
+              <path d="M15 1l6 4-6 4" />
+              <path d="M3 11v-3a6 6 0 016-6h6" />
+              <path d="M7 23l-6-4 6-4" />
               <path d="M21 13v3a6 6 0 01-6 6H7" />
               <path d="M12 9v6" strokeLinecap="round" />
               <path d="M11 9h2" strokeLinecap="round" />
             </svg>
           ) : repeatMode === 'all' ? (
             <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M17 1l4 4-4 4" />
-              <path d="M3 11v-3a6 6 0 016-6h8" stroke="currentColor" strokeWidth="2" fill="none" />
-              <path d="M7 23l-4-4 4-4" />
+              <path d="M15 1l6 4-6 4" />
+              <path d="M3 11v-3a6 6 0 016-6h6" stroke="currentColor" strokeWidth="2" fill="none" />
+              <path d="M7 23l-6-4 6-4" />
               <path d="M21 13v3a6 6 0 01-6 6H7" stroke="currentColor" strokeWidth="2" fill="none" />
             </svg>
           ) : (
             <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M17 1l4 4-4 4" />
-              <path d="M3 11v-3a6 6 0 016-6h8" stroke="currentColor" strokeWidth="2" fill="none" />
+              <path d="M15 1l6 4-6 4" />
+              <path d="M3 11v-3a6 6 0 016-6h6" stroke="currentColor" strokeWidth="2" fill="none" />
+              <path d="M7 23l-6-4 6-4" />
+              <path d="M21 13v3a6 6 0 01-6 6H7" stroke="currentColor" strokeWidth="2" fill="none" />
             </svg>
           )}
         </button>
@@ -87,9 +89,9 @@ export default function ExtraControls({
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M4 4h4l5 8 5-8" />
-            <polyline points="18,4 22,4 20,6" />
+            <polyline points="16,4 23,4 20,7" />
             <path d="M4 20h4l5-8 5 8" />
-            <polyline points="18,20 22,20 20,18" />
+            <polyline points="16,20 23,20 20,17" />
           </svg>
         </button>
       </div>
