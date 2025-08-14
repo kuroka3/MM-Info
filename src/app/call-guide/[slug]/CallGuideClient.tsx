@@ -79,6 +79,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     'callGuideRepeatMode',
     'off',
     parseRepeatMode,
+    String,
   );
   const [shuffle, setShuffle, shuffleRef, shuffleLoaded] = useStoredState(
     'callGuideShuffle',
