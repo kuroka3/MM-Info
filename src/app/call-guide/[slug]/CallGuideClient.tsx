@@ -257,17 +257,36 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
 
   useEffect(() => {
     const base = activePlaylist?.slugs || songs.map((s) => s.slug!);
+    let order: string[] | null = null;
     if (shuffle) {
-      const k = base.indexOf(song.slug!);
-      const before = base.slice(0, k);
-      const after = base.slice(k + 1);
-      const shuffledBefore = [...before].sort(() => Math.random() - 0.5);
-      const shuffledAfter = [...after].sort(() => Math.random() - 0.5);
-      setPlaylistOrder([...shuffledBefore, song.slug!, ...shuffledAfter]);
+      const stored = localStorage.getItem('callGuidePlaylistOrder');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored) as string[];
+          if (Array.isArray(parsed) && parsed.length === base.length && parsed.includes(song.slug!)) {
+            order = parsed;
+          }
+        } catch {
+          /* ignore */
+        }
+      }
+      if (!order) {
+        const k = base.indexOf(song.slug!);
+        const before = base.slice(0, k);
+        const after = base.slice(k + 1);
+        const shuffledBefore = [...before].sort(() => Math.random() - 0.5);
+        const shuffledAfter = [...after].sort(() => Math.random() - 0.5);
+        order = [...shuffledBefore, song.slug!, ...shuffledAfter];
+      }
     } else {
-      setPlaylistOrder(base);
+      order = base;
     }
+    setPlaylistOrder(order);
   }, [activePlaylist, songs, shuffle, song.slug]);
+
+  useEffect(() => {
+    localStorage.setItem('callGuidePlaylistOrder', JSON.stringify(playlistOrder));
+  }, [playlistOrder]);
 
   useEffect(() => {
     const idx = playlistOrder.indexOf(song.slug!);
@@ -297,7 +316,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
 
   const toggleExtra = () => {
     setExtraOpen((prev) => {
-      setToggleRotation((r) => (r + 180) % 360);
+      setToggleRotation(prev ? 0 : 180);
       return !prev;
     });
   };
@@ -306,7 +325,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     setShowPlaylistSongs((p) => !p);
     if (extraOpen) {
       setExtraOpen(false);
-      setToggleRotation((r) => (r + 180) % 360);
+      setToggleRotation((r) => r + 180);
     }
   };
   const closePlaylistSongs = () => setShowPlaylistSongs(false);
@@ -649,6 +668,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                     const newOrder = [...base].sort(() => Math.random() - 0.5);
                     setPlaylistOrder(newOrder);
                     playlistOrderRef.current = newOrder;
+                    localStorage.setItem('callGuidePlaylistOrder', JSON.stringify(newOrder));
                     targetSlug = newOrder[0];
                   } else {
                     targetSlug = playlistSlugs[0];
@@ -1030,14 +1050,24 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
               <div className="tooltip-wrapper">
                 <button
                   className="control-button"
-                  disabled={!nextSong}
+                  disabled={!nextSong && !shuffle}
                   onMouseEnter={() => setShowNextTooltip(true)}
                   onMouseLeave={() => setShowNextTooltip(false)}
                   onClick={() => {
-                    if (!nextSong) return;
-                    setShowNextTooltip(false);
-                    autoScrollRef.current = true;
-                    router.push(`/call-guide/${nextSong.slug}`);
+                    if (nextSong) {
+                      setShowNextTooltip(false);
+                      autoScrollRef.current = true;
+                      router.push(`/call-guide/${nextSong.slug}`);
+                    } else if (shuffle) {
+                      const base = activePlaylist?.slugs || songs.map((s) => s.slug!);
+                      const newOrder = [...base].sort(() => Math.random() - 0.5);
+                      setPlaylistOrder(newOrder);
+                      playlistOrderRef.current = newOrder;
+                      localStorage.setItem('callGuidePlaylistOrder', JSON.stringify(newOrder));
+                      setShowNextTooltip(false);
+                      autoScrollRef.current = true;
+                      router.push(`/call-guide/${newOrder[0]}`);
+                    }
                   }}
                 >
                   <svg viewBox="0 0 24 24" fill="currentColor">
@@ -1167,11 +1197,13 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
           <button
             className="triangle-toggle"
             onClick={toggleExtra}
-            style={{ transform: `rotate(${toggleRotation}deg)` }}
           >
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <polygon points="12,8 18,16 6,16" />
-            </svg>
+            <span
+              className="triangle-icon"
+              style={{ transform: `rotate(${toggleRotation}deg)` }}
+            >
+              ▲
+            </span>
           </button>
         </div>
 
