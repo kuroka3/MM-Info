@@ -4,6 +4,9 @@ import React, { useState, useEffect, useCallback, useRef, useMemo, type CSSPrope
 import Link from 'next/link';
 import Image from 'next/image';
 import type { Prisma } from '@prisma/client';
+import SelectionOverlay from '@/components/call-guide/SelectionOverlay';
+import PlaylistNameModal from '@/components/call-guide/PlaylistNameModal';
+import PlaylistDeleteModal from '@/components/call-guide/PlaylistDeleteModal';
 
 const partColors = {
   MIKU: '#39c5bbaa',
@@ -719,19 +722,11 @@ export default function CallGuideIndexClient({ songs }: Props) {
       </div>
 
       {selectMode && (
-        <>
-          <div className="selection-info">
-            {selected.size}곡 선택됨
-          </div>
-          <div className="selection-actions">
-            <button className="confirm-button" onClick={confirmSelection}>
-              선택 완료
-            </button>
-            <button className="cancel-button" onClick={cancelSelection}>
-              취소
-            </button>
-          </div>
-        </>
+        <SelectionOverlay
+          count={selected.size}
+          onConfirm={confirmSelection}
+          onCancel={cancelSelection}
+        />
       )}
 
       {showPlaylistModal && (
@@ -821,58 +816,22 @@ export default function CallGuideIndexClient({ songs }: Props) {
       )}
 
       {showNameModal && (
-        <div className="playlist-modal" onClick={cancelNameModal}>
-          <div
-            className="playlist-name-popup"
-            onClick={(e) => e.stopPropagation()}
-          >
-          <h3>재생목록 이름</h3>
-          <input
-            type="text"
-            value={playlistName}
-            onChange={(e) => setPlaylistName(e.target.value)}
-            placeholder="이름 입력"
-            autoFocus
-          />
-          <div className="color-palette">
-            {['rgba(255,255,255,0.1)', '#39c5bbaa', '#ffa500aa', '#ffe211aa', '#ffc0cbaa', '#0000ffaa', '#d80000aa'].map((c) => (
-              <span
-                key={c}
-                className={`palette-color${playlistColor === c ? ' selected' : ''}`}
-                style={{ background: c }}
-                onClick={() => setPlaylistColor(c)}
-              />
-            ))}
-          </div>
-          <div className="name-modal-actions">
-            <button className="confirm-button" onClick={createPlaylist}>
-              선택
-            </button>
-            <button className="cancel-button" onClick={cancelNameModal}>
-              취소
-            </button>
-          </div>
-          </div>
-        </div>
+        <PlaylistNameModal
+          name={playlistName}
+          color={playlistColor}
+          setName={setPlaylistName}
+          setColor={setPlaylistColor}
+          onConfirm={createPlaylist}
+          onCancel={cancelNameModal}
+        />
       )}
 
       {deleteIndex !== null && (
-        <div className="playlist-modal" onClick={cancelDelete}>
-          <div className="playlist-delete-popup" onClick={(e) => e.stopPropagation()}>
-            <p>
-              &apos;<span className="delete-playlist-name">{playlists[deleteIndex].name}</span>&apos; 재생목록을
-            </p>
-            <p>삭제하시겠습니까?</p>
-            <div className="name-modal-actions">
-              <button className="confirm-button" onClick={confirmDelete}>
-                예
-              </button>
-              <button className="cancel-button" onClick={cancelDelete}>
-                아니오
-              </button>
-            </div>
-          </div>
-        </div>
+        <PlaylistDeleteModal
+          name={playlists[deleteIndex].name}
+          onConfirm={confirmDelete}
+          onCancel={cancelDelete}
+        />
       )}
 
       {!selectMode && activePlaylist && (

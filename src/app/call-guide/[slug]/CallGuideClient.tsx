@@ -15,6 +15,7 @@ import SpoilerGate from '@/components/SpoilerGate';
 import ScrollTopButton from '@/components/ScrollTopButton';
 import type { Song } from '@prisma/client';
 import type { Call, LyricLine } from '@/types/call-guide';
+import PlaylistSelectModal from '@/components/call-guide/PlaylistSelectModal';
 
 interface Token {
   text: string;
@@ -1235,16 +1236,11 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
         </div>
       )}
       {showPlaylistModal && (
-        <div className="playlist-modal" onClick={closePlaylistModal}>
-          <div className="playlist-modal-content" onClick={(e) => e.stopPropagation()}>
-            <ul>
-              <li onClick={() => selectPlaylist('default')}>전체 곡</li>
-              {playlists.map((pl, i) => (
-                <li key={i} onClick={() => selectPlaylist(pl)}>{pl.name}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
+        <PlaylistSelectModal
+          playlists={playlists}
+          onSelect={selectPlaylist}
+          onClose={closePlaylistModal}
+        />
       )}
       {showPlaylistSongs && activePlaylist && (
         <div className="playlist-modal" onClick={closePlaylistSongs}>
