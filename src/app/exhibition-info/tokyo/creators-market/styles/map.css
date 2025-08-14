@@ -67,16 +67,6 @@
   border-radius:16px;
   overflow:visible;
 }
-.cm-tokyo .cm-map-wrapper::after{
-  content:"";
-  pointer-events:none;
-  position:absolute;
-  inset:8px;
-  border:2px solid rgba(255,255,255,.6);
-  border-left-color:transparent;
-  border-bottom-color:transparent;
-  border-radius:12px;
-}
 
 .cm-tokyo .cm-grid{
   display:grid;
@@ -249,9 +239,6 @@ button.booth {
     box-sizing:border-box;
     margin:0;
     padding:0;
-  }
-  .cm-tokyo .cm-map-wrapper::after{
-    content:none;
   }
   .cm-grid .booth .booth-label{
     flex-direction:column;
