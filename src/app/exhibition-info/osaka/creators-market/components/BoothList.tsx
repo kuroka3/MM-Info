@@ -7,7 +7,9 @@ import {
   useLayoutEffect,
   Fragment,
   CSSProperties,
+  useCallback,
 } from 'react';
+import useThrottle from '@/hooks/useThrottle';
 import Image from 'next/image';
 import { ROWS, rowClasses, BOOTHS } from '@/data/exhibition/osaka/creators-market/booths';
 import {
@@ -34,25 +36,27 @@ const BoothList = forwardRef<BoothListHandle, BoothListProps>(
   const listRefs = useRef<Record<string, HTMLLIElement | null>>({});
   const rowRefs = useRef<Record<string, HTMLLIElement | null>>({});
 
-  useLayoutEffect(() => {
-    const updateDividers = () => {
-      const wrapper = document.querySelector('.cm-map-wrapper') as HTMLDivElement | null;
-      if (!wrapper) return;
-      const parentRect = wrapper.getBoundingClientRect();
-      const style = getComputedStyle(wrapper);
-      const rightGap = parseFloat(style.paddingRight) || 0;
-      const maxWidth = Math.min(parentRect.width, window.innerWidth);
-      Object.values(rowRefs.current).forEach(li => {
-        if (!li) return;
-        const width = maxWidth - rightGap;
-        li.style.setProperty('--divider-left', '0px');
-        li.style.setProperty('--divider-width', `${width}px`);
-      });
-    };
-    updateDividers();
-    window.addEventListener('resize', updateDividers);
-    return () => window.removeEventListener('resize', updateDividers);
+  const updateDividers = useCallback(() => {
+    const wrapper = document.querySelector('.cm-map-wrapper') as HTMLDivElement | null;
+    if (!wrapper) return;
+    const parentRect = wrapper.getBoundingClientRect();
+    const style = getComputedStyle(wrapper);
+    const rightGap = parseFloat(style.paddingRight) || 0;
+    const maxWidth = Math.min(parentRect.width, window.innerWidth);
+    Object.values(rowRefs.current).forEach(li => {
+      if (!li) return;
+      const width = maxWidth - rightGap;
+      li.style.setProperty('--divider-left', '0px');
+      li.style.setProperty('--divider-width', `${width}px`);
+    });
   }, []);
+  const throttledUpdateDividers = useThrottle(updateDividers, 100);
+
+  useLayoutEffect(() => {
+    throttledUpdateDividers();
+    window.addEventListener('resize', throttledUpdateDividers);
+    return () => window.removeEventListener('resize', throttledUpdateDividers);
+  }, [throttledUpdateDividers]);
 
   const scrollToBooth = (id: string) => {
     const el = listRefs.current[id];

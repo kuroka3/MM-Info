@@ -13,6 +13,7 @@ import {
   CSSProperties,
   type ReactNode,
 } from 'react';
+import useThrottle from '@/hooks/useThrottle';
 import Image from 'next/image';
 import type { Booth } from '@/types/booth';
 import { ROWS, COLS, rowClasses, BOOTHS } from '@/data/exhibition/tokyo/creators-market/booths';
@@ -265,19 +266,20 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
       if (activeTooltip.current === el) activeTooltip.current = null;
     };
 
+    const handleScroll = useThrottle(() => {
+      const active = activeTooltip.current;
+      if (!active) return;
+      if (active.matches(':hover') || disableScrollHide.current) {
+        updateTooltipPosition(active);
+      } else {
+        hideTooltip(active);
+      }
+    }, 100);
+
     useEffect(() => {
-      const handleScroll = () => {
-        const active = activeTooltip.current;
-        if (!active) return;
-        if (active.matches(':hover') || disableScrollHide.current) {
-          updateTooltipPosition(active);
-        } else {
-          hideTooltip(active);
-        }
-      };
       window.addEventListener('scroll', handleScroll, { passive: true });
       return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+    }, [handleScroll]);
 
     useEffect(() => {
       const handlePointerDown = (e: PointerEvent) => {

@@ -8,11 +8,13 @@ import {
   Fragment,
   forwardRef,
   useImperativeHandle,
+  useCallback,
   type PointerEvent as ReactPointerEvent,
   type MouseEvent as ReactMouseEvent,
   CSSProperties,
   type ReactNode,
 } from 'react';
+import useThrottle from '@/hooks/useThrottle';
 import Image from 'next/image';
 import type { Booth } from '@/types/booth';
 import { ROWS, COLS, rowClasses, BOOTHS } from '@/data/exhibition/osaka/creators-market/booths';
@@ -128,17 +130,18 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
       };
     }, []);
 
-    useLayoutEffect(() => {
-      function updateGutter() {
-        if (wrapperRef.current) {
-          const { width, height } = wrapperRef.current.getBoundingClientRect();
-          setGutter(Math.min(width, height) * 0.15);
-        }
+    const updateGutter = useCallback(() => {
+      if (wrapperRef.current) {
+        const { width, height } = wrapperRef.current.getBoundingClientRect();
+        setGutter(Math.min(width, height) * 0.15);
       }
-      updateGutter();
-      window.addEventListener('resize', updateGutter);
-      return () => window.removeEventListener('resize', updateGutter);
     }, []);
+    const throttledUpdateGutter = useThrottle(updateGutter, 100);
+    useLayoutEffect(() => {
+      throttledUpdateGutter();
+      window.addEventListener('resize', throttledUpdateGutter);
+      return () => window.removeEventListener('resize', throttledUpdateGutter);
+    }, [throttledUpdateGutter]);
 
     useEffect(() => {
       const root = document.createElement('div');
@@ -279,19 +282,20 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
       if (activeTooltip.current === el) activeTooltip.current = null;
     };
 
+    const handleScroll = useThrottle(() => {
+      const active = activeTooltip.current;
+      if (!active) return;
+      if (active.matches(':hover') || disableScrollHide.current) {
+        updateTooltipPosition(active);
+      } else {
+        hideTooltip(active);
+      }
+    }, 100);
+
     useEffect(() => {
-      const handleScroll = () => {
-        const active = activeTooltip.current;
-        if (!active) return;
-        if (active.matches(':hover') || disableScrollHide.current) {
-          updateTooltipPosition(active);
-        } else {
-          hideTooltip(active);
-        }
-      };
       window.addEventListener('scroll', handleScroll, { passive: true });
       return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+    }, [handleScroll]);
 
     useEffect(() => {
       const handlePointerDown = (e: PointerEvent) => {

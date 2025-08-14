@@ -86,6 +86,7 @@ export default function ImportantNoticesPage() {
                   src="images/images/mail_linkst.svg"
                   className="inquiry_mail"
                   alt=""
+                  loading="lazy"
                 />
                 <a
                   href="mailto:event@linkst.jp"
