@@ -31,14 +31,15 @@ export interface BoothMapHandle {
 }
 
 const COLS_REVERSED = [...COLS].reverse();
-const BOOTHS_MAP: Record<string, Record<number, Booth>> = {};
-for (const b of BOOTHS) (BOOTHS_MAP[b.row] ??= {})[b.col] = b;
+// Multiple booths may share the same row/column across different days.
+// Keep a list for each cell and choose the booth for the selected day.
+const BOOTHS_MAP: Record<string, Record<number, Booth[]>> = {};
+for (const b of BOOTHS) ((BOOTHS_MAP[b.row] ??= {})[b.col] ??= []).push(b);
 
 const findBooth = (row: string, col: number, day: string) => {
-  const booth = BOOTHS_MAP[row]?.[col];
-  if (!booth) return undefined;
-  if (booth.hidden) return booth;
-  return booth.dates.includes(day) ? booth : undefined;
+  const booths = BOOTHS_MAP[row]?.[col];
+  if (!booths) return undefined;
+  return booths.find(b => b.dates.includes(day)) ?? booths.find(b => b.hidden);
 };
 
 const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
