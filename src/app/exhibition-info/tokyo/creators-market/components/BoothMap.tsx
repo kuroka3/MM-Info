@@ -28,14 +28,15 @@ export interface BoothMapHandle {
   scrollToMapBooth: (id: string) => Promise<void>;
 }
 
-const BOOTHS_MAP: Record<string, Record<number, Booth>> = {};
-for (const b of BOOTHS) (BOOTHS_MAP[b.row] ??= {})[b.col] = b;
+// Multiple booths can occupy the same row/col on different days (e.g. F-13a/F-13b)
+// Store all booths per cell and pick the one matching the selected day.
+const BOOTHS_MAP: Record<string, Record<number, Booth[]>> = {};
+for (const b of BOOTHS) ((BOOTHS_MAP[b.row] ??= {})[b.col] ??= []).push(b);
 
 const findBooth = (row: string, col: number, day: string) => {
-  const booth = BOOTHS_MAP[row]?.[col];
-  if (!booth) return undefined;
-  if (booth.hidden) return booth;
-  return booth.dates.includes(day) ? booth : undefined;
+  const booths = BOOTHS_MAP[row]?.[col];
+  if (!booths) return undefined;
+  return booths.find(b => b.dates.includes(day)) ?? booths.find(b => b.hidden);
 };
 
 const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
