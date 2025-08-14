@@ -1,0 +1,49 @@
+import type { Call } from '@/types/call-guide';
+import type { Song } from '@prisma/client';
+
+export interface Token {
+  text: string;
+  time?: number;
+}
+
+export interface ProcessedLine {
+  jp: Token[];
+  pron: Token[];
+  ko: Token[];
+  call?: Call;
+}
+
+export interface Playlist {
+  name: string;
+  slugs: string[];
+  color?: string;
+}
+
+export interface YTPlayer {
+  getCurrentTime: () => number;
+  getDuration: () => number;
+  playVideo: () => void;
+  pauseVideo: () => void;
+  seekTo: (seconds: number, allowSeekAhead?: boolean) => void;
+  destroy: () => void;
+  getVolume: () => number;
+  setVolume: (volume: number) => void;
+  mute: () => void;
+  unMute: () => void;
+  isMuted: () => boolean;
+  getIframe?: () => HTMLIFrameElement;
+}
+
+export interface CallGuideClientProps {
+  song: Song;
+  songs: Song[];
+}
+
+declare global {
+  interface Window {
+    YT: { Player: new (...args: unknown[]) => YTPlayer };
+    onYouTubeIframeAPIReady: () => void;
+  }
+}
+
+export {};
