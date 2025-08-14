@@ -9,8 +9,6 @@
 .cm-scope .cm-grid > * {
   min-width: 0 !important;
   min-height: 0 !important;
-  content-visibility: auto;
-  contain-intrinsic-size: 40px 40px;
 }
 
 .cm-scope .cm-grid .booth,
@@ -29,8 +27,6 @@
     transform: translate(-50%, -50%) rotate(90deg) !important;
     transform-origin: center !important;
     overflow: hidden !important;
-    contain: layout paint size;
-    will-change: transform;
   }
   .cm-scope .map-inner.is-rotated .cm-grid {
     width: 100% !important;
