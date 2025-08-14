@@ -58,10 +58,16 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const [showPlaylistSongs, setShowPlaylistSongs] = useState(false);
   const [extraOpen, setExtraOpen] = useState(false);
   const [toggleRotation, setToggleRotation] = useState(0);
+  const parseBoolean = useCallback((v: string) => v === 'true', []);
+  const parseRepeatMode = useCallback(
+    (v: string) =>
+      v === 'off' || v === 'all' || v === 'one' ? (v as 'off' | 'all' | 'one') : 'off',
+    [],
+  );
   const [autoNext, setAutoNext, autoNextRef, autoNextLoaded] = useStoredState(
     'callGuideAutoNext',
     true,
-    (v) => v === 'true',
+    parseBoolean,
     String,
   );
   const [
@@ -72,15 +78,12 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   ] = useStoredState<'off' | 'all' | 'one'>(
     'callGuideRepeatMode',
     'off',
-    (v) =>
-      v === 'off' || v === 'all' || v === 'one'
-        ? (v as 'off' | 'all' | 'one')
-        : 'off',
+    parseRepeatMode,
   );
   const [shuffle, setShuffle, shuffleRef, shuffleLoaded] = useStoredState(
     'callGuideShuffle',
     false,
-    (v) => v === 'true',
+    parseBoolean,
     String,
   );
   const [volume, setVolume, volumeRef, volumeLoaded] = useStoredState(
@@ -92,7 +95,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const [muted, setMuted, mutedRef, mutedLoaded] = useStoredState(
     'callGuideMuted',
     false,
-    (v) => v === 'true',
+    parseBoolean,
     String,
   );
 
