@@ -3,6 +3,7 @@ import "./globals.css";
 import Footer from "@/components/Footer";
 import NavBar from "@/components/NavBar";
 import HomeButton from "@/components/HomeButton";
+import ViewportHeightSetter from "@/components/ViewportHeightSetter";
 
 export const metadata: Metadata = {
   title: {
@@ -30,6 +31,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body>
+        <ViewportHeightSetter />
         <div className="container">
           <div className="top-bar">
             <HomeButton />

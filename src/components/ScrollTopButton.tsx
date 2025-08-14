@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import useThrottle from '@/hooks/useThrottle';
 import { scrollToPosition } from '@/lib/scroll';
 
 interface ScrollTopButtonProps {
@@ -10,11 +11,12 @@ interface ScrollTopButtonProps {
 export default function ScrollTopButton({ className = '' }: ScrollTopButtonProps) {
   const [visible, setVisible] = useState(false);
 
+  const onScroll = useThrottle(() => setVisible(window.scrollY > 200), 100);
+
   useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > 200);
-    window.addEventListener('scroll', onScroll);
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  }, [onScroll]);
 
   return (
     <button

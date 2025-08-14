@@ -17,6 +17,7 @@ import type { Song } from '@prisma/client';
 import type { LyricLine } from '@/types/call-guide';
 import PlaylistSelectModal from '@/components/call-guide/PlaylistSelectModal';
 import useStoredState from '@/hooks/useStoredState';
+import useThrottle from '@/hooks/useThrottle';
 import LyricsDisplay from './LyricsDisplay';
 import VolumeControls from './VolumeControls';
 import ExtraControls from './ExtraControls';
@@ -311,22 +312,23 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     }
   }, [showPlaylistSongs, playlistOrder, song.slug, activePlaylist]);
 
+  const adjust = useThrottle(() => {
+    const buttons = playerButtonsRef.current;
+    const volume = volumeControlsRef.current;
+    const container = buttons?.parentElement;
+    if (!buttons || !volume || !container) return;
+    const gap = 0;
+    const total = buttons.offsetWidth + gap + volume.offsetWidth;
+    if (total > container.offsetWidth) volume.classList.add('compact');
+    else volume.classList.remove('compact');
+  }, 200);
+
   useEffect(() => {
     if (!settingsLoaded) return;
-    const adjust = () => {
-      const buttons = playerButtonsRef.current;
-      const volume = volumeControlsRef.current;
-      const container = buttons?.parentElement;
-      if (!buttons || !volume || !container) return;
-      const gap = 0;
-      const total = buttons.offsetWidth + gap + volume.offsetWidth;
-      if (total > container.offsetWidth) volume.classList.add('compact');
-      else volume.classList.remove('compact');
-    };
     adjust();
     window.addEventListener('resize', adjust);
     return () => window.removeEventListener('resize', adjust);
-  }, [settingsLoaded]);
+  }, [settingsLoaded, adjust]);
 
   const handleSongDragStart = (index: number) => {
     if (activePlaylistRef.current?.name === '전체 곡') return;
@@ -695,11 +697,12 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     );
   }, [lyrics]);
   useLayoutEffect(computeCallPositions, [computeCallPositions]);
+  const throttledComputeCallPositions = useThrottle(computeCallPositions, 200);
   useEffect(() => {
     document.fonts?.ready.then(computeCallPositions);
-    window.addEventListener('resize', computeCallPositions);
-    return () => window.removeEventListener('resize', computeCallPositions);
-  }, [computeCallPositions]);
+    window.addEventListener('resize', throttledComputeCallPositions);
+    return () => window.removeEventListener('resize', throttledComputeCallPositions);
+  }, [computeCallPositions, throttledComputeCallPositions]);
 
   useEffect(() => {
     const gap = gaps.find((g) => currentTime >= g.start && currentTime < g.end);
@@ -739,14 +742,15 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [isPlaying, currentTime, scrollToLine, timeToLine, activeLine]);
 
+  const onScroll = useThrottle(() => {
+    if (programmaticScrollRef.current) return;
+    autoScrollRef.current = false;
+  }, 100);
+
   useEffect(() => {
-    const onScroll = () => {
-      if (programmaticScrollRef.current) return;
-      autoScrollRef.current = false;
-    };
-    window.addEventListener('scroll', onScroll);
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  }, [onScroll]);
 
   const callActive = (line: ProcessedLine) =>
     line.call ? currentTime >= line.call.start && currentTime <= line.call.end : false;
