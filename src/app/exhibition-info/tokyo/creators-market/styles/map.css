@@ -68,7 +68,7 @@
   overflow:visible;
 }
 
-.cm-grid{
+.cm-tokyo .cm-grid{
   display:grid;
   width:100%;
   height:100%;
@@ -221,7 +221,7 @@ button.booth {
 }
 
 @media (max-width:480px){
-  .cm-grid{
+  .cm-tokyo .cm-grid{
     width:100%;
     height:100%;
     grid-auto-rows:1fr;
@@ -238,6 +238,7 @@ button.booth {
     max-width:100%;
     box-sizing:border-box;
     margin:0;
+    padding:0;
   }
   .cm-grid .booth .booth-label{
     flex-direction:column;
