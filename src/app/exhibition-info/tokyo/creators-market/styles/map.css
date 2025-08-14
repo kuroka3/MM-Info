@@ -208,7 +208,7 @@ button.booth {
   z-index: 10000;
 }
 .booth .booth-label {
-  display: inline-block;
+  display: inline-flex;
   transform: rotate(0deg);
   transform-origin: center;
 }
@@ -226,12 +226,6 @@ button.booth {
     height:100%;
     grid-auto-rows:1fr;
   }
-  .cm-grid .booth .booth-label{
-    display:inline-block;
-  }
-  .cm-grid .booth .booth-label span{
-    display:block;
-  }
 }
 
 @media (max-width:480px) and (orientation:portrait){
@@ -243,9 +237,10 @@ button.booth {
     width:100%;
     max-width:100%;
     box-sizing:border-box;
+    margin:0;
   }
   .cm-grid .booth .booth-label{
-    transform:rotate(-90deg);
-    transform-origin:center;
+    flex-direction:column;
+    align-items:center;
   }
 }
