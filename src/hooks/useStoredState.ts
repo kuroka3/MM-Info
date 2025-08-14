@@ -6,16 +6,8 @@ export default function useStoredState<T>(
   parser: (raw: string) => T = JSON.parse,
   serializer: (value: T) => string = JSON.stringify,
 ) {
-  const [value, setValue] = useState<T>(() => {
-    if (typeof window === 'undefined') return defaultValue;
-    const stored = window.localStorage.getItem(key);
-    if (stored === null) return defaultValue;
-    try {
-      return parser(stored);
-    } catch {
-      return defaultValue;
-    }
-  });
+  const [value, setValue] = useState<T>(defaultValue);
+  const [loaded, setLoaded] = useState(false);
 
   const ref = useRef(value);
   useEffect(() => {
@@ -23,14 +15,28 @@ export default function useStoredState<T>(
   }, [value]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        window.localStorage.setItem(key, serializer(value));
-      } catch {
-        // ignore
+    if (typeof window === 'undefined') return;
+    try {
+      const stored = window.localStorage.getItem(key);
+      if (stored !== null) {
+        const parsed = parser(stored);
+        setValue(parsed);
+        ref.current = parsed;
       }
+    } catch {
+      // ignore
     }
-  }, [key, value, serializer]);
+    setLoaded(true);
+  }, [key, parser]);
 
-  return [value, setValue, ref] as const;
+  useEffect(() => {
+    if (!loaded || typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(key, serializer(value));
+    } catch {
+      // ignore
+    }
+  }, [key, value, serializer, loaded]);
+
+  return [value, setValue, ref, loaded] as const;
 }

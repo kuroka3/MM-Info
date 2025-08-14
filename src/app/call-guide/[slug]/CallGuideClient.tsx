@@ -57,46 +57,64 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const [showPlaylistSongs, setShowPlaylistSongs] = useState(false);
   const [extraOpen, setExtraOpen] = useState(false);
   const [toggleRotation, setToggleRotation] = useState(0);
-  const [autoNext, setAutoNext, autoNextRef] = useStoredState(
+  const [autoNext, setAutoNext, autoNextRef, autoNextLoaded] = useStoredState(
     'callGuideAutoNext',
     true,
     (v) => v === 'true',
     String,
   );
-  const [repeatMode, setRepeatMode, repeatModeRef] = useStoredState<
-    'off' | 'all' | 'one'
-  >('callGuideRepeatMode', 'off', (v) =>
-    v === 'off' || v === 'all' || v === 'one' ? (v as 'off' | 'all' | 'one') : 'off',
+  const [
+    repeatMode,
+    setRepeatMode,
+    repeatModeRef,
+    repeatModeLoaded,
+  ] = useStoredState<'off' | 'all' | 'one'>(
+    'callGuideRepeatMode',
+    'off',
+    (v) =>
+      v === 'off' || v === 'all' || v === 'one'
+        ? (v as 'off' | 'all' | 'one')
+        : 'off',
   );
-  const [shuffle, setShuffle, shuffleRef] = useStoredState(
+  const [shuffle, setShuffle, shuffleRef, shuffleLoaded] = useStoredState(
     'callGuideShuffle',
     false,
     (v) => v === 'true',
     String,
   );
-  const [volume, setVolume, volumeRef] = useStoredState(
+  const [volume, setVolume, volumeRef, volumeLoaded] = useStoredState(
     'callGuideVolume',
     100,
     Number,
     String,
   );
-  const [muted, setMuted, mutedRef] = useStoredState(
+  const [muted, setMuted, mutedRef, mutedLoaded] = useStoredState(
     'callGuideMuted',
     false,
     (v) => v === 'true',
     String,
   );
+
+  const settingsLoaded =
+    autoNextLoaded &&
+    repeatModeLoaded &&
+    shuffleLoaded &&
+    volumeLoaded &&
+    mutedLoaded;
+
   const [showPrevTooltip, setShowPrevTooltip] = useState(false);
   const [showNextTooltip, setShowNextTooltip] = useState(false);
 
   useEffect(() => {
+    if (!volumeLoaded) return;
     playerRef.current?.setVolume?.(volume);
-  }, [volume]);
+  }, [volume, volumeLoaded]);
 
   useEffect(() => {
+    if (!mutedLoaded) return;
     if (muted) playerRef.current?.mute?.();
     else playerRef.current?.unMute?.();
-  }, [muted]);
+  }, [muted, mutedLoaded]);
 
   const playlistOrderRef = useRef<string[]>([]);
   useEffect(() => {
@@ -294,6 +312,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   }, [showPlaylistSongs, playlistOrder, song.slug, activePlaylist]);
 
   useEffect(() => {
+    if (!settingsLoaded) return;
     const adjust = () => {
       const buttons = playerButtonsRef.current;
       const volume = volumeControlsRef.current;
@@ -307,7 +326,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     adjust();
     window.addEventListener('resize', adjust);
     return () => window.removeEventListener('resize', adjust);
-  }, []);
+  }, [settingsLoaded]);
 
   const handleSongDragStart = (index: number) => {
     if (activePlaylistRef.current?.name === '전체 곡') return;
@@ -637,14 +656,8 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   }, [song, scrollToLine, router, autoNextRef, repeatModeRef, shuffleRef, volumeRef, mutedRef]);
 
   useEffect(() => {
-    let frame: number;
-    const smooth = () => {
-      setDisplayTime((prev) => prev + (currentTimeRef.current - prev) * 0.2);
-      frame = requestAnimationFrame(smooth);
-    };
-    frame = requestAnimationFrame(smooth);
-    return () => cancelAnimationFrame(frame);
-  }, []);
+    setDisplayTime(currentTime);
+  }, [currentTime]);
 
   const timeToLine = useCallback(
     (t: number) => {
@@ -868,51 +881,57 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
             />
           </div>
           <div className="player-bottom-row">
-            <PlayerButtons
-              prevSong={prevSong}
-              nextSong={nextSong}
-              showPrevTooltip={showPrevTooltip}
-              setShowPrevTooltip={setShowPrevTooltip}
-              showNextTooltip={showNextTooltip}
-              setShowNextTooltip={setShowNextTooltip}
-              playerButtonsRef={playerButtonsRef}
-              isPlaying={isPlaying}
-              playerRef={playerRef}
-              autoScrollRef={autoScrollRef}
-              scrollToLine={scrollToLine}
-              activeLine={activeLine}
-              router={router}
-              shuffle={shuffle}
-              activePlaylist={activePlaylist}
-              songs={songs}
-              setPlaylistOrder={setPlaylistOrder}
-              playlistOrderRef={playlistOrderRef}
-            />
-            <VolumeControls
-              ref={volumeControlsRef}
-              muted={muted}
-              volume={volume}
-              toggleMute={toggleMute}
-              onVolumeChange={(v) => {
-                setVolume(v);
-                playerRef.current?.setVolume?.(v);
-              }}
-            />
+            {settingsLoaded && (
+              <>
+                <PlayerButtons
+                  prevSong={prevSong}
+                  nextSong={nextSong}
+                  showPrevTooltip={showPrevTooltip}
+                  setShowPrevTooltip={setShowPrevTooltip}
+                  showNextTooltip={showNextTooltip}
+                  setShowNextTooltip={setShowNextTooltip}
+                  playerButtonsRef={playerButtonsRef}
+                  isPlaying={isPlaying}
+                  playerRef={playerRef}
+                  autoScrollRef={autoScrollRef}
+                  scrollToLine={scrollToLine}
+                  activeLine={activeLine}
+                  router={router}
+                  shuffle={shuffle}
+                  activePlaylist={activePlaylist}
+                  songs={songs}
+                  setPlaylistOrder={setPlaylistOrder}
+                  playlistOrderRef={playlistOrderRef}
+                />
+                <VolumeControls
+                  ref={volumeControlsRef}
+                  muted={muted}
+                  volume={volume}
+                  toggleMute={toggleMute}
+                  onVolumeChange={(v) => {
+                    setVolume(v);
+                    playerRef.current?.setVolume?.(v);
+                  }}
+                />
+              </>
+            )}
           </div>
         </div>
 
-        <ExtraControls
-          extraOpen={extraOpen}
-          openPlaylistSongs={openPlaylistSongs}
-          autoNext={autoNext}
-          toggleAutoNext={toggleAutoNext}
-          repeatMode={repeatMode}
-          cycleRepeat={cycleRepeat}
-          shuffle={shuffle}
-          toggleShuffle={toggleShuffle}
-          toggleExtra={toggleExtra}
-          toggleRotation={toggleRotation}
-        />
+        {settingsLoaded && (
+          <ExtraControls
+            extraOpen={extraOpen}
+            openPlaylistSongs={openPlaylistSongs}
+            autoNext={autoNext}
+            toggleAutoNext={toggleAutoNext}
+            repeatMode={repeatMode}
+            cycleRepeat={cycleRepeat}
+            shuffle={shuffle}
+            toggleShuffle={toggleShuffle}
+            toggleExtra={toggleExtra}
+            toggleRotation={toggleRotation}
+          />
+        )}
 
       </main>
       <ScrollTopButton className="between-bar" />
