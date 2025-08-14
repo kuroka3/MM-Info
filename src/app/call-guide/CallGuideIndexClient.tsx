@@ -6,7 +6,9 @@ import SelectionOverlay from '@/components/call-guide/SelectionOverlay';
 import PlaylistNameModal from '@/components/call-guide/PlaylistNameModal';
 import PlaylistDeleteModal from '@/components/call-guide/PlaylistDeleteModal';
 import PlaylistModal from '@/components/call-guide/PlaylistModal';
-import SongList from '@/components/call-guide/SongList';
+import SongList, {
+  type SongListHandle,
+} from '@/components/call-guide/SongList';
 import type { Playlist, SongWithSetlist } from '@/types/callGuide';
 
 interface Props {
@@ -24,6 +26,34 @@ export default function CallGuideIndexClient({ songs }: Props) {
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
   const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null);
   const previousActive = useRef<Playlist | null>(null);
+  const songListRef = useRef<SongListHandle | null>(null);
+  const sortButtonRef = useRef<HTMLButtonElement | null>(null);
+  const [sortNeeded, setSortNeeded] = useState(false);
+  const [showSortButton, setShowSortButton] = useState(false);
+
+  useEffect(() => {
+    if (sortNeeded) {
+      setShowSortButton(true);
+    } else {
+      const btn = sortButtonRef.current;
+      if (btn) {
+        btn.classList.remove('show');
+        btn.classList.add('hide');
+      }
+      const t = setTimeout(() => setShowSortButton(false), 300);
+      return () => clearTimeout(t);
+    }
+  }, [sortNeeded]);
+
+  useEffect(() => {
+    if (showSortButton) {
+      const btn = sortButtonRef.current;
+      requestAnimationFrame(() => {
+        btn?.classList.add('show');
+        btn?.classList.remove('hide');
+      });
+    }
+  }, [showSortButton]);
 
   useEffect(() => {
     const stored = localStorage.getItem('callGuidePlaylists');
@@ -161,6 +191,16 @@ export default function CallGuideIndexClient({ songs }: Props) {
           />
           <span className="button-text">새 재생목록</span>
         </button>
+        {showSortButton && (
+          <button
+            ref={sortButtonRef}
+            className="glass-button sort-button"
+            onClick={() => songListRef.current?.restoreSongOrder()}
+          >
+            <span className="sort-text-full">재생목록 정렬</span>
+            <span className="sort-text-short">정렬</span>
+          </button>
+        )}
       </div>
 
       <SongList
@@ -171,6 +211,8 @@ export default function CallGuideIndexClient({ songs }: Props) {
         selectMode={selectMode}
         selected={selected}
         toggleSelect={toggleSelect}
+        onSortNeededChange={setSortNeeded}
+        ref={songListRef}
       />
 
       {selectMode && (
