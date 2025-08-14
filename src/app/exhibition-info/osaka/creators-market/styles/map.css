@@ -67,7 +67,7 @@
   border-radius:16px;
   overflow:visible;
 }
-.cm-map-wrapper::after{
+.cm-osaka .cm-map-wrapper::after{
   content:"";
   pointer-events:none;
   position:absolute;
@@ -304,15 +304,15 @@ button.booth {
     margin:0;
     padding:0;
   }
-  .cm-map-wrapper::before,
-  .cm-map-wrapper::after{
+  .cm-osaka .cm-map-wrapper::before,
+  .cm-osaka .cm-map-wrapper::after{
     content:none;
   }
-  .cm-map-wrapper .entrance-label,
-  .cm-map-wrapper .exit-label-cell{
+  .cm-osaka .cm-map-wrapper .entrance-label,
+  .cm-osaka .cm-map-wrapper .exit-label-cell{
     display:none;
   }
-  .bottom-left-mask-box::after{
+  .cm-osaka .bottom-left-mask-box::after{
     content:none;
   }
   .cm-grid .booth .booth-label{

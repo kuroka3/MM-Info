@@ -13,7 +13,6 @@ import {
   type ReactNode,
 } from 'react';
 import useThrottle from '@/hooks/useThrottle';
-import Image from 'next/image';
 import type { Booth } from '@/types/booth';
 import { ROWS, COLS, rowClasses, BOOTHS } from '@/data/exhibition/tokyo/creators-market/booths';
 import { jacketSrc, displayBoothId, DAYS } from '@/data/exhibition/tokyo/creators-market/constants';
@@ -113,6 +112,10 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
         const color = getComputedStyle(el).getPropertyValue('--row-color');
         if (color) wrapper.style.setProperty('--row-color', color);
         const tooltip = found.cloneNode(true) as HTMLElement;
+        const img = tooltip.querySelector<HTMLImageElement>('img[data-src]');
+        if (img && !img.src) {
+          img.src = img.dataset.src || '';
+        }
         tooltip.style.pointerEvents = 'none';
         const id = el.dataset.boothId!;
         wrapper.addEventListener('pointerup', e => {
@@ -395,8 +398,9 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
                 {labelNode}
                 <div className="booth-tooltip">
                   <div className="tooltip-img-wrapper">
-                    <Image
-                      src={jacketSrc(booth.id)}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      data-src={jacketSrc(booth.id)}
                       alt={booth.name}
                       width={120}
                       height={120}

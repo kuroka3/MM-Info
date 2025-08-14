@@ -4,15 +4,15 @@ import { useEffect } from 'react';
 
 export default function ViewportHeightSetter() {
   useEffect(() => {
-    const rafThrottle = <T extends unknown[]>(fn: (...args: T) => void) => {
-      let ticking = false;
+    const throttle = <T extends unknown[]>(fn: (...args: T) => void, limit: number) => {
+      let inThrottle = false;
       return (...args: T) => {
-        if (ticking) return;
-        ticking = true;
-        requestAnimationFrame(() => {
-          ticking = false;
+        if (inThrottle) return;
+        inThrottle = true;
+        setTimeout(() => {
+          inThrottle = false;
           fn(...args);
-        });
+        }, limit);
       };
     };
 
@@ -24,17 +24,17 @@ export default function ViewportHeightSetter() {
       document.documentElement.style.setProperty('--vh', next);
     };
 
-    const setVhRaf = rafThrottle(setVh);
+    const setVhThrottled = throttle(setVh, 100);
 
     setVh();
     window.addEventListener('orientationchange', setVh, { passive: true });
-    window.addEventListener('resize', setVhRaf, { passive: true });
-    window.visualViewport?.addEventListener('resize', setVhRaf, { passive: true });
+    window.addEventListener('resize', setVhThrottled, { passive: true });
+    window.visualViewport?.addEventListener('resize', setVhThrottled, { passive: true });
 
     return () => {
       window.removeEventListener('orientationchange', setVh);
-      window.removeEventListener('resize', setVhRaf);
-      window.visualViewport?.removeEventListener('resize', setVhRaf);
+      window.removeEventListener('resize', setVhThrottled);
+      window.visualViewport?.removeEventListener('resize', setVhThrottled);
     };
   }, []);
 
