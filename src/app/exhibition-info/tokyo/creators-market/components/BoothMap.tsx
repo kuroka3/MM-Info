@@ -56,6 +56,7 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
           wrapper: HTMLDivElement;
           hideTimer?: number;
           finish?: () => void;
+          id?: string;
         }
       >(),
     );
@@ -103,9 +104,10 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
     const showTooltip = (el: HTMLButtonElement, allowClick = false) => {
       const root = tooltipRootRef.current;
       if (!root) return;
+      const id = el.dataset.boothId!;
       let entry = tooltipMap.current.get(el);
+      const found = el.querySelector('.booth-tooltip') as HTMLElement | null;
       if (!entry) {
-        const found = el.querySelector('.booth-tooltip') as HTMLElement | null;
         if (!found) return;
         const wrapper = document.createElement('div');
         wrapper.style.position = 'absolute';
@@ -115,17 +117,33 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
         if (color) wrapper.style.setProperty('--row-color', color);
         const tooltip = found.cloneNode(true) as HTMLElement;
         tooltip.style.pointerEvents = 'none';
-        const id = el.dataset.boothId!;
+        wrapper.appendChild(tooltip);
         wrapper.addEventListener('pointerup', e => {
           if (e.pointerType === 'touch') {
             hideTooltip(el);
-            onBoothClick(id);
+            const currentId = el.dataset.boothId!;
+            onBoothClick(currentId);
           }
         });
-        wrapper.appendChild(tooltip);
-        entry = { tooltip, wrapper };
+        entry = { tooltip, wrapper, id };
         tooltipMap.current.set(el, entry);
         found.style.display = 'none';
+      } else if (entry.id !== id) {
+        if (found) {
+          const newImg = found.querySelector('.tooltip-img') as HTMLImageElement | null;
+          const oldImg = entry.tooltip.querySelector('.tooltip-img') as HTMLImageElement | null;
+          if (newImg && oldImg) {
+            oldImg.src = newImg.src;
+            if (newImg.srcset) oldImg.srcset = newImg.srcset;
+            if (newImg.sizes) oldImg.sizes = newImg.sizes;
+            oldImg.alt = newImg.alt;
+          }
+          const newTitle = found.querySelector('.tooltip-title') as HTMLElement | null;
+          const oldTitle = entry.tooltip.querySelector('.tooltip-title') as HTMLElement | null;
+          if (newTitle && oldTitle) oldTitle.textContent = newTitle.textContent;
+          entry.id = id;
+          found.style.display = 'none';
+        }
       }
       const { tooltip, wrapper } = entry;
       if (entry.finish) {
