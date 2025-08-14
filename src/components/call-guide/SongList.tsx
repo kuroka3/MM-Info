@@ -1,6 +1,14 @@
 'use client';
 
-import React, { useState, useRef, useMemo, useEffect, type CSSProperties } from 'react';
+import React, {
+  useState,
+  useRef,
+  useMemo,
+  useEffect,
+  forwardRef,
+  useImperativeHandle,
+  type CSSProperties,
+} from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { partColors } from './colors';
@@ -14,25 +22,32 @@ interface Props {
   selectMode: boolean;
   selected: Set<string>;
   toggleSelect: (slug: string) => void;
+  onSortNeededChange?: (needed: boolean) => void;
 }
 
-export default function SongList({
-  songs,
-  setPlaylists,
-  activePlaylist,
-  setActivePlaylist,
-  selectMode,
-  selected,
-  toggleSelect,
-}: Props) {
+export type SongListHandle = {
+  restoreSongOrder: () => void;
+};
+
+function SongList(
+  {
+    songs,
+    setPlaylists,
+    activePlaylist,
+    setActivePlaylist,
+    selectMode,
+    selected,
+    toggleSelect,
+    onSortNeededChange,
+  }: Props,
+  ref: React.ForwardedRef<SongListHandle>,
+) {
   const [songDragIndex, setSongDragIndex] = useState<number | null>(null);
   const touchTimerRef = useRef<NodeJS.Timeout | null>(null);
   const dragItemRef = useRef<HTMLElement | null>(null);
   const touchStartY = useRef(0);
   const swappingRef = useRef(false);
   const swapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const sortButtonRef = useRef<HTMLButtonElement | null>(null);
-  const [showSortButton, setShowSortButton] = useState(false);
 
   const isDefaultPlaylist = activePlaylist?.name === '전체 곡';
 
@@ -58,28 +73,8 @@ export default function SongList({
   const shouldShowSort = !isDefaultPlaylist && !isSorted;
 
   useEffect(() => {
-    if (shouldShowSort) {
-      setShowSortButton(true);
-    } else {
-      const btn = sortButtonRef.current;
-      if (btn) {
-        btn.classList.remove('show');
-        btn.classList.add('hide');
-      }
-      const t = setTimeout(() => setShowSortButton(false), 300);
-      return () => clearTimeout(t);
-    }
-  }, [shouldShowSort]);
-
-  useEffect(() => {
-    if (showSortButton) {
-      const btn = sortButtonRef.current;
-      requestAnimationFrame(() => {
-        btn?.classList.add('show');
-        btn?.classList.remove('hide');
-      });
-    }
-  }, [showSortButton]);
+    onSortNeededChange?.(shouldShowSort);
+  }, [onSortNeededChange, shouldShowSort]);
 
   const playlistSongs = useMemo(() => {
     if (!activePlaylist) return songs;
@@ -371,6 +366,8 @@ export default function SongList({
     });
   };
 
+  useImperativeHandle(ref, () => ({ restoreSongOrder }));
+
   const handleSongClick = () => {
     if (!activePlaylist) {
       const def = { name: '전체 곡', slugs: songs.map((s) => s.slug!) };
@@ -522,16 +519,7 @@ export default function SongList({
           );
         })}
       </div>
-      {showSortButton && (
-        <button
-          ref={sortButtonRef}
-          className="glass-button sort-button"
-          onClick={restoreSongOrder}
-        >
-          <span className="sort-text-full">재생목록 정렬</span>
-          <span className="sort-text-short">정렬</span>
-        </button>
-      )}
     </>
   );
 }
+export default forwardRef(SongList);
