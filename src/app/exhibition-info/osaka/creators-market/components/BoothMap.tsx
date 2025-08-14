@@ -50,6 +50,7 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
     const wrapperRef = useRef<HTMLDivElement | null>(null);
     const rotatorRef = useRef<HTMLDivElement | null>(null);
     const raf = useRef<number | null>(null);
+    const prevViewportWidth = useRef(0);
 
     const tooltipRootRef = useRef<HTMLDivElement | null>(null);
     const tooltipMap = useRef(
@@ -66,6 +67,8 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
     const activeTooltip = useRef<HTMLButtonElement | null>(null);
     const disableScrollHide = useRef(false);
     const [gutter, setGutter] = useState(0);
+    const prevWrapperWidth = useRef(0);
+    const prevGutterViewportWidth = useRef(0);
 
     useLayoutEffect(() => {
       const wrapper = wrapperRef.current;
@@ -110,6 +113,10 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
       };
 
       const schedule = () => {
+        const vv = window.visualViewport;
+        const vw = vv?.width ?? window.innerWidth;
+        if (Math.abs(prevViewportWidth.current - vw) < 1) return;
+        prevViewportWidth.current = vw;
         if (raf.current) cancelAnimationFrame(raf.current);
         raf.current = requestAnimationFrame(applyRotation);
       };
@@ -131,8 +138,13 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
     }, []);
 
     const updateGutter = useCallback(() => {
+      const vw = window.innerWidth;
+      if (Math.abs(prevGutterViewportWidth.current - vw) < 1) return;
+      prevGutterViewportWidth.current = vw;
       if (wrapperRef.current) {
         const { width, height } = wrapperRef.current.getBoundingClientRect();
+        if (Math.abs(prevWrapperWidth.current - width) < 1) return;
+        prevWrapperWidth.current = width;
         setGutter(Math.min(width, height) * 0.15);
       }
     }, []);
