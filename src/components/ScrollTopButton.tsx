@@ -23,7 +23,9 @@ export default function ScrollTopButton({ className = '' }: ScrollTopButtonProps
       aria-label="맨 위로"
       title="맨 위로"
       className={`scroll-top ${visible ? 'show' : ''} ${className}`.trim()}
-      onClick={() => void scrollToPosition(0, 400)}
+      onClick={() =>
+        void scrollToPosition(0, 400).then(() => setVisible(false))
+      }
     >
       ↑
     </button>
