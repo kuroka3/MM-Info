@@ -48,6 +48,7 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
     const wrapperRef = useRef<HTMLDivElement | null>(null);
     const rotatorRef = useRef<HTMLDivElement | null>(null);
     const raf = useRef<number | null>(null);
+    const prevViewportWidth = useRef(0);
 
     const tooltipRootRef = useRef<HTMLDivElement | null>(null);
     const tooltipMap = useRef(
@@ -107,6 +108,10 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
       };
 
       const schedule = () => {
+        const vv = window.visualViewport;
+        const vw = vv?.width ?? window.innerWidth;
+        if (Math.abs(prevViewportWidth.current - vw) < 1) return;
+        prevViewportWidth.current = vw;
         if (raf.current) cancelAnimationFrame(raf.current);
         raf.current = requestAnimationFrame(applyRotation);
       };
