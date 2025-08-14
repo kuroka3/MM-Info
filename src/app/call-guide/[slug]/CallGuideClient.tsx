@@ -14,20 +14,11 @@ import { useRouter } from 'next/navigation';
 import SpoilerGate from '@/components/SpoilerGate';
 import ScrollTopButton from '@/components/ScrollTopButton';
 import type { Song } from '@prisma/client';
-import type { Call, LyricLine } from '@/types/call-guide';
+import type { LyricLine } from '@/types/call-guide';
 import PlaylistSelectModal from '@/components/call-guide/PlaylistSelectModal';
-
-interface Token {
-  text: string;
-  time?: number;
-}
-
-interface ProcessedLine {
-  jp: Token[];
-  pron: Token[];
-  ko: Token[];
-  call?: Call;
-}
+import useStoredState from '@/hooks/useStoredState';
+import LyricsDisplay from './LyricsDisplay';
+import type { Token, ProcessedLine } from './types';
 
 interface Playlist {
   name: string;
@@ -90,63 +81,43 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const [showPlaylistSongs, setShowPlaylistSongs] = useState(false);
   const [extraOpen, setExtraOpen] = useState(false);
   const [toggleRotation, setToggleRotation] = useState(0);
-  const [autoNext, setAutoNext] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('callGuideAutoNext');
-      if (stored !== null) return stored === 'true';
-    }
-    return true;
-  });
-  const [repeatMode, setRepeatMode] = useState<'off' | 'all' | 'one'>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('callGuideRepeatMode');
-      if (stored === 'off' || stored === 'all' || stored === 'one') return stored as 'off' | 'all' | 'one';
-    }
-    return 'off';
-  });
-  const [shuffle, setShuffle] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('callGuideShuffle');
-      if (stored !== null) return stored === 'true';
-    }
-    return false;
-  });
-  const [volume, setVolume] = useState<number>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('callGuideVolume');
-      if (stored !== null) return Number(stored);
-    }
-    return 100;
-  });
-  const [muted, setMuted] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('callGuideMuted');
-      if (stored !== null) return stored === 'true';
-    }
-    return false;
-  });
+  const [autoNext, setAutoNext, autoNextRef] = useStoredState(
+    'callGuideAutoNext',
+    true,
+    (v) => v === 'true',
+    String,
+  );
+  const [repeatMode, setRepeatMode, repeatModeRef] = useStoredState<
+    'off' | 'all' | 'one'
+  >('callGuideRepeatMode', 'off', (v) =>
+    v === 'off' || v === 'all' || v === 'one' ? (v as 'off' | 'all' | 'one') : 'off',
+  );
+  const [shuffle, setShuffle, shuffleRef] = useStoredState(
+    'callGuideShuffle',
+    false,
+    (v) => v === 'true',
+    String,
+  );
+  const [volume, setVolume, volumeRef] = useStoredState(
+    'callGuideVolume',
+    100,
+    Number,
+    String,
+  );
+  const [muted, setMuted, mutedRef] = useStoredState(
+    'callGuideMuted',
+    false,
+    (v) => v === 'true',
+    String,
+  );
   const [showPrevTooltip, setShowPrevTooltip] = useState(false);
   const [showNextTooltip, setShowNextTooltip] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('callGuideAutoNext', String(autoNext));
-  }, [autoNext]);
-
-  useEffect(() => {
-    localStorage.setItem('callGuideRepeatMode', repeatMode);
-  }, [repeatMode]);
-
-  useEffect(() => {
-    localStorage.setItem('callGuideShuffle', String(shuffle));
-  }, [shuffle]);
-
-  useEffect(() => {
-    localStorage.setItem('callGuideVolume', String(volume));
     playerRef.current?.setVolume?.(volume);
   }, [volume]);
 
   useEffect(() => {
-    localStorage.setItem('callGuideMuted', String(muted));
     if (muted) playerRef.current?.mute?.();
     else playerRef.current?.unMute?.();
   }, [muted]);
@@ -155,31 +126,6 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   useEffect(() => {
     playlistOrderRef.current = playlistOrder;
   }, [playlistOrder]);
-
-  const repeatModeRef = useRef(repeatMode);
-  useEffect(() => {
-    repeatModeRef.current = repeatMode;
-  }, [repeatMode]);
-
-  const autoNextRef = useRef(autoNext);
-  useEffect(() => {
-    autoNextRef.current = autoNext;
-  }, [autoNext]);
-
-  const shuffleRef = useRef(shuffle);
-  useEffect(() => {
-    shuffleRef.current = shuffle;
-  }, [shuffle]);
-
-  const volumeRef = useRef(volume);
-  useEffect(() => {
-    volumeRef.current = volume;
-  }, [volume]);
-
-  const mutedRef = useRef(muted);
-  useEffect(() => {
-    mutedRef.current = muted;
-  }, [muted]);
 
   const activePlaylistRef = useRef<Playlist | null>(null);
   useEffect(() => {
@@ -712,7 +658,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       playerRef.current?.destroy?.();
       playerRef.current = null;
     };
-  }, [song, scrollToLine, router]);
+  }, [song, scrollToLine, router, autoNextRef, repeatModeRef, shuffleRef, volumeRef, mutedRef]);
 
   useEffect(() => {
     let frame: number;
@@ -850,72 +796,25 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
             ))}
           </div>
 
-          <div className="lyrics">
-            {lyrics.map((line, idx) => (
-              <div
-                key={idx}
-                className={`lyric-line${idx === activeLine ? ' focused' : ''}`}
-                ref={(el) => {
-                  lineRefs.current[idx] = el!;
-                }}
-                onClick={() => {
-                  const t = line.jp[0]?.time ?? 0;
-                  pendingSeekRef.current = t;
-                  playerRef.current?.seekTo?.(t, true);
-                  currentTimeRef.current = t;
-                  setCurrentTime(t);
-                  setDisplayTime(t);
-                  autoScrollRef.current = true;
-                  scrollToLine(idx);
-                }}
-              >
-                <div
-                  className={`lyric-call${callActive(line) ? ' active' : ''}`}
-                  style={
-                    line.call?.pos != null
-                      ? { left: callPositions[idx], transform: 'none' }
-                      : undefined
-                  }
-                >
-                  {line.call?.text ?? ''}
-                </div>
-                <div className="lyric-row">
-                  {line.jp.map((token, i) => (
-                    <span
-                      key={i}
-                      ref={(el) => {
-                        if (!tokenRefs.current[idx]) tokenRefs.current[idx] = [];
-                        tokenRefs.current[idx][i] = el!;
-                      }}
-                      className={`lyric-char${charActive(token) ? ' active' : ''}`}
-                    >
-                      {token.text}
-                    </span>
-                  ))}
-                </div>
-                <div className="lyric-row">
-                  {line.pron.map((token, i) => (
-                    <span
-                      key={i}
-                      className={`lyric-char${charActive(token) ? ' active' : ''}`}
-                    >
-                      {token.text}
-                    </span>
-                  ))}
-                </div>
-                <div className="lyric-row">
-                  {line.ko.map((token, i) => (
-                    <span
-                      key={i}
-                      className={`lyric-char${charActive(token) ? ' active' : ''}`}
-                    >
-                      {token.text}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+          <LyricsDisplay
+            lyrics={lyrics}
+            activeLine={activeLine}
+            tokenRefs={tokenRefs}
+            lineRefs={lineRefs}
+            callPositions={callPositions}
+            callActive={callActive}
+            charActive={charActive}
+            onLineClick={(idx) => {
+              const t = lyrics[idx].jp[0]?.time ?? 0;
+              pendingSeekRef.current = t;
+              playerRef.current?.seekTo?.(t, true);
+              currentTimeRef.current = t;
+              setCurrentTime(t);
+              setDisplayTime(t);
+              autoScrollRef.current = true;
+              scrollToLine(idx);
+            }}
+          />
         </section>
         <div className="player-controls">
           <div className="seek-container">
