@@ -541,11 +541,16 @@
   color: #fff;
   cursor: pointer;
   backdrop-filter: blur(8px);
-  transition: background 0.3s ease;
+  transition: background 0.3s ease, transform 0.3s ease;
 }
 
 .extra-toggle.open .triangle-toggle {
   background: rgba(255, 255, 255, 0.5);
+}
+
+.triangle-toggle svg {
+  width: 12px;
+  height: 12px;
 }
 
 .small-glass-button {
