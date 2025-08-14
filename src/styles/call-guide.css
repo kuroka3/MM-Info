@@ -477,7 +477,7 @@
 }
 
 .small-glass-button.inactive {
-  color: rgba(255, 255, 255, 0.5);
+  color: gray;
 }
 
 .small-glass-button:hover {
@@ -485,7 +485,8 @@
 }
 
 .small-glass-button.active {
-  box-shadow: 0 0 8px var(--accent-blue);
+  color: #39c5bb;
+  box-shadow: 0 0 8px #39c5bb;
 }
 
 .playlist-songs-popup {
