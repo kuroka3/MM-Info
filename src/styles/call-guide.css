@@ -541,16 +541,27 @@
   color: #fff;
   cursor: pointer;
   backdrop-filter: blur(8px);
-  transition: background 0.3s ease, transform 0.3s ease;
+  transition: background 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  .triangle-toggle {
+    width: 48px;
+    height: 48px;
+  }
 }
 
 .extra-toggle.open .triangle-toggle {
   background: rgba(255, 255, 255, 0.5);
 }
 
-.triangle-toggle svg {
+.triangle-toggle .triangle-icon {
+  display: inline-block;
   width: 12px;
   height: 12px;
+  font-size: 12px;
+  transition: transform 0.3s ease;
+  transform-origin: center;
 }
 
 .small-glass-button {
