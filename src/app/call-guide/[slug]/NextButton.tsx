@@ -8,6 +8,7 @@ import type { RouterType } from './PlayerButtons';
 
 interface NextButtonProps {
   song: Song | null;
+  currentSlug: string;
   showTooltip: boolean;
   setShowTooltip: (v: boolean) => void;
   router: RouterType;
@@ -21,6 +22,7 @@ interface NextButtonProps {
 
 export default function NextButton({
   song,
+  currentSlug,
   showTooltip,
   setShowTooltip,
   router,
@@ -45,7 +47,12 @@ export default function NextButton({
             router.push(`/call-guide/${song.slug}`);
           } else if (shuffle) {
             const base = activePlaylist?.slugs || songs.map((s) => s.slug!);
-            const newOrder = [...base].sort(() => Math.random() - 0.5);
+            let newOrder = [...base];
+            if (newOrder.length > 1) {
+              do {
+                newOrder = [...base].sort(() => Math.random() - 0.5);
+              } while (newOrder[0] === currentSlug);
+            }
             setPlaylistOrder(newOrder);
             if (playlistOrderRef.current != null) playlistOrderRef.current = newOrder;
             localStorage.setItem('callGuidePlaylistOrder', JSON.stringify(newOrder));
