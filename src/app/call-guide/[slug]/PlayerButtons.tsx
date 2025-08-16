@@ -27,6 +27,7 @@ interface PlayerButtonsProps {
   playlistId: string;
   currentSlug: string;
   playlistOrderRef: RefObject<string[]>;
+  onNext: () => void;
 }
 
 export default function PlayerButtons({
@@ -46,6 +47,7 @@ export default function PlayerButtons({
   currentSlug,
   playlistOrderRef,
   playlistId,
+  onNext,
 }: PlayerButtonsProps) {
   return (
     <div className="player-buttons" ref={playerButtonsRef}>
@@ -75,6 +77,7 @@ export default function PlayerButtons({
         autoScrollRef={autoScrollRef}
         playlistOrderRef={playlistOrderRef}
         playlistId={playlistId}
+        onNext={onNext}
       />
     </div>
   );

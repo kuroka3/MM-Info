@@ -19,6 +19,7 @@ import PlaylistSelectModal from '@/components/call-guide/PlaylistSelectModal';
 import useStoredState from '@/hooks/useStoredState';
 import useThrottle from '@/hooks/useThrottle';
 import type { Playlist } from '@/types/callGuide';
+import { animateReorder } from '@/utils/flip';
 import LyricsDisplay from './LyricsDisplay';
 import VolumeControls from './VolumeControls';
 import ExtraControls from './ExtraControls';
@@ -73,16 +74,39 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const [extraOpen, setExtraOpen] = useState(false);
   const [toggleRotation, setToggleRotation] = useState(0);
   const [playlistReady, setPlaylistReady] = useState(false);
+  const isPlayingRef = useRef(false);
+  const isTogglingRef = useRef(false);
+  const toggleResolveRef = useRef<((ok: boolean) => void) | null>(null);
 
   const prevPlaylistIdRef = useRef<string | null>(null);
   const prevBaseRef = useRef<string[] | null>(null);
   const sameSet = (a: string[], b: string[]) => a.length === b.length && a.every(x => b.includes(x));
 
+
+  const togglePlayPause = useCallback(() => {
+    const p = playerRef.current;
+    if (!p || isTogglingRef.current) return;
+    isTogglingRef.current = true;
+
+    const target = !isPlayingRef.current;
+    if (target) p.playVideo?.(); else p.pauseVideo?.();
+
+    new Promise<boolean>((resolve) => {
+      toggleResolveRef.current = resolve;
+      setTimeout(() => resolve(false), 1200);
+    }).finally(() => {
+      isTogglingRef.current = false;
+    });
+
+    setIsPlaying(target);
+    isPlayingRef.current = target;
+  }, [playerRef]);
+
   const playlistId = useMemo(
     () => activePlaylist?.id ?? 'all',
     [activePlaylist]
   );
-
+  const pendingReshuffleRef = useRef<{ nextSlug: string; newOrder: string[] } | null>(null);
   const parseBoolean = useCallback((v: string) => v === 'true', []);
   const parseRepeatMode = useCallback(
     (v: string) =>
@@ -117,6 +141,37 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const [showPrevTooltip, setShowPrevTooltip] = useState(false);
   const [showNextTooltip, setShowNextTooltip] = useState(false);
 
+  const handleToggleShuffle = () => {
+    if (!activePlaylist?.slugs?.length) return;
+    const base = buildBaseSlugs(activePlaylist.slugs, songs);
+
+    animateReorder(() => {
+      const { shuffle: nextShuffle, order } = applyToggleShuffle({
+        base,
+        currentSlug: song.slug ?? null,
+        prevShuffle: shuffleRef.current,
+      });
+      setShuffle(nextShuffle);
+      shuffleRef.current = nextShuffle;
+
+      setPlaylistOrder(order);
+      playlistOrderRef.current = order;
+      if (storageKey) persistOrder(storageKey, order);
+    }, { container: '.playlist-songs-popup' });
+  };
+
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        togglePlayPause();
+      }
+    };
+    window.addEventListener('keydown', onKey, { passive: false });
+    return () => window.removeEventListener('keydown', onKey);
+  }, [togglePlayPause]);
+
   useEffect(() => {
     if (!activePlaylist) return;
     const urlList = searchParams.get('list');
@@ -150,6 +205,12 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   useEffect(() => {
     songsRef.current = songs;
   }, [songs]);
+
+  useEffect(() => {
+    if (!activePlaylist?.id) return;
+    const base = Array.isArray(activePlaylist.slugs) ? activePlaylist.slugs : [];
+    originalOrderRef.current = [...base];
+  }, [activePlaylist?.id]);
 
   useEffect(() => {
     const handleVisibility = () => {
@@ -287,6 +348,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   }, [activePlaylist?.id, activePlaylist?.slugs, storageKey, song.slug, shuffle]);
 
   useEffect(() => {
+    pendingReshuffleRef.current = null;
     if (!playlistOrder.length) {
       setPrevSong(null);
       setNextSong(null);
@@ -300,6 +362,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       return;
     }
     const last = playlistOrder.length - 1;
+
     let prevSlug: string | undefined;
     let nextSlug: string | undefined;
 
@@ -308,12 +371,46 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
 
     if (repeatMode === 'all') {
       if (!prevSlug) prevSlug = playlistOrder[last];
-      if (!nextSlug) nextSlug = playlistOrder[0];
+      if (!nextSlug) {
+        if (shuffle) {
+          const base = buildBaseSlugs(activePlaylist?.slugs, songs);
+          const { nextSlug: predicted, newOrder } = onEndedDecision({
+            order: playlistOrder,
+            currentSlug: safeSlug,
+            repeat: 'all',
+            shuffle: true,
+            baseForReshuffle: base,
+          });
+          if (predicted && newOrder) {
+            nextSlug = predicted;
+            pendingReshuffleRef.current = { nextSlug: predicted, newOrder };
+          } else {
+            nextSlug = playlistOrder[0];
+          }
+        } else {
+          nextSlug = playlistOrder[0];
+        }
+      }
     }
 
     setPrevSong(songs.find((s) => s.slug === prevSlug) || null);
     setNextSong(songs.find((s) => s.slug === nextSlug) || null);
-  }, [song.slug, songs, playlistOrder, repeatMode]);
+  }, [song.slug, songs, playlistOrder, repeatMode, shuffle, activePlaylist]);
+
+  // 수동 다음 버튼 클릭 처리 함수 추가
+  const handleNextClick = () => {
+    const pending = pendingReshuffleRef.current;
+    if (pending && pending.newOrder && pending.nextSlug) {
+      setPlaylistOrder(pending.newOrder);
+      playlistOrderRef.current = pending.newOrder;
+      if (storageKey) persistOrder(storageKey, pending.newOrder);
+      router.push(`/call-guide/${pending.nextSlug}?list=${playlistId}`);
+      return;
+    }
+    if (nextSong?.slug) {
+      router.push(`/call-guide/${nextSong.slug}?list=${playlistId}`);
+    }
+  };
 
   useEffect(() => {
     if (storageKey) persistOrder(storageKey, playlistOrder);
@@ -503,45 +600,32 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   };
 
   const resetOrder = () => {
-    if (!activePlaylist || !songListRef.current) return;
-    const oldPositions: Record<string, DOMRect> = {};
-    Array.from(songListRef.current.children).forEach((child) => {
-      const el = child as HTMLElement;
-      oldPositions[el.dataset.slug!] = el.getBoundingClientRect();
-    });
-    const newOrder = [...originalOrderRef.current];
-    setPlaylistOrder(newOrder);
-    const newActive = { ...activePlaylist, slugs: newOrder };
-    setActivePlaylist(newActive);
-    setPlaylists((pls) => {
-      const updatedPls = pls.map((pl) => (pl.id === activePlaylist.id ? newActive : pl));
-      localStorage.setItem('callGuidePlaylists', JSON.stringify(updatedPls));
-      return updatedPls;
-    });
-    localStorage.setItem('callGuideActivePlaylist', JSON.stringify(newActive));
-    persistOrder(storageKey, newOrder);
+    if (!activePlaylist) return;
+    const base = buildBaseSlugs(activePlaylist.slugs, songs);
+    const newOrder =
+      originalOrderRef.current?.length ? [...originalOrderRef.current] : [...base];
+    if (!newOrder.length) return;
 
-    requestAnimationFrame(() => {
-      Array.from(songListRef.current!.children).forEach((child) => {
-        const el = child as HTMLElement;
-        const slug = el.dataset.slug!;
-        const first = oldPositions[slug];
-        const last = el.getBoundingClientRect();
-        const invertX = first.left - last.left;
-        const invertY = first.top - last.top;
-        el.animate(
-          [
-            { transform: `translate(${invertX}px, ${invertY}px)` },
-            { transform: 'translate(0,0)' },
-          ],
-          {
-            duration: 500,
-            easing: 'cubic-bezier(0.455, 0.03, 0.515, 0.955)',
-          },
-        );
+    animateReorder(() => {
+      setShuffle(false);
+      shuffleRef.current = false;
+      pendingReshuffleRef.current = null;
+
+      setPlaylistOrder(newOrder);
+      playlistOrderRef.current = newOrder;
+
+      const newActive = { ...activePlaylist, slugs: newOrder };
+      setActivePlaylist(newActive);
+      setPlaylists((pls) => {
+        const updated = pls.map((pl) => (pl.id === activePlaylist.id ? newActive : pl));
+        localStorage.setItem('callGuidePlaylists', JSON.stringify(updated));
+        return updated;
       });
-    });
+      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(newActive));
+      if (storageKey) persistOrder(storageKey, newOrder);
+    }, { container: '.playlist-songs-popup' });
   };
+
 
   const toggleMute = () => {
     if (muted) {
@@ -702,8 +786,12 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
             }
           },
           onStateChange: (e: { data: number }) => {
-            setIsPlaying(e.data === 1);
-            if (e.data === 0) {
+            const state = e.data;
+
+            if (state === 0) {
+              setIsPlaying(false);
+              isPlayingRef.current = false;
+
               if (repeatModeRef.current === 'one') {
                 playerRef.current?.seekTo?.(0, true);
                 playerRef.current?.playVideo?.();
@@ -728,16 +816,41 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
               if (autoNextRef.current && nextSlug) {
                 router.push(`/call-guide/${nextSlug}?list=${playlistId}`);
               }
+
+              return;
             }
 
-            if (e.data === 1 || e.data === 3) {
+            if (state === 1) {
+              setIsPlaying(true);
+              isPlayingRef.current = true;
+              toggleResolveRef.current?.(true);
+              toggleResolveRef.current = null;
+
               autoScrollRef.current = true;
               scrollToLine(activeLineRef.current);
               if (pendingSeekRef.current != null) {
                 playerRef.current?.seekTo?.(pendingSeekRef.current, true);
               }
+              return;
             }
-          },
+
+            if (state === 2) {
+              setIsPlaying(false);
+              isPlayingRef.current = false;
+              toggleResolveRef.current?.(true);
+              toggleResolveRef.current = null;
+              return;
+            }
+
+            if (state === 3) {
+              autoScrollRef.current = true;
+              scrollToLine(activeLineRef.current);
+              if (pendingSeekRef.current != null) {
+                playerRef.current?.seekTo?.(pendingSeekRef.current, true);
+              }
+              return;
+            }
+          }
         },
       }) as unknown as YTPlayer;
     };
@@ -1054,6 +1167,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                   currentSlug={song.slug!}
                   playlistOrderRef={playlistOrderRef}
                   playlistId={playlistId}
+                  onNext={handleNextClick}
                 />
                 <VolumeControls
                   ref={volumeControlsRef}
@@ -1079,7 +1193,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
             repeatMode={repeatMode}
             cycleRepeat={cycleRepeat}
             shuffle={shuffle}
-            toggleShuffle={toggleShuffle}
+            toggleShuffle={handleToggleShuffle}
             toggleExtra={toggleExtra}
             toggleRotation={toggleRotation}
           />

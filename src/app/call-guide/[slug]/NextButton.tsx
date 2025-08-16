@@ -10,27 +10,21 @@ interface NextButtonProps {
   setShowTooltip: (v: boolean) => void;
   router: RouterType;
   autoScrollRef: RefObject<boolean>;
-
   playlistOrderRef: RefObject<string[]>;
   playlistId: string;
+  onNext: () => void;
 }
 
 export default function NextButton({
-  song, currentSlug, showTooltip, setShowTooltip,
-  router, autoScrollRef, playlistOrderRef, playlistId,
+  song,
+  showTooltip,
+  setShowTooltip,
+  onNext,
 }: NextButtonProps) {
   const handleNext = () => {
     if (!song) return;
     setShowTooltip(false);
-    if (autoScrollRef.current != null) autoScrollRef.current = true;
-
-    const order = playlistOrderRef.current ?? [];
-    if (!order.length) return;
-    const i = order.indexOf(currentSlug);
-    if (i < 0) return;
-
-    const nextSlug = i < order.length - 1 ? order[i + 1] : order[0];
-    router.push(`/call-guide/${nextSlug}?list=${encodeURIComponent(playlistId)}`);
+    onNext();
   };
 
   return (
