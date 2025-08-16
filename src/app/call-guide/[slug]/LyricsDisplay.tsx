@@ -30,6 +30,7 @@ export default function LyricsDisplay({
         <div
           key={idx}
           className={`lyric-line${idx === activeLine ? ' focused' : ''}`}
+          tabIndex={-1}
           ref={(el) => {
             lineRefs.current[idx] = el!;
           }}
