@@ -317,18 +317,19 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     setActivePlaylist(active);
   }, [songs]);
 
-const focusThenScroll = (idx: number) => {
-  const el = lineRefs.current[idx];
-  if (!el) return;
-  try { el.focus({ preventScroll: true }); } catch { el.focus(); }
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
+  const focusThenScroll = (idx: number) => {
+    const el = lineRefs.current[idx];
+    if (!el) return;
+    try {
+      el.focus({ preventScroll: true });
+    } catch {
+      el.focus();
+    }
+    setTimeout(() => {
       if (!el.isConnected) return;
-      el.blur();
       scrollToLine(idx);
-    });
-  });
-};
+    }, 200);
+  };
 
   const storageKey = useMemo(
     () => (playlistId ? makeOrderStorageKey(playlistId) : ''),
@@ -729,7 +730,10 @@ const focusThenScroll = (idx: number) => {
     if (el) {
       programmaticScrollRef.current = true;
       if (programmaticScrollTimeout.current) clearTimeout(programmaticScrollTimeout.current);
-      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      const rect = el.getBoundingClientRect();
+      const top =
+        rect.top + window.scrollY - (window.innerHeight * 3 / 7 - rect.height / 2);
+      window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
       el.focus({ preventScroll: true });
       programmaticScrollTimeout.current = setTimeout(() => {
         programmaticScrollRef.current = false;
@@ -923,7 +927,7 @@ const focusThenScroll = (idx: number) => {
             line: activeLineRef.current,
           })
         );
-      } catch {}
+      } catch { }
     };
 
     const restoreState = () => {
@@ -968,7 +972,7 @@ const focusThenScroll = (idx: number) => {
             return;
           }
         }
-      } catch {}
+      } catch { }
       focusThenScroll(activeLineRef.current);
     };
 
@@ -1170,20 +1174,26 @@ const focusThenScroll = (idx: number) => {
     });
     ms.setActionHandler('play', () => playerRef.current?.playVideo?.());
     ms.setActionHandler('pause', () => playerRef.current?.pauseVideo?.());
-    ms.setActionHandler('previoustrack', () => {
-      if (prevSong?.slug) router.push(`/call-guide/${prevSong.slug}?list=${playlistId}`);
-    });
-    ms.setActionHandler('nexttrack', () => {
-      if (predictedNext.slug) router.push(`/call-guide/${predictedNext.slug}?list=${playlistId}`);
-    });
-  }, [song, playerRef, prevSong, predictedNext.slug, router, playlistId]);
+    ms.setActionHandler(
+      'previoustrack',
+      prevSong?.slug
+        ? () => router.push(`/call-guide/${prevSong.slug}?list=${playlistId}`)
+        : null,
+    );
+    ms.setActionHandler(
+      'nexttrack',
+      predictedNext?.slug
+        ? () => router.push(`/call-guide/${predictedNext.slug}?list=${playlistId}`)
+        : null,
+    );
+  }, [song, playerRef, prevSong?.slug, predictedNext?.slug, router, playlistId]);
 
   useEffect(() => {
     const ms = (navigator as Navigator & { mediaSession?: MediaSession }).mediaSession;
     if (!ms || typeof ms.setPositionState !== 'function') return;
     try {
       ms.setPositionState({ duration, position: currentTime });
-    } catch {}
+    } catch { }
   }, [currentTime, duration]);
 
   const callActive = (line: ProcessedLine) =>
