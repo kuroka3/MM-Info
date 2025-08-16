@@ -201,7 +201,8 @@ export default function CallGuideIndexClient({ songs }: Props) {
     setDeleteIndex(null);
   };
 
-  const renamePlaylist = (oldName: string, newName: string, slugs: string[]) => {};
+  // TODO
+  const _renamePlaylist = (oldName: string, newName: string, slugs: string[]) => {};
 
   return (
     <>

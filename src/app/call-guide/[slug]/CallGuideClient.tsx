@@ -174,25 +174,6 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     [predictedNext.slug, songs]
   );
 
-  const handleToggleShuffle = () => {
-    if (!activePlaylist?.slugs?.length) return;
-    const base = buildBaseSlugs(activePlaylist.slugs, songs);
-
-    animateReorder(() => {
-      const { shuffle: nextShuffle, order } = applyToggleShuffle({
-        base,
-        currentSlug: song.slug ?? null,
-        prevShuffle: shuffleRef.current,
-      });
-      setShuffle(nextShuffle);
-      shuffleRef.current = nextShuffle;
-
-      setPlaylistOrder(order);
-      playlistOrderRef.current = order;
-      if (storageKey) persistOrder(storageKey, order);
-    }, { container: '.playlist-songs-popup' });
-  };
-
   const adjustVolume = useCallback((delta: number) => {
     const base = typeof volumeRef.current === 'number' ? volumeRef.current : 0;
     const v = Math.max(0, Math.min(100, base + delta));
@@ -202,9 +183,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       playerRef.current?.unMute?.();
       setMuted(false);
     }
-  }, [setVolume, playerRef, mutedRef, setMuted]);
-
-
+  }, [playerRef, setVolume, volumeRef, mutedRef, setMuted]);
 
   useEffect(() => {
     if (predictedNext.order && predictedNext.slug) {
@@ -345,6 +324,23 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     [playlistId],
   );
 
+  const handleToggleShuffle = useCallback(() => {
+    if (!activePlaylist?.slugs?.length) return;
+    const base = buildBaseSlugs(activePlaylist.slugs, songs);
+    animateReorder(() => {
+      const { shuffle: nextShuffle, order } = applyToggleShuffle({
+        base,
+        currentSlug: song.slug ?? null,
+        prevShuffle: shuffleRef.current,
+      });
+      setShuffle(nextShuffle);
+      shuffleRef.current = nextShuffle;
+      setPlaylistOrder(order);
+      playlistOrderRef.current = order;
+      if (storageKey) persistOrder(storageKey, order);
+    }, { container: '.playlist-songs-popup' });
+  }, [activePlaylist?.slugs, songs, song.slug, storageKey]);
+
   useEffect(() => {
     const apl = activePlaylist;
     if (!apl || !apl.id || !Array.isArray(apl.slugs) || apl.slugs.length === 0) return;
@@ -466,20 +462,19 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     }
   };
 
-  const toggleExtra = () => {
+  const toggleExtra = useCallback(() => {
     setExtraOpen((prev) => {
       setToggleRotation(prev ? 0 : 180);
       return !prev;
     });
-  };
+  }, []);
 
-  const openPlaylistSongs = () => {
+  const openPlaylistSongs = useCallback(() => {
     setShowPlaylistSongs((p) => !p);
-    if (extraOpen) {
-      setExtraOpen(false);
-      setToggleRotation((r) => r + 180);
-    }
-  };
+    setExtraOpen(false);
+    setToggleRotation((r) => r + 180);
+  }, []);
+
   const closePlaylistSongs = () => setShowPlaylistSongs(false);
 
   const toggleAutoNext = () => {
@@ -489,13 +484,13 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       return next;
     });
   };
-  const cycleRepeat = () => {
+  const cycleRepeat = useCallback(() => {
     setRepeatMode((prev) => {
       const next = prev === 'off' ? 'all' : prev === 'all' ? 'one' : 'off';
       if (next !== 'off') setAutoNext(true);
       return next;
     });
-  };
+  }, [setRepeatMode, setAutoNext]);
 
   const songListRef = useRef<HTMLUListElement | null>(null);
   const [songDragIndex, setSongDragIndex] = useState<number | null>(null);
@@ -628,17 +623,16 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     }, { container: '.playlist-songs-popup' });
   };
 
-
-  const toggleMute = () => {
+  const toggleMute = useCallback(() => {
     if (muted) {
       playerRef.current?.unMute?.();
-      playerRef.current?.setVolume?.(volume);
+      playerRef.current?.setVolume?.(volumeRef.current ?? 100);
       setMuted(false);
     } else {
       playerRef.current?.mute?.();
       setMuted(true);
     }
-  };
+  }, [muted, playerRef, setMuted, volumeRef]);
 
   const interpolateTokens = (tokens: Token[]): Token[] => {
     const res = tokens.map((t) => ({ ...t }));
