@@ -193,6 +193,19 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     }, { container: '.playlist-songs-popup' });
   };
 
+  const adjustVolume = useCallback((delta: number) => {
+    const base = typeof volumeRef.current === 'number' ? volumeRef.current : 0;
+    const v = Math.max(0, Math.min(100, base + delta));
+    setVolume(v);
+    playerRef.current?.setVolume?.(v);
+    if (v > 0 && mutedRef.current) {
+      playerRef.current?.unMute?.();
+      setMuted(false);
+    }
+  }, [setVolume, playerRef, mutedRef, setMuted]);
+
+
+
   useEffect(() => {
     if (predictedNext.order && predictedNext.slug) {
       pendingReshuffleRef.current = { nextSlug: predictedNext.slug, newOrder: predictedNext.order };
@@ -202,16 +215,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   }, [predictedNext.slug, predictedNext.order]);
 
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.code === 'Space') {
-        e.preventDefault();
-        togglePlayPause();
-      }
-    };
-    window.addEventListener('keydown', onKey, { passive: false });
-    return () => window.removeEventListener('keydown', onKey);
-  }, [togglePlayPause]);
+
 
   useEffect(() => {
     if (!activePlaylist) return;
@@ -979,30 +983,88 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (!playerRef.current) return;
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      const tag = target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || target.isContentEditable) return;
+
+      const keyLower = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+
       if (e.code === 'Space') {
         e.preventDefault();
-        if (isPlaying) playerRef.current.pauseVideo?.();
-        else playerRef.current.playVideo?.();
-        autoScrollRef.current = true;
-        scrollToLine(activeLine);
-      } else if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
+        togglePlayPause();
+        return;
+      }
+
+      if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
         e.preventDefault();
+        if (!playerRef.current) return;
         const delta = e.code === 'ArrowLeft' ? -5 : 5;
-        const t = Math.max(0, Math.min((playerRef.current.getDuration?.() ?? 0), currentTime + delta));
+        const dur = playerRef.current.getDuration?.() ?? 0;
+        const t = Math.max(0, Math.min(dur, currentTime + delta));
         pendingSeekRef.current = t;
-        playerRef.current?.seekTo?.(t, true);
+        playerRef.current.seekTo?.(t, true);
         currentTimeRef.current = t;
         setCurrentTime(t);
         setDisplayTime(t);
         autoScrollRef.current = true;
         const idx = timeToLine(t);
         setTimeout(() => scrollToLine(idx), 100);
+        return;
+      }
+
+      if (e.code === 'ArrowUp' || e.code === 'ArrowDown') {
+        e.preventDefault();
+        adjustVolume(e.code === 'ArrowUp' ? +5 : -5);
+        return;
+      }
+
+      switch (keyLower) {
+        case 'm':
+          e.preventDefault();
+          toggleMute();
+          return;
+        case 'r':
+          e.preventDefault();
+          cycleRepeat();
+          return;
+        case 's':
+          e.preventDefault();
+          handleToggleShuffle();
+          return;
+        case 'b':
+        case 't':
+          e.preventDefault();
+          toggleExtra();
+          return;
+        case 'l':
+        case 'p':
+          e.preventDefault();
+          openPlaylistSongs();
+          return;
+        default:
+          return;
       }
     };
-    window.addEventListener('keydown', onKeyDown);
+
+    window.addEventListener('keydown', onKeyDown, { passive: false });
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [isPlaying, currentTime, scrollToLine, timeToLine, activeLine]);
+  }, [
+    togglePlayPause,
+    playerRef,
+    currentTime,
+    timeToLine,
+    scrollToLine,
+    adjustVolume,
+    toggleMute,
+    cycleRepeat,
+    handleToggleShuffle,
+    toggleExtra,
+    openPlaylistSongs,
+    setCurrentTime,
+    setDisplayTime,
+  ]);
+
 
   const onScroll = useThrottle(() => {
     if (programmaticScrollRef.current) return;

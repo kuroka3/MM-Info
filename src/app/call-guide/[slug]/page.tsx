@@ -1,8 +1,8 @@
+import { Suspense } from 'react';
 import prisma from '@/lib/prisma';
-import { Prisma } from '@prisma/client';
+import { Prisma, type Song } from '@prisma/client';
 import CallGuideClient from './CallGuideClient';
 import { notFound } from 'next/navigation';
-import type { Song } from '@prisma/client';
 import type { Metadata } from 'next';
 
 type PageProps = {
@@ -11,9 +11,7 @@ type PageProps = {
 
 export const revalidate = 60;
 
-const getSongData = async (
-  slug: string
-): Promise<{ song: Song; songs: Song[] }> => {
+const getSongData = async (slug: string): Promise<{ song: Song; songs: Song[] }> => {
   const songs = await prisma.song.findMany({
     where: {
       slug: { not: null },
@@ -37,11 +35,9 @@ const getSongData = async (
   });
 
   const song = songs.find((s) => s.slug === slug);
-  if (!song) {
-    notFound();
-  }
+  if (!song) notFound();
 
-  return { song, songs };
+  return { song: song!, songs };
 };
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -58,13 +54,15 @@ export async function generateStaticParams() {
     select: { slug: true },
   });
 
-  return songs.map((song) => ({
-    slug: song.slug!,
-  }));
+  return songs.map((song) => ({ slug: song.slug! }));
 }
 
 export default async function CallGuideSongPage({ params }: PageProps) {
   const { slug } = await params;
   const { song, songs } = await getSongData(slug);
-  return <CallGuideClient song={song} songs={songs} />;
+  return (
+    <Suspense fallback={null}>
+      <CallGuideClient song={song} songs={songs} />
+    </Suspense>
+  );
 }
