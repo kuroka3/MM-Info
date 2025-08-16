@@ -31,8 +31,7 @@ export interface BoothMapHandle {
 }
 
 const COLS_REVERSED = [...COLS].reverse();
-// Multiple booths may share the same row/column across different days.
-// Keep a list for each cell and choose the booth for the selected day.
+
 const BOOTHS_MAP: Record<string, Record<number, Booth[]>> = {};
 for (const b of BOOTHS) ((BOOTHS_MAP[b.row] ??= {})[b.col] ??= []).push(b);
 

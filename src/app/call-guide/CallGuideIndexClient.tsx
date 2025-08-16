@@ -9,7 +9,8 @@ import PlaylistModal from '@/components/call-guide/PlaylistModal';
 import SongList, {
   type SongListHandle,
 } from '@/components/call-guide/SongList';
-import type { Playlist, SongWithSetlist } from '@/types/callGuide';
+import { makeOrderStorageKey, generateShortId11, ensureUniquePlaylistId, ALL_PLAYLIST_ID } from '@/utils/playlistOrder';
+import { SongWithSetlist, Playlist } from '@/types/callGuide';
 
 interface Props {
   songs: SongWithSetlist[];
@@ -56,30 +57,53 @@ export default function CallGuideIndexClient({ songs }: Props) {
   }, [showSortButton]);
 
   useEffect(() => {
+    let migrated: Playlist[] = [];
     const stored = localStorage.getItem('callGuidePlaylists');
     if (stored) {
       try {
-        setPlaylists(JSON.parse(stored));
+        const arr = JSON.parse(stored) as Playlist[];
+        const seen = new Set<string>(arr.filter(p => p.id).map(p => p.id));
+        migrated = arr.map((pl) => {
+          if (pl.id) return pl;
+          const id = ensureUniquePlaylistId(seen);
+          seen.add(id);
+          return { ...pl, id };
+        });
+        setPlaylists(migrated);
+        if (JSON.stringify(arr) !== JSON.stringify(migrated)) {
+          localStorage.setItem('callGuidePlaylists', JSON.stringify(migrated));
+        }
       } catch {
-        /* ignore */
+        migrated = [];
+        setPlaylists([]);
       }
+    } else {
+      setPlaylists([]);
     }
 
     const activeStored = localStorage.getItem('callGuideActivePlaylist');
     if (activeStored) {
       try {
-        const parsed = JSON.parse(activeStored);
-        if (parsed.name === 'default' || parsed.name === '전체 곡') {
-          parsed.name = '전체 곡';
-          parsed.slugs = songs.map((s) => s.slug!);
-          localStorage.setItem('callGuideActivePlaylist', JSON.stringify(parsed));
+        let parsed = JSON.parse(activeStored) as Playlist | null;
+        if (!parsed || !Array.isArray(parsed.slugs)) {
+          parsed = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+        } else if (!parsed.id) {
+          const match = migrated.find(pl => pl.name === parsed!.name && Array.isArray(pl.slugs) && pl.slugs.length === parsed!.slugs.length && pl.slugs.every(s => parsed!.slugs.includes(s)));
+          const id = match?.id ?? generateShortId11();
+          parsed = { ...parsed, id };
         }
+        if (parsed.name === 'default') {
+          parsed = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+        }
+        localStorage.setItem('callGuideActivePlaylist', JSON.stringify(parsed));
         setActivePlaylist(parsed);
       } catch {
-        /* ignore */
+        const def = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+        localStorage.setItem('callGuideActivePlaylist', JSON.stringify(def));
+        setActivePlaylist(def);
       }
     } else {
-      const def = { name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+      const def = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
       localStorage.setItem('callGuideActivePlaylist', JSON.stringify(def));
       setActivePlaylist(def);
     }
@@ -112,9 +136,11 @@ export default function CallGuideIndexClient({ songs }: Props) {
 
   const createPlaylist = () => {
     if (!playlistName.trim()) return;
-    const color =
-      playlistColor === 'rgba(255,255,255,0.1)' ? undefined : playlistColor;
-    const newPlaylist = {
+    const color = playlistColor === 'rgba(255,255,255,0.1)' ? undefined : playlistColor;
+    const existingIds = playlists.map(p => p.id);
+    const id = ensureUniquePlaylistId(existingIds);
+    const newPlaylist: Playlist = {
+      id,
       name: playlistName.trim(),
       slugs: Array.from(selected),
       color,
@@ -148,7 +174,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
 
   const startNewPlaylist = () => {
     previousActive.current = activePlaylist;
-    const def = { name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+    const def: Playlist = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
     setActivePlaylist(def);
     localStorage.setItem('callGuideActivePlaylist', JSON.stringify(def));
     setSelected(new Set());
@@ -161,12 +187,22 @@ export default function CallGuideIndexClient({ songs }: Props) {
   const confirmDelete = () => {
     if (deleteIndex === null) return;
     setPlaylists((prev) => {
+      const toDelete = prev[deleteIndex];
+      if (toDelete?.id) {
+        localStorage.removeItem(makeOrderStorageKey(toDelete.id));
+      }
+      if (toDelete?.name) {
+        localStorage.removeItem(makeOrderStorageKey(toDelete.name as unknown as string));
+      }
       const updated = prev.filter((_, i) => i !== deleteIndex);
       localStorage.setItem('callGuidePlaylists', JSON.stringify(updated));
       return updated;
     });
     setDeleteIndex(null);
   };
+
+  // TODO
+  const _renamePlaylist = (oldName: string, newName: string, slugs: string[]) => {};
 
   return (
     <>
@@ -247,11 +283,11 @@ export default function CallGuideIndexClient({ songs }: Props) {
       )}
 
       {deleteIndex !== null && (
-      <PlaylistDeleteModal
-        name={playlists[deleteIndex].name}
-        onConfirm={confirmDelete}
-        onCancel={cancelDelete}
-      />
+        <PlaylistDeleteModal
+          name={playlists[deleteIndex].name}
+          onConfirm={confirmDelete}
+          onCancel={cancelDelete}
+        />
       )}
 
       {!selectMode && activePlaylist && (
@@ -272,14 +308,12 @@ export default function CallGuideIndexClient({ songs }: Props) {
             className="glass-button"
             onClick={(e) => {
               e.stopPropagation();
-              const def = {
+              const def: Playlist = {
+                id: ALL_PLAYLIST_ID,
                 name: '전체 곡',
                 slugs: songs.map((s) => s.slug!),
               };
-              localStorage.setItem(
-                'callGuideActivePlaylist',
-                JSON.stringify(def),
-              );
+              localStorage.setItem('callGuideActivePlaylist', JSON.stringify(def));
               setActivePlaylist(def);
             }}
           >

@@ -1,9 +1,10 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useCallback } from 'react';
 import type { Ref, RefObject } from 'react';
 import type { Song } from '@prisma/client';
-import type { Playlist, YTPlayer } from './types';
+import type { YTPlayer } from './types';
 import PrevButton from './PrevButton';
 import PlayPauseButton from './PlayPauseButton';
 import NextButton from './NextButton';
@@ -24,12 +25,10 @@ interface PlayerButtonsProps {
   scrollToLine: (line: number) => void;
   activeLine: number;
   router: RouterType;
+  playlistId: string;
   currentSlug: string;
-  shuffle: boolean;
-  activePlaylist: Playlist | null;
-  songs: Song[];
-  setPlaylistOrder: React.Dispatch<React.SetStateAction<string[]>>;
   playlistOrderRef: RefObject<string[]>;
+  onNext: () => void;
 }
 
 export default function PlayerButtons({
@@ -47,12 +46,17 @@ export default function PlayerButtons({
   activeLine,
   router,
   currentSlug,
-  shuffle,
-  activePlaylist,
-  songs,
-  setPlaylistOrder,
   playlistOrderRef,
+  playlistId,
+  onNext,
 }: PlayerButtonsProps) {
+  const handleTogglePlay = useCallback(() => {
+    const p = playerRef.current;
+    if (!p) return;
+    if (isPlaying) p.pauseVideo();
+    else p.playVideo();
+  }, [isPlaying, playerRef]);
+
   return (
     <div className="player-buttons" ref={playerButtonsRef}>
       <PrevButton
@@ -61,6 +65,9 @@ export default function PlayerButtons({
         setShowTooltip={setShowPrevTooltip}
         router={router}
         autoScrollRef={autoScrollRef}
+        currentSlug={currentSlug}
+        playlistOrderRef={playlistOrderRef}
+        playlistId={playlistId}
       />
       <PlayPauseButton
         isPlaying={isPlaying}
@@ -68,6 +75,7 @@ export default function PlayerButtons({
         autoScrollRef={autoScrollRef}
         scrollToLine={scrollToLine}
         activeLine={activeLine}
+        onToggle={handleTogglePlay}
       />
       <NextButton
         song={nextSong}
@@ -75,12 +83,10 @@ export default function PlayerButtons({
         showTooltip={showNextTooltip}
         setShowTooltip={setShowNextTooltip}
         router={router}
-        shuffle={shuffle}
         autoScrollRef={autoScrollRef}
-        activePlaylist={activePlaylist}
-        songs={songs}
-        setPlaylistOrder={setPlaylistOrder}
         playlistOrderRef={playlistOrderRef}
+        playlistId={playlistId}
+        onNext={onNext}
       />
     </div>
   );

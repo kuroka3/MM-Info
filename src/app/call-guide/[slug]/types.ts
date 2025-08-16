@@ -1,5 +1,6 @@
 import type { Call } from '@/types/call-guide';
 import type { Song } from '@prisma/client';
+import type { Playlist } from '@/types/callGuide';
 
 export interface Token {
   text: string;
@@ -11,12 +12,6 @@ export interface ProcessedLine {
   pron: Token[];
   ko: Token[];
   call?: Call;
-}
-
-export interface Playlist {
-  name: string;
-  slugs: string[];
-  color?: string;
 }
 
 export interface YTPlayer {
@@ -32,6 +27,7 @@ export interface YTPlayer {
   unMute: () => void;
   isMuted: () => boolean;
   getIframe?: () => HTMLIFrameElement;
+  getPlayerState(): number;
 }
 
 export interface CallGuideClientProps {
@@ -46,4 +42,5 @@ declare global {
   }
 }
 
-export {};
+export type { Playlist };
+export { };

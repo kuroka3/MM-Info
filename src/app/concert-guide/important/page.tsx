@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import ScrollTopButton from '@/components/ScrollTopButton';
 import NoticeScroll from '@/components/NoticeScroll';
 
@@ -82,10 +83,12 @@ export default function ImportantNoticesPage() {
               <h3 className="info-subtitle">신분증 안내</h3>
               <p className="text-left">
                 <i className="ico_mail i_l" />
-                <img
-                  src="images/images/mail_linkst.svg"
-                  className="inquiry_mail"
+                <Image
+                  src="/images/images/mail_linkst.svg"
                   alt=""
+                  width={24}
+                  height={24}
+                  className="inquiry_mail"
                   loading="lazy"
                 />
                 <a

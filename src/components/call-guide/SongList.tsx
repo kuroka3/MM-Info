@@ -13,6 +13,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { partColors } from './colors';
 import type { SongWithSetlist, Playlist } from '@/types/callGuide';
+import { ALL_PLAYLIST_ID } from '@/utils/playlistOrder';
 
 interface Props {
   songs: SongWithSetlist[];
@@ -49,7 +50,7 @@ function SongList(
   const swappingRef = useRef(false);
   const swapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const isDefaultPlaylist = activePlaylist?.name === '전체 곡';
+  const isDefaultPlaylist = activePlaylist?.id === ALL_PLAYLIST_ID;
 
   const getSongOrder = useMemo(
     () => (slug: string) => songs.findIndex((s) => s.slug === slug),
@@ -130,7 +131,7 @@ function SongList(
       const updated = { ...prev, slugs: updatedSlugs };
       localStorage.setItem('callGuideActivePlaylist', JSON.stringify(updated));
       setPlaylists((pls) => {
-        const idx = pls.findIndex((p) => p.name === prev.name);
+        const idx = pls.findIndex((p) => p.id === prev.id);
         if (idx >= 0) {
           const newPls = [...pls];
           newPls[idx] = { ...newPls[idx], slugs: updatedSlugs };
@@ -242,7 +243,7 @@ function SongList(
       const updated = { ...prev, slugs: updatedSlugs };
       localStorage.setItem('callGuideActivePlaylist', JSON.stringify(updated));
       setPlaylists((pls) => {
-        const idx = pls.findIndex((p) => p.name === prev.name);
+        const idx = pls.findIndex((p) => p.id === prev.id);
         if (idx >= 0) {
           const newPls = [...pls];
           newPls[idx] = { ...newPls[idx], slugs: updatedSlugs };
@@ -333,7 +334,7 @@ function SongList(
       const updated = { ...prev, slugs: sortedSlugs };
       localStorage.setItem('callGuideActivePlaylist', JSON.stringify(updated));
       setPlaylists((pls) => {
-        const idx = pls.findIndex((p) => p.name === prev.name);
+        const idx = pls.findIndex((p) => p.id === prev.id);
         if (idx >= 0) {
           const newPls = [...pls];
           newPls[idx] = { ...newPls[idx], slugs: sortedSlugs };
@@ -370,7 +371,7 @@ function SongList(
 
   const handleSongClick = () => {
     if (!activePlaylist) {
-      const def = { name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+      const def: Playlist = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
       localStorage.setItem('callGuideActivePlaylist', JSON.stringify(def));
       setActivePlaylist(def);
     }
@@ -458,7 +459,7 @@ function SongList(
           return (
             <Link
               key={song.slug!}
-              href={`/call-guide/${song.slug}`}
+              href={`/call-guide/${song.slug}?list=${activePlaylist?.id ?? ALL_PLAYLIST_ID}`}
               className={itemClass}
               style={{ textDecoration: 'none' }}
               onClick={handleSongClick}

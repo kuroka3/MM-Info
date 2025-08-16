@@ -1,4 +1,4 @@
-// 가로모드 모바일 레거시코드
+// 세로모드 모바일 레거시코드
 @media (max-width:480px) and (orientation:portrait){
   .cm-grid .booth .booth-label{
     transform:rotate(-90deg);

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import { ALL_PLAYLIST_ID } from '@/utils/playlistOrder';
 import type { Playlist, SongWithSetlist } from '@/types/callGuide';
 
 interface Props {
@@ -53,9 +54,9 @@ export default function PlaylistModal({
   };
 
   const selectPlaylist = (pl: Playlist | 'default') => {
-    const active =
+    const active: Playlist =
       pl === 'default'
-        ? { name: '전체 곡', slugs: songs.map((s) => s.slug!) }
+        ? { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) }
         : pl;
     localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
     setActivePlaylist(active);
@@ -74,7 +75,7 @@ export default function PlaylistModal({
           <li onClick={() => selectPlaylist('default')}>전체 곡</li>
           {playlists.map((pl, i) => (
             <li
-              key={pl.name}
+              key={pl.id}
               data-index={i}
               onClick={() => selectPlaylist(pl)}
               onDragOver={(e) => e.preventDefault()}
@@ -125,8 +126,7 @@ export default function PlaylistModal({
                       onClick={() => {
                         setPlaylists((prev) => {
                           const updated = [...prev];
-                          const color =
-                            c === 'rgba(255,255,255,0.1)' ? undefined : c;
+                          const color = c === 'rgba(255,255,255,0.1)' ? undefined : c;
                           updated[i] = { ...updated[i], color };
                           localStorage.setItem(
                             'callGuidePlaylists',
@@ -134,11 +134,10 @@ export default function PlaylistModal({
                           );
                           return updated;
                         });
-                        if (activePlaylist?.name === pl.name) {
+                        if (activePlaylist?.id === pl.id) {
                           const active = {
                             ...pl,
-                            color:
-                              c === 'rgba(255,255,255,0.1)' ? undefined : c,
+                            color: c === 'rgba(255,255,255,0.1)' ? undefined : c,
                           };
                           setActivePlaylist(active);
                           localStorage.setItem(
