@@ -9,9 +9,8 @@ import PlaylistModal from '@/components/call-guide/PlaylistModal';
 import SongList, {
   type SongListHandle,
 } from '@/components/call-guide/SongList';
-import { makeOrderStorageKey, generateUUID, ALL_PLAYLIST_ID } from '@/utils/playlistOrder';
+import { makeOrderStorageKey, generateShortId11, ensureUniquePlaylistId, ALL_PLAYLIST_ID } from '@/utils/playlistOrder';
 import { SongWithSetlist, Playlist } from '@/types/callGuide';
-
 
 interface Props {
   songs: SongWithSetlist[];
@@ -58,29 +57,40 @@ export default function CallGuideIndexClient({ songs }: Props) {
   }, [showSortButton]);
 
   useEffect(() => {
+    let migrated: Playlist[] = [];
     const stored = localStorage.getItem('callGuidePlaylists');
     if (stored) {
       try {
         const arr = JSON.parse(stored) as Playlist[];
-        const migrated = arr.map((pl) => (pl.id ? pl : { ...pl, id: generateUUID() }));
+        const seen = new Set<string>(arr.filter(p => p.id).map(p => p.id));
+        migrated = arr.map((pl) => {
+          if (pl.id) return pl;
+          const id = ensureUniquePlaylistId(seen);
+          seen.add(id);
+          return { ...pl, id };
+        });
         setPlaylists(migrated);
         if (JSON.stringify(arr) !== JSON.stringify(migrated)) {
           localStorage.setItem('callGuidePlaylists', JSON.stringify(migrated));
         }
-      } catch { }
+      } catch {
+        migrated = [];
+        setPlaylists([]);
+      }
+    } else {
+      setPlaylists([]);
     }
 
     const activeStored = localStorage.getItem('callGuideActivePlaylist');
     if (activeStored) {
       try {
-        let parsed = JSON.parse(activeStored) as Playlist;
+        let parsed = JSON.parse(activeStored) as Playlist | null;
         if (!parsed || !Array.isArray(parsed.slugs)) {
           parsed = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
         } else if (!parsed.id) {
-          parsed = {
-            ...parsed,
-            id: parsed.name === '전체 곡' ? ALL_PLAYLIST_ID : generateUUID(),
-          };
+          const match = migrated.find(pl => pl.name === parsed!.name && Array.isArray(pl.slugs) && pl.slugs.length === parsed!.slugs.length && pl.slugs.every(s => parsed!.slugs.includes(s)));
+          const id = match?.id ?? generateShortId11();
+          parsed = { ...parsed, id };
         }
         if (parsed.name === 'default') {
           parsed = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
@@ -127,8 +137,10 @@ export default function CallGuideIndexClient({ songs }: Props) {
   const createPlaylist = () => {
     if (!playlistName.trim()) return;
     const color = playlistColor === 'rgba(255,255,255,0.1)' ? undefined : playlistColor;
+    const existingIds = playlists.map(p => p.id);
+    const id = ensureUniquePlaylistId(existingIds);
     const newPlaylist: Playlist = {
-      id: generateUUID(),
+      id,
       name: playlistName.trim(),
       slugs: Array.from(selected),
       color,
@@ -170,7 +182,6 @@ export default function CallGuideIndexClient({ songs }: Props) {
     setSelectMode(true);
   };
 
-
   const openDeleteModal = (index: number) => setDeleteIndex(index);
   const cancelDelete = () => setDeleteIndex(null);
   const confirmDelete = () => {
@@ -190,8 +201,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
     setDeleteIndex(null);
   };
 
-  // TODO
-  const renamePlaylist = (oldName: string, newName: string, slugs: string[]) => { };
+  const renamePlaylist = (oldName: string, newName: string, slugs: string[]) => {};
 
   return (
     <>
@@ -286,9 +296,9 @@ export default function CallGuideIndexClient({ songs }: Props) {
           style={
             activePlaylist.color
               ? {
-                background: activePlaylist.color,
-                borderTop: `1px solid ${activePlaylist.color}`,
-              }
+                  background: activePlaylist.color,
+                  borderTop: `1px solid ${activePlaylist.color}`,
+                }
               : undefined
           }
         >

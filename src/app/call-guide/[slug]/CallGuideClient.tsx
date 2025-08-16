@@ -39,7 +39,8 @@ import {
   restoreOrderValidated,
   isValidPermutation,
   makeOrderStorageKey,
-  generateUUID,
+  generateShortId11,
+  ensureUniquePlaylistId,
   ALL_PLAYLIST_ID,
   removeOrder,
 } from '@/utils/playlistOrder';
@@ -304,7 +305,16 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     if (storedPlaylists) {
       try {
         const arr = JSON.parse(storedPlaylists) as Playlist[];
-        const migrated = arr.map((pl) => (pl.id ? pl : { ...pl, id: generateUUID() }));
+        const seen = new Set<string>();
+        arr.forEach(pl => { if (pl.id) seen.add(pl.id); });
+
+        const migrated = arr.map((pl) => {
+          if (pl.id) return pl;
+          const id = ensureUniquePlaylistId(seen);
+          seen.add(id);
+          return { ...pl, id };
+        });
+
         setPlaylists(migrated);
         if (JSON.stringify(arr) !== JSON.stringify(migrated)) {
           localStorage.setItem('callGuidePlaylists', JSON.stringify(migrated));
@@ -327,16 +337,17 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       active = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
       localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
     } else if (!active.id) {
-      active = {
-        ...active,
-        id: active.name === '전체 곡' ? ALL_PLAYLIST_ID : generateUUID(),
-      };
+      const currentList = JSON.parse(localStorage.getItem('callGuidePlaylists') || '[]') as Playlist[];
+      const match = currentList.find(pl => pl.name === active!.name && sameSet(pl.slugs, active!.slugs));
+      const id = match?.id ?? generateShortId11();
+      active = { ...active, id };
       localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
     }
 
     setActivePlaylist(active);
     setPlaylistReady(true);
   }, [songs]);
+
 
 
   const storageKey = useMemo(
