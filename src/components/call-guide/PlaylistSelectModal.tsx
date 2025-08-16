@@ -1,10 +1,6 @@
+import { Playlist } from '@/app/call-guide/[slug]/types';
 import React from 'react';
 
-interface Playlist {
-  name: string;
-  slugs: string[];
-  color?: string;
-}
 
 interface Props {
   playlists: Playlist[];
@@ -50,8 +46,8 @@ export default function PlaylistSelectModal({ playlists, onSelect, onClose }: Pr
       <div style={contentStyle} onClick={(e) => e.stopPropagation()}>
         <ul style={listStyle}>
           <li style={itemStyle} onClick={() => onSelect('default')}>전체 곡</li>
-          {playlists.map((pl, i) => (
-            <li key={i} style={itemStyle} onClick={() => onSelect(pl)}>
+          {playlists.map((pl) => (
+            <li key={pl.id} style={itemStyle} onClick={() => onSelect(pl)}>
               {pl.name}
             </li>
           ))}

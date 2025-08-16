@@ -1,5 +1,3 @@
-'use client';
-
 import type { Song } from '@prisma/client';
 import type { RefObject } from 'react';
 import SongTooltip from './SongTooltip';
@@ -11,15 +9,30 @@ interface PrevButtonProps {
   setShowTooltip: (v: boolean) => void;
   router: RouterType;
   autoScrollRef: RefObject<boolean>;
+  currentSlug: string;
+  playlistOrderRef: RefObject<string[]>;
+  playlistId: string;
 }
 
 export default function PrevButton({
-  song,
-  showTooltip,
-  setShowTooltip,
-  router,
-  autoScrollRef,
+  song, showTooltip, setShowTooltip,
+  router, autoScrollRef,
+  currentSlug, playlistOrderRef, playlistId,
 }: PrevButtonProps) {
+  const handlePrev = () => {
+    if (!song) return;
+    setShowTooltip(false);
+    if (autoScrollRef.current != null) autoScrollRef.current = true;
+
+    const order = playlistOrderRef.current ?? [];
+    if (!order.length) return;
+    const i = order.indexOf(currentSlug);
+    if (i < 0) return;
+
+    const prevSlug = i > 0 ? order[i - 1] : order[order.length - 1];
+    router.push(`/call-guide/${prevSlug}?list=${encodeURIComponent(playlistId)}`);
+  };
+
   return (
     <div className="tooltip-wrapper">
       <button
@@ -27,12 +40,8 @@ export default function PrevButton({
         disabled={!song}
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
-        onClick={() => {
-          if (!song) return;
-          setShowTooltip(false);
-          if (autoScrollRef.current != null) autoScrollRef.current = true;
-          router.push(`/call-guide/${song.slug}`);
-        }}
+        onClick={handlePrev}
+        aria-label="이전 곡"
       >
         <svg viewBox="0 0 24 24" fill="currentColor">
           <polygon points="15,5 7,12 15,19" />

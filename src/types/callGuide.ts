@@ -11,6 +11,7 @@ export type SongWithSetlist = Prisma.SongGetPayload<{
 }>;
 
 export interface Playlist {
+  id: string;
   name: string;
   slugs: string[];
   color?: string;

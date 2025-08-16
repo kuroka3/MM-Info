@@ -10,7 +10,7 @@ import React, {
 } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import SpoilerGate from '@/components/SpoilerGate';
 import ScrollTopButton from '@/components/ScrollTopButton';
 import type { Song } from '@prisma/client';
@@ -18,6 +18,7 @@ import type { LyricLine } from '@/types/call-guide';
 import PlaylistSelectModal from '@/components/call-guide/PlaylistSelectModal';
 import useStoredState from '@/hooks/useStoredState';
 import useThrottle from '@/hooks/useThrottle';
+import type { Playlist } from '@/types/callGuide';
 import LyricsDisplay from './LyricsDisplay';
 import VolumeControls from './VolumeControls';
 import ExtraControls from './ExtraControls';
@@ -25,13 +26,26 @@ import PlayerButtons from './PlayerButtons';
 import type {
   Token,
   ProcessedLine,
-  Playlist,
   YTPlayer,
   CallGuideClientProps,
 } from './types';
+import {
+  buildBaseSlugs,
+  computeInitialOrder,
+  onEndedDecision,
+  applyToggleShuffle,
+  persistOrder,
+  restoreOrderValidated,
+  isValidPermutation,
+  makeOrderStorageKey,
+  generateUUID,
+  ALL_PLAYLIST_ID,
+  removeOrder,
+} from '@/utils/playlistOrder';
 
 export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [prevSong, setPrevSong] = useState<Song | null>(null);
   const [nextSong, setNextSong] = useState<Song | null>(null);
   const playerRef = useRef<YTPlayer | null>(null);
@@ -58,24 +72,31 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const [showPlaylistSongs, setShowPlaylistSongs] = useState(false);
   const [extraOpen, setExtraOpen] = useState(false);
   const [toggleRotation, setToggleRotation] = useState(0);
+  const [playlistReady, setPlaylistReady] = useState(false);
+
+  const prevPlaylistIdRef = useRef<string | null>(null);
+  const prevBaseRef = useRef<string[] | null>(null);
+  const sameSet = (a: string[], b: string[]) => a.length === b.length && a.every(x => b.includes(x));
+
+  const playlistId = useMemo(
+    () => activePlaylist?.id ?? 'all',
+    [activePlaylist]
+  );
+
   const parseBoolean = useCallback((v: string) => v === 'true', []);
   const parseRepeatMode = useCallback(
     (v: string) =>
       v === 'off' || v === 'all' || v === 'one' ? (v as 'off' | 'all' | 'one') : 'off',
     [],
   );
+
   const [autoNext, setAutoNext, autoNextRef, autoNextLoaded] = useStoredState(
     'callGuideAutoNext',
     true,
     parseBoolean,
     String,
   );
-  const [
-    repeatMode,
-    setRepeatMode,
-    repeatModeRef,
-    repeatModeLoaded,
-  ] = useStoredState<'off' | 'all' | 'one'>(
+  const [repeatMode, setRepeatMode, repeatModeRef, repeatModeLoaded] = useStoredState<'off' | 'all' | 'one'>(
     'callGuideRepeatMode',
     'off',
     parseRepeatMode,
@@ -87,28 +108,22 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     parseBoolean,
     String,
   );
-  const [volume, setVolume, volumeRef, volumeLoaded] = useStoredState(
-    'callGuideVolume',
-    100,
-    Number,
-    String,
-  );
-  const [muted, setMuted, mutedRef, mutedLoaded] = useStoredState(
-    'callGuideMuted',
-    false,
-    parseBoolean,
-    String,
-  );
+  const [volume, setVolume, volumeRef, volumeLoaded] = useStoredState('callGuideVolume', 100, Number, String);
+  const [muted, setMuted, mutedRef, mutedLoaded] = useStoredState('callGuideMuted', false, parseBoolean, String);
 
   const settingsLoaded =
-    autoNextLoaded &&
-    repeatModeLoaded &&
-    shuffleLoaded &&
-    volumeLoaded &&
-    mutedLoaded;
+    autoNextLoaded && repeatModeLoaded && shuffleLoaded && volumeLoaded && mutedLoaded;
 
   const [showPrevTooltip, setShowPrevTooltip] = useState(false);
   const [showNextTooltip, setShowNextTooltip] = useState(false);
+
+  useEffect(() => {
+    if (!activePlaylist) return;
+    const urlList = searchParams.get('list');
+    if (urlList !== playlistId) {
+      router.replace(`/call-guide/${song.slug}?list=${playlistId}`);
+    }
+  }, [activePlaylist, playlistId, router, searchParams, song.slug]);
 
   useEffect(() => {
     if (!volumeLoaded) return;
@@ -166,9 +181,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
 
   const formatTime = (t: number) => {
     const m = Math.floor(t / 60);
-    const s = Math.floor(t % 60)
-      .toString()
-      .padStart(2, '0');
+    const s = Math.floor(t % 60).toString().padStart(2, '0');
     return `${m}:${s}`;
   };
 
@@ -176,63 +189,135 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     const storedPlaylists = localStorage.getItem('callGuidePlaylists');
     if (storedPlaylists) {
       try {
-        setPlaylists(JSON.parse(storedPlaylists));
-      } catch {
-        /* ignore */
-      }
+        const arr = JSON.parse(storedPlaylists) as Playlist[];
+        const migrated = arr.map((pl) => (pl.id ? pl : { ...pl, id: generateUUID() }));
+        setPlaylists(migrated);
+        if (JSON.stringify(arr) !== JSON.stringify(migrated)) {
+          localStorage.setItem('callGuidePlaylists', JSON.stringify(migrated));
+        }
+      } catch { }
     }
+
     const activeStored = localStorage.getItem('callGuideActivePlaylist');
     let active: Playlist | null = null;
     if (activeStored) {
       try {
         active = JSON.parse(activeStored);
         if (active?.name === 'default' || active?.name === '전체 곡') {
-          active = { name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+          active = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
           localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
         }
-      } catch {
-        /* ignore */
-      }
+      } catch { }
     }
     if (!active || !Array.isArray(active.slugs)) {
-      active = { name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+      active = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
+    } else if (!active.id) {
+      active = {
+        ...active,
+        id: active.name === '전체 곡' ? ALL_PLAYLIST_ID : generateUUID(),
+      };
       localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
     }
+
     setActivePlaylist(active);
+    setPlaylistReady(true);
   }, [songs]);
 
-  useEffect(() => {
-    const base = activePlaylist?.slugs || songs.map((s) => s.slug!);
-    let order: string[] | null = null;
-    if (shuffle) {
-      const stored = localStorage.getItem('callGuidePlaylistOrder');
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored) as string[];
-          if (Array.isArray(parsed) && parsed.length === base.length && parsed.includes(song.slug!)) {
-            order = parsed;
-          }
-        } catch {
-          /* ignore */
-        }
-      }
-      if (!order) {
-        const k = base.indexOf(song.slug!);
-        const before = base.slice(0, k);
-        const after = base.slice(k + 1);
-        const shuffledBefore = [...before].sort(() => Math.random() - 0.5);
-        const shuffledAfter = [...after].sort(() => Math.random() - 0.5);
-        order = [...shuffledBefore, song.slug!, ...shuffledAfter];
-      }
-    } else {
-      order = base;
-    }
-    setPlaylistOrder(order);
-  }, [activePlaylist, songs, shuffle, song.slug]);
+
+  const storageKey = useMemo(
+    () => (playlistId ? makeOrderStorageKey(playlistId) : ''),
+    [playlistId],
+  );
 
   useEffect(() => {
-    localStorage.setItem('callGuidePlaylistOrder', JSON.stringify(playlistOrder));
-  }, [playlistOrder]);
+    const apl = activePlaylistRef.current;
+    if (!apl || !apl.id || !Array.isArray(apl.slugs) || apl.slugs.length === 0) return;
+
+    const base = apl.slugs.slice();
+    const prevId = prevPlaylistIdRef.current;
+    const prevBase = prevBaseRef.current;
+
+    if (prevId === apl.id && prevBase && !sameSet(prevBase, base)) {
+      removeOrder(storageKey);
+    }
+
+    prevPlaylistIdRef.current = apl.id;
+    prevBaseRef.current = base;
+  }, [activePlaylist, storageKey]);
+
+  useEffect(() => {
+    const base = buildBaseSlugs(activePlaylistRef.current?.slugs, songsRef.current);
+    const prevBase = prevBaseRef.current;
+
+    const changed =
+      !prevBase ||
+      prevBase.length !== base.length ||
+      !prevBase.every((s, i) => s === base[i]);
+
+    if (changed && storageKey) {
+      localStorage.removeItem(storageKey);
+    }
+    prevBaseRef.current = base;
+  }, [activePlaylist, songs, storageKey]);
+
+  useEffect(() => {
+    if (!activePlaylist?.id || !activePlaylist.slugs?.length || !storageKey) return;
+
+    const base = activePlaylist.slugs;
+
+    const prev = playlistOrderRef.current;
+    if (prev && isValidPermutation(base, prev)) {
+      if (prev !== playlistOrder) setPlaylistOrder(prev);
+      persistOrder(storageKey, prev);
+      return;
+    }
+
+    const stored = restoreOrderValidated(storageKey, base);
+    const order = computeInitialOrder({
+      base,
+      currentSlug: song.slug ?? null,
+      shuffle,
+      storedOrder: stored,
+    });
+
+    playlistOrderRef.current = order;
+    setPlaylistOrder(order);
+    persistOrder(storageKey, order);
+  }, [activePlaylist?.id, activePlaylist?.slugs, storageKey, song.slug, shuffle]);
+
+  useEffect(() => {
+    if (!playlistOrder.length) {
+      setPrevSong(null);
+      setNextSong(null);
+      return;
+    }
+    const safeSlug = song.slug ?? playlistOrder[0];
+    const idx = playlistOrder.indexOf(safeSlug);
+    if (idx < 0) {
+      setPrevSong(null);
+      setNextSong(null);
+      return;
+    }
+    const last = playlistOrder.length - 1;
+    let prevSlug: string | undefined;
+    let nextSlug: string | undefined;
+
+    if (idx > 0) prevSlug = playlistOrder[idx - 1];
+    if (idx < last) nextSlug = playlistOrder[idx + 1];
+
+    if (repeatMode === 'all') {
+      if (!prevSlug) prevSlug = playlistOrder[last];
+      if (!nextSlug) nextSlug = playlistOrder[0];
+    }
+
+    setPrevSong(songs.find((s) => s.slug === prevSlug) || null);
+    setNextSong(songs.find((s) => s.slug === nextSlug) || null);
+  }, [song.slug, songs, playlistOrder, repeatMode]);
+
+  useEffect(() => {
+    if (storageKey) persistOrder(storageKey, playlistOrder);
+  }, [playlistOrder, storageKey]);
 
   useEffect(() => {
     const idx = playlistOrder.indexOf(song.slug!);
@@ -250,18 +335,20 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const openPlaylistModal = () => setShowPlaylistModal(true);
   const closePlaylistModal = () => setShowPlaylistModal(false);
 
-  const selectPlaylist = (pl: Playlist | 'default') => {
-    const selected =
+  const selectPlaylist = (pl: 'default' | Playlist) => {
+    const selected: Playlist =
       pl === 'default'
-        ? { name: '전체 곡', slugs: songs.map((s) => s.slug!) }
+        ? { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) }
         : pl;
+
     setActivePlaylist(selected);
     localStorage.setItem('callGuideActivePlaylist', JSON.stringify(selected));
     closePlaylistModal();
+
     if (!selected.slugs.includes(song.slug!)) {
       const firstSlug = selected.slugs[0];
       const firstSong = songs.find((s) => s.slug === firstSlug);
-      if (firstSong) router.push(`/call-guide/${firstSong.slug}`);
+      if (firstSong) router.push(`/call-guide/${firstSong.slug}?list=${selected.id}`);
     }
   };
 
@@ -295,7 +382,20 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       return next;
     });
   };
-  const toggleShuffle = () => setShuffle((prev) => !prev);
+
+  const toggleShuffle = () => {
+    const base = buildBaseSlugs(activePlaylistRef.current?.slugs, songsRef.current);
+    const { shuffle: newShuffle, order } = applyToggleShuffle({
+      base,
+      currentSlug: song.slug!,
+      prevShuffle: shuffleRef.current,
+    });
+    setShuffle(newShuffle);
+    shuffleRef.current = newShuffle;
+    setPlaylistOrder(order);
+    playlistOrderRef.current = order;
+    persistOrder(storageKey, order);
+  };
 
   const songListRef = useRef<HTMLUListElement | null>(null);
   const [songDragIndex, setSongDragIndex] = useState<number | null>(null);
@@ -307,9 +407,9 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const volumeControlsRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (activePlaylist && activePlaylist.name !== prevPlaylistNameRef.current) {
+    if (activePlaylist && activePlaylist.id !== prevPlaylistIdRef.current) {
       originalOrderRef.current = [...activePlaylist.slugs];
-      prevPlaylistNameRef.current = activePlaylist.name;
+      prevPlaylistIdRef.current = activePlaylist.id;
     }
   }, [activePlaylist]);
 
@@ -361,12 +461,11 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       setActivePlaylist(newActive);
       localStorage.setItem('callGuideActivePlaylist', JSON.stringify(newActive));
       setPlaylists((pls) => {
-        const updatedPls = pls.map((pl) =>
-          pl.name === activePlaylist.name ? newActive : pl,
-        );
+        const updatedPls = pls.map((pl) => (pl.id === activePlaylist.id ? newActive : pl));
         localStorage.setItem('callGuidePlaylists', JSON.stringify(updatedPls));
         return updatedPls;
       });
+      persistOrder(storageKey, updated);
       return updated;
     });
     setSongDragIndex(null);
@@ -415,13 +514,13 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     const newActive = { ...activePlaylist, slugs: newOrder };
     setActivePlaylist(newActive);
     setPlaylists((pls) => {
-      const updatedPls = pls.map((pl) =>
-        pl.name === activePlaylist.name ? newActive : pl,
-      );
+      const updatedPls = pls.map((pl) => (pl.id === activePlaylist.id ? newActive : pl));
       localStorage.setItem('callGuidePlaylists', JSON.stringify(updatedPls));
       return updatedPls;
     });
     localStorage.setItem('callGuideActivePlaylist', JSON.stringify(newActive));
+    persistOrder(storageKey, newOrder);
+
     requestAnimationFrame(() => {
       Array.from(songListRef.current!.children).forEach((child) => {
         const el = child as HTMLElement;
@@ -608,37 +707,29 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
               if (repeatModeRef.current === 'one') {
                 playerRef.current?.seekTo?.(0, true);
                 playerRef.current?.playVideo?.();
-              } else {
-                let targetSlug: string | undefined;
-                const playlistSlugs = playlistOrderRef.current.length
-                  ? playlistOrderRef.current
-                  : activePlaylistRef.current?.slugs || songsRef.current.map((s) => s.slug!);
-                const idx = playlistSlugs.indexOf(song.slug!);
-                targetSlug = playlistSlugs[idx + 1];
-                if (!targetSlug && repeatModeRef.current === 'all') {
-                  if (shuffleRef.current) {
-                    const base = activePlaylistRef.current?.slugs || songsRef.current.map((s) => s.slug!);
-                    let newOrder = [...base];
-                    if (newOrder.length > 1) {
-                      do {
-                        newOrder = [...base].sort(() => Math.random() - 0.5);
-                      } while (newOrder[0] === song.slug);
-                    } else {
-                      newOrder = [...base];
-                    }
-                    setPlaylistOrder(newOrder);
-                    playlistOrderRef.current = newOrder;
-                    localStorage.setItem('callGuidePlaylistOrder', JSON.stringify(newOrder));
-                    targetSlug = newOrder[0];
-                  } else {
-                    targetSlug = playlistSlugs[0];
-                  }
-                }
-                if (autoNextRef.current && targetSlug) {
-                  router.push(`/call-guide/${targetSlug}`);
-                }
+                return;
+              }
+
+              const base = buildBaseSlugs(activePlaylistRef.current?.slugs, songsRef.current);
+              const { nextSlug, newOrder } = onEndedDecision({
+                order: playlistOrderRef.current.length ? playlistOrderRef.current : base,
+                currentSlug: song.slug!,
+                repeat: repeatModeRef.current,
+                shuffle: shuffleRef.current,
+                baseForReshuffle: base,
+              });
+
+              if (newOrder) {
+                setPlaylistOrder(newOrder);
+                playlistOrderRef.current = newOrder;
+                persistOrder(storageKey, newOrder);
+              }
+
+              if (autoNextRef.current && nextSlug) {
+                router.push(`/call-guide/${nextSlug}?list=${playlistId}`);
               }
             }
+
             if (e.data === 1 || e.data === 3) {
               autoScrollRef.current = true;
               scrollToLine(activeLineRef.current);
@@ -654,7 +745,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     if (window.YT && window.YT.Player) {
       createPlayer();
     } else {
-      window.onYouTubeIframeAPIReady = createPlayer;
+      (window as any).onYouTubeIframeAPIReady = createPlayer;
       if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
         const tag = document.createElement('script');
         tag.src = 'https://www.youtube.com/iframe_api';
@@ -671,7 +762,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       playerRef.current?.destroy?.();
       playerRef.current = null;
     };
-  }, [song, scrollToLine, router, autoNextRef, repeatModeRef, shuffleRef, volumeRef, mutedRef]);
+  }, [song, scrollToLine, router, autoNextRef, repeatModeRef, shuffleRef, volumeRef, mutedRef, storageKey]);
 
   useEffect(() => {
     setDisplayTime(currentTime);
@@ -698,27 +789,70 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     activeLineRef.current = activeLine;
   }, [activeLine]);
 
-  const computeCallPositions = useCallback(() => {
-    setCallPositions(
-      lyrics.map((line, idx) => {
-        const pos = line.call?.pos;
-        if (pos == null) return 0;
-        const charEl = tokenRefs.current[idx]?.[pos];
-        const lineEl = lineRefs.current[idx];
-        if (!charEl || !lineEl) return 0;
-        const charRect = charEl.getBoundingClientRect();
-        const lineRect = lineEl.getBoundingClientRect();
-        return charRect.left - lineRect.left;
-      })
-    );
+  const computeCallPositions = useCallback((): boolean => {
+    let allOk = true;
+    const next = lyrics.map((line, idx) => {
+      const pos = line.call?.pos;
+      if (pos == null) return 0;
+      const charEl = tokenRefs.current[idx]?.[pos] ?? null;
+      const lineEl = lineRefs.current[idx] ?? null;
+      if (!charEl || !lineEl) {
+        allOk = false;
+        return 0;
+      }
+      const charRect = charEl.getBoundingClientRect();
+      const lineRect = lineEl.getBoundingClientRect();
+      if (!charRect || !lineRect || lineRect.width === 0) {
+        allOk = false;
+        return 0;
+      }
+      return charRect.left - lineRect.left;
+    });
+    setCallPositions((prev) => {
+      if (prev.length !== next.length) return next;
+      for (let i = 0; i < next.length; i++) if (prev[i] !== next[i]) return next;
+      return prev;
+    });
+    return allOk;
   }, [lyrics]);
-  useLayoutEffect(computeCallPositions, [computeCallPositions]);
-  const throttledComputeCallPositions = useThrottle(computeCallPositions, 200);
+
+  useLayoutEffect(() => {
+    let raf1 = 0, raf2 = 0, rafLoop = 0, tries = 0;
+    const tick = () => {
+      const ok = computeCallPositions();
+      if (!ok && tries++ < 10) rafLoop = requestAnimationFrame(tick);
+    };
+    raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(tick);
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+      cancelAnimationFrame(rafLoop);
+    };
+  }, [computeCallPositions, lyrics]);
+
+  const throttledComputeCallPositions = useThrottle(() => { computeCallPositions(); }, 200);
+
   useEffect(() => {
-    document.fonts?.ready.then(computeCallPositions);
+    const ready = (document as any).fonts?.ready;
+    if (ready && typeof ready.then === 'function') {
+      ready.then(() => { requestAnimationFrame(() => computeCallPositions()); });
+    }
+  }, [computeCallPositions]);
+
+  useEffect(() => {
     window.addEventListener('resize', throttledComputeCallPositions);
     return () => window.removeEventListener('resize', throttledComputeCallPositions);
-  }, [computeCallPositions, throttledComputeCallPositions]);
+  }, [throttledComputeCallPositions]);
+
+  useEffect(() => {
+    const els = lineRefs.current.filter(Boolean);
+    if (!els.length) return;
+    const ro = new ResizeObserver(() => { throttledComputeCallPositions(); });
+    els.forEach((el) => ro.observe(el));
+    return () => ro.disconnect();
+  }, [lyrics, throttledComputeCallPositions]);
 
   useEffect(() => {
     const gap = gaps.find((g) => currentTime >= g.start && currentTime < g.end);
@@ -918,11 +1052,8 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                   activeLine={activeLine}
                   router={router}
                   currentSlug={song.slug!}
-                  shuffle={shuffle}
-                  activePlaylist={activePlaylist}
-                  songs={songs}
-                  setPlaylistOrder={setPlaylistOrder}
                   playlistOrderRef={playlistOrderRef}
+                  playlistId={playlistId}
                 />
                 <VolumeControls
                   ref={volumeControlsRef}
@@ -1031,7 +1162,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                     onTouchEnd={draggable ? handleSongTouchEnd : undefined}
                     onClick={() => {
                       if (wasDraggingRef.current) return;
-                      router.push(`/call-guide/${slug}`);
+                      router.push(`/call-guide/${slug}?list=${playlistId}`);
                       closePlaylistSongs();
                     }}
                   >

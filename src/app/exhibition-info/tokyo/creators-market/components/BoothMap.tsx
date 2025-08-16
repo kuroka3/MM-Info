@@ -28,8 +28,6 @@ export interface BoothMapHandle {
   scrollToMapBooth: (id: string) => Promise<void>;
 }
 
-// Multiple booths can occupy the same row/col on different days (e.g. F-13a/F-13b)
-// Store all booths per cell and pick the one matching the selected day.
 const BOOTHS_MAP: Record<string, Record<number, Booth[]>> = {};
 for (const b of BOOTHS) ((BOOTHS_MAP[b.row] ??= {})[b.col] ??= []).push(b);
 
