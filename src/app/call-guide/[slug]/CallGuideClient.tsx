@@ -317,7 +317,18 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     setActivePlaylist(active);
   }, [songs]);
 
-
+const focusThenScroll = (idx: number) => {
+  const el = lineRefs.current[idx];
+  if (!el) return;
+  try { el.focus({ preventScroll: true }); } catch { el.focus(); }
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      if (!el.isConnected) return;
+      el.blur();
+      scrollToLine(idx);
+    });
+  });
+};
 
   const storageKey = useMemo(
     () => (playlistId ? makeOrderStorageKey(playlistId) : ''),
@@ -719,6 +730,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       programmaticScrollRef.current = true;
       if (programmaticScrollTimeout.current) clearTimeout(programmaticScrollTimeout.current);
       el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      el.focus({ preventScroll: true });
       programmaticScrollTimeout.current = setTimeout(() => {
         programmaticScrollRef.current = false;
       }, 500);
@@ -898,6 +910,85 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     activeLineRef.current = activeLine;
   }, [activeLine]);
 
+  useEffect(() => {
+    const storageKey = 'callGuideSession';
+    const saveState = () => {
+      try {
+        sessionStorage.setItem(
+          storageKey,
+          JSON.stringify({
+            slug: song.slug,
+            time: currentTimeRef.current,
+            playing: isPlayingRef.current,
+            line: activeLineRef.current,
+          })
+        );
+      } catch {}
+    };
+
+    const restoreState = () => {
+      try {
+        const t = playerRef.current?.getCurrentTime?.();
+        if (typeof t === 'number' && !Number.isNaN(t) && t > 0) {
+          pendingSeekRef.current = null;
+          currentTimeRef.current = t;
+          setCurrentTime(t);
+          setDisplayTime(t);
+          const idx = timeToLine(t);
+          setActiveLine(idx);
+          autoScrollRef.current = true;
+          scrollToLine(idx);
+          focusThenScroll(idx);
+          return;
+        }
+
+        const raw = sessionStorage.getItem(storageKey);
+        if (!raw) {
+          focusThenScroll(activeLineRef.current);
+          return;
+        }
+        const data = JSON.parse(raw) as {
+          slug?: string;
+          time?: number;
+          playing?: boolean;
+          line?: number;
+        };
+        if (data.slug === song.slug) {
+          if (typeof data.time === 'number') {
+            pendingSeekRef.current = data.time;
+            setCurrentTime(data.time);
+            setDisplayTime(data.time);
+          }
+          if (data.playing) {
+            playerRef.current?.playVideo?.();
+          }
+          if (typeof data.line === 'number') {
+            scrollToLine(data.line);
+            focusThenScroll(data.line);
+            return;
+          }
+        }
+      } catch {}
+      focusThenScroll(activeLineRef.current);
+    };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'hidden') saveState();
+      else if (document.visibilityState === 'visible') restoreState();
+    };
+
+    restoreState();
+    document.addEventListener('visibilitychange', handleVisibility);
+    window.addEventListener('pageshow', restoreState);
+    window.addEventListener('focus', restoreState);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('pageshow', restoreState);
+      window.removeEventListener('focus', restoreState);
+    };
+  }, [song.slug, scrollToLine, timeToLine]);
+
   const computeCallPositions = useCallback((): boolean => {
     let allOk = true;
     const next = lyrics.map((line, idx) => {
@@ -1069,6 +1160,31 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [onScroll]);
+
+  useEffect(() => {
+    const ms = (navigator as Navigator & { mediaSession?: MediaSession }).mediaSession;
+    if (!ms) return;
+    ms.metadata = new MediaMetadata({
+      title: song.krtitle || song.title,
+      artwork: song.thumbnail ? [{ src: song.thumbnail, sizes: '512x512', type: 'image/png' }] : [],
+    });
+    ms.setActionHandler('play', () => playerRef.current?.playVideo?.());
+    ms.setActionHandler('pause', () => playerRef.current?.pauseVideo?.());
+    ms.setActionHandler('previoustrack', () => {
+      if (prevSong?.slug) router.push(`/call-guide/${prevSong.slug}?list=${playlistId}`);
+    });
+    ms.setActionHandler('nexttrack', () => {
+      if (predictedNext.slug) router.push(`/call-guide/${predictedNext.slug}?list=${playlistId}`);
+    });
+  }, [song, playerRef, prevSong, predictedNext.slug, router, playlistId]);
+
+  useEffect(() => {
+    const ms = (navigator as Navigator & { mediaSession?: MediaSession }).mediaSession;
+    if (!ms || typeof ms.setPositionState !== 'function') return;
+    try {
+      ms.setPositionState({ duration, position: currentTime });
+    } catch {}
+  }, [currentTime, duration]);
 
   const callActive = (line: ProcessedLine) =>
     line.call ? currentTime >= line.call.start && currentTime <= line.call.end : false;
