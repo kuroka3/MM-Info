@@ -1,6 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useCallback } from 'react';
 import type { Ref, RefObject } from 'react';
 import type { Song } from '@prisma/client';
 import type { YTPlayer } from './types';
@@ -49,6 +50,13 @@ export default function PlayerButtons({
   playlistId,
   onNext,
 }: PlayerButtonsProps) {
+  const handleTogglePlay = useCallback(() => {
+    const p = playerRef.current;
+    if (!p) return;
+    if (isPlaying) p.pauseVideo();
+    else p.playVideo();
+  }, [isPlaying, playerRef]);
+
   return (
     <div className="player-buttons" ref={playerButtonsRef}>
       <PrevButton
@@ -67,6 +75,7 @@ export default function PlayerButtons({
         autoScrollRef={autoScrollRef}
         scrollToLine={scrollToLine}
         activeLine={activeLine}
+        onToggle={handleTogglePlay}
       />
       <NextButton
         song={nextSong}

@@ -27,6 +27,7 @@ export interface YTPlayer {
   unMute: () => void;
   isMuted: () => boolean;
   getIframe?: () => HTMLIFrameElement;
+  getPlayerState(): number;
 }
 
 export interface CallGuideClientProps {
