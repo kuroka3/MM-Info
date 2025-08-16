@@ -142,11 +142,10 @@ export const restoreOrderValidated = (
   removeOrder(storageKey);
   return null;
 };
-
 export function generateUUID(): string {
   try {
     if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
-      return (crypto as any).randomUUID();
+      return (crypto as Crypto & { randomUUID: () => string }).randomUUID();
     }
   } catch { }
   const bytes = Array.from({ length: 16 }, () => Math.floor(Math.random() * 256));
@@ -165,12 +164,15 @@ function uuidToBytes(uuid: string): Uint8Array {
 }
 
 function bytesToBase64Url(bytes: Uint8Array): string {
-  if (typeof Buffer !== 'undefined' && (Buffer as any).from) {
-    return Buffer.from(bytes).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-  }
   let bin = '';
   for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  const base64 = typeof btoa === 'function'
+    ? btoa(bin)
+    : (() => {
+      const g = globalThis as unknown as { Buffer?: { from: (s: string, enc?: string) => { toString: (enc: string) => string } } };
+      return g.Buffer ? g.Buffer.from(bin, 'binary').toString('base64') : '';
+    })();
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
 }
 
 function uuidToBase64Url(uuid: string): string {
