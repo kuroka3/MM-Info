@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import SelectionOverlay from '@/components/call-guide/SelectionOverlay';
 import PlaylistNameModal from '@/components/call-guide/PlaylistNameModal';
 import PlaylistDeleteModal from '@/components/call-guide/PlaylistDeleteModal';
 import PlaylistModal from '@/components/call-guide/PlaylistModal';
+import PlaylistEditModal from '@/components/call-guide/PlaylistEditModal';
 import SongList, {
   type SongListHandle,
 } from '@/components/call-guide/SongList';
@@ -31,6 +33,12 @@ export default function CallGuideIndexClient({ songs }: Props) {
   const sortButtonRef = useRef<HTMLButtonElement | null>(null);
   const [sortNeeded, setSortNeeded] = useState(false);
   const [showSortButton, setShowSortButton] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [removeMode, setRemoveMode] = useState(false);
+  const [editingExisting, setEditingExisting] = useState(false);
+  const editMenuRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+  const ignoreActiveChange = useRef(false);
 
   useEffect(() => {
     if (sortNeeded) {
@@ -119,7 +127,26 @@ export default function CallGuideIndexClient({ songs }: Props) {
   }, []);
 
   const confirmSelection = () => {
-    if (selected.size === 0) return;
+    if (editingExisting && previousActive.current) {
+      const updated = { ...previousActive.current, slugs: Array.from(selected) };
+      setActivePlaylist(updated);
+      setPlaylists((prev) => {
+        const idx = prev.findIndex((p) => p.id === updated.id);
+        if (idx >= 0) {
+          const arr = [...prev];
+          arr[idx] = updated;
+          localStorage.setItem('callGuidePlaylists', JSON.stringify(arr));
+          return arr;
+        }
+        return prev;
+      });
+      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(updated));
+      setSelected(new Set());
+      setSelectMode(false);
+      setEditingExisting(false);
+      previousActive.current = null;
+      return;
+    }
     setShowNameModal(true);
   };
 
@@ -175,12 +202,89 @@ export default function CallGuideIndexClient({ songs }: Props) {
   const startNewPlaylist = () => {
     previousActive.current = activePlaylist;
     const def: Playlist = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+    ignoreActiveChange.current = true;
     setActivePlaylist(def);
     localStorage.setItem('callGuideActivePlaylist', JSON.stringify(def));
     setSelected(new Set());
     setPlaylistColor('rgba(255,255,255,0.1)');
     setSelectMode(true);
+    setRemoveMode(false);
   };
+
+  const startAddSongs = () => {
+    if (!activePlaylist) return;
+    previousActive.current = activePlaylist;
+    const def: Playlist = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+    ignoreActiveChange.current = true;
+    setActivePlaylist(def);
+    localStorage.setItem('callGuideActivePlaylist', JSON.stringify(def));
+    setSelected(new Set(activePlaylist.slugs));
+    setPlaylistColor(activePlaylist.color ?? 'rgba(255,255,255,0.1)');
+    setSelectMode(true);
+    setEditingExisting(true);
+    setRemoveMode(false);
+  };
+
+  const startRemoveSongs = () => {
+    setRemoveMode(true);
+  };
+
+  const handleRemoveSong = (slug: string) => {
+    if (!activePlaylist || activePlaylist.id === ALL_PLAYLIST_ID) return;
+    const updated = {
+      ...activePlaylist,
+      slugs: activePlaylist.slugs.filter((s) => s !== slug),
+    };
+    setActivePlaylist(updated);
+    setPlaylists((prev) => {
+      const idx = prev.findIndex((p) => p.id === updated.id);
+      if (idx >= 0) {
+        const arr = [...prev];
+        arr[idx] = updated;
+        localStorage.setItem('callGuidePlaylists', JSON.stringify(arr));
+        return arr;
+      }
+      return prev;
+    });
+    localStorage.setItem('callGuideActivePlaylist', JSON.stringify(updated));
+  };
+
+  useEffect(() => {
+    if (!removeMode) return;
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.closest('.remove-button')) return;
+      setRemoveMode(false);
+    };
+    document.addEventListener('click', handleClick, true);
+    return () => document.removeEventListener('click', handleClick, true);
+  }, [removeMode]);
+
+  useEffect(() => {
+    if (selectMode) cancelSelection();
+    if (removeMode) setRemoveMode(false);
+  }, [pathname]);
+
+  const resetEditState = useCallback(() => {
+    setSelectMode(false);
+    setRemoveMode(false);
+    setSelected(new Set());
+    setShowNameModal(false);
+    setPlaylistName('');
+    setPlaylistColor('rgba(255,255,255,0.1)');
+    setEditingExisting(false);
+    previousActive.current = null;
+  }, []);
+
+  useEffect(() => {
+    if (ignoreActiveChange.current) {
+      ignoreActiveChange.current = false;
+      return;
+    }
+    if (selectMode || removeMode || showNameModal) {
+      resetEditState();
+    }
+  }, [activePlaylist?.id]);
 
   const openDeleteModal = (index: number) => setDeleteIndex(index);
   const cancelDelete = () => setDeleteIndex(null);
@@ -201,9 +305,6 @@ export default function CallGuideIndexClient({ songs }: Props) {
     setDeleteIndex(null);
   };
 
-  // TODO
-  const _renamePlaylist = (oldName: string, newName: string, slugs: string[]) => {};
-
   return (
     <>
       <div className="call-guide-actions">
@@ -217,16 +318,52 @@ export default function CallGuideIndexClient({ songs }: Props) {
           />
           <span className="button-text">목록 리스트</span>
         </button>
-        <button className="glass-button" onClick={startNewPlaylist}>
-          <Image
-            src="/images/plus.svg"
-            alt="새 재생목록"
-            width={28}
-            height={28}
-            className="button-icon plus-icon"
-          />
-          <span className="button-text">새 재생목록</span>
-        </button>
+        {!selectMode && !removeMode && !showEditModal && !showNameModal && (
+          <button className="glass-button" onClick={startNewPlaylist}>
+            <Image
+              src="/images/plus.svg"
+              alt="새 재생목록"
+              width={28}
+              height={28}
+              className="button-icon plus-icon"
+            />
+            <span className="button-text">새 재생목록</span>
+          </button>
+        )}
+        {activePlaylist?.id !== ALL_PLAYLIST_ID && (
+          <div className="edit-menu-wrapper" ref={editMenuRef}>
+            <button
+              className="glass-button"
+              onClick={() => {
+                setRemoveMode(false);
+                setShowEditModal((v) => !v);
+              }}
+            >
+              <Image
+                src="/images/edit.svg"
+                alt="목록 편집"
+                width={24}
+                height={24}
+                className="button-icon"
+              />
+              <span className="button-text">목록 편집</span>
+            </button>
+            {showEditModal && (
+              <PlaylistEditModal
+                onAdd={() => {
+                  setShowEditModal(false);
+                  startAddSongs();
+                }}
+                onRemove={() => {
+                  setShowEditModal(false);
+                  startRemoveSongs();
+                }}
+                onClose={() => setShowEditModal(false)}
+                parentRef={editMenuRef}
+              />
+            )}
+          </div>
+        )}
         {showSortButton && (
           <button
             ref={sortButtonRef}
@@ -248,6 +385,8 @@ export default function CallGuideIndexClient({ songs }: Props) {
         selected={selected}
         toggleSelect={toggleSelect}
         onSortNeededChange={setSortNeeded}
+        removeMode={removeMode}
+        onRemoveSong={handleRemoveSong}
         ref={songListRef}
       />
 
@@ -297,9 +436,9 @@ export default function CallGuideIndexClient({ songs }: Props) {
           style={
             activePlaylist.color
               ? {
-                  background: activePlaylist.color,
-                  borderTop: `1px solid ${activePlaylist.color}`,
-                }
+                background: activePlaylist.color,
+                borderTop: `1px solid ${activePlaylist.color}`,
+              }
               : undefined
           }
         >

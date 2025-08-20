@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface Props {
   name: string;
@@ -29,6 +29,7 @@ const popupStyle: React.CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: '1rem',
+  position: 'relative',
 };
 
 const inputStyle: React.CSSProperties = {
@@ -77,9 +78,23 @@ const cancelStyle: React.CSSProperties = {
 const paletteColors = ['rgba(255,255,255,0.1)', '#39c5bbaa', '#ffa500aa', '#ffe211aa', '#ffc0cbaa', '#0000ffaa', '#d80000aa'];
 
 export default function PlaylistNameModal({ name, color, setName, setColor, onConfirm, onCancel }: Props) {
+  const [showMessage, setShowMessage] = useState(false);
+
+  const handleConfirm = () => {
+    if (!name.trim()) {
+      setShowMessage(true);
+      setTimeout(() => setShowMessage(false), 2000);
+      return;
+    }
+    onConfirm();
+  };
+
   return (
     <div style={modalStyle} onClick={onCancel}>
       <div style={popupStyle} onClick={(e) => e.stopPropagation()}>
+        {showMessage && (
+          <div className="fade-message">최소 1글자 이상 입력해주세요.</div>
+        )}
         <h3>재생목록 이름</h3>
         <input
           type="text"
@@ -107,7 +122,7 @@ export default function PlaylistNameModal({ name, color, setName, setColor, onCo
           ))}
         </div>
         <div style={actionsStyle}>
-          <button style={confirmStyle} onClick={onConfirm}>선택</button>
+          <button style={confirmStyle} onClick={handleConfirm}>선택</button>
           <button style={cancelStyle} onClick={onCancel}>취소</button>
         </div>
       </div>

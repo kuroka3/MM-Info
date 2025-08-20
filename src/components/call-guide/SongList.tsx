@@ -24,6 +24,8 @@ interface Props {
   selected: Set<string>;
   toggleSelect: (slug: string) => void;
   onSortNeededChange?: (needed: boolean) => void;
+  removeMode: boolean;
+  onRemoveSong: (slug: string) => void;
 }
 
 export type SongListHandle = {
@@ -40,6 +42,8 @@ function SongList(
     selected,
     toggleSelect,
     onSortNeededChange,
+    removeMode,
+    onRemoveSong,
   }: Props,
   ref: React.ForwardedRef<SongListHandle>,
 ) {
@@ -377,6 +381,37 @@ function SongList(
     }
   };
 
+  const handleRemoveClick = (
+    slug: string,
+    e: React.MouseEvent<HTMLImageElement, MouseEvent>,
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const item = e.currentTarget.closest('.call-item') as HTMLElement | null;
+    if (!item) return;
+
+    item.style.animation = 'none';
+    const anim = item.animate(
+      [
+        { transform: 'translateX(0)', opacity: 1 },
+        { transform: 'translateX(-150%)', opacity: 0 },
+      ],
+      { duration: 300, easing: 'cubic-bezier(0.4,0,1,1)' },
+    );
+
+    anim.onfinish = () => {
+      onRemoveSong(slug);
+    };
+  };
+
+  if (playlistSongs.length === 0) {
+    return (
+      <div className="call-list">
+        <p className="empty-message">재생목록에 곡이 없습니다</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="call-list">
@@ -416,6 +451,50 @@ function SongList(
                   pointerEvents: 'none',
                 } as CSSProperties)
               : undefined;
+
+        if (removeMode) {
+          return (
+            <Link
+              key={song.slug!}
+              href={`/call-guide/${song.slug}?list=${activePlaylist?.id ?? ALL_PLAYLIST_ID}`}
+              className={`${itemClass} remove-mode`}
+              style={{ textDecoration: 'none', position: 'relative' }}
+            >
+              {colors.length > 0 && <div style={borderStyle} />}
+              <div className="song-index-wrapper">
+                <span className="song-index">{order}</span>
+              </div>
+              <div className="call-info-link">
+                <Image
+                  src={song.thumbnail!}
+                  alt={song.title}
+                  width={80}
+                  height={80}
+                  className="song-jacket"
+                />
+                <div className="song-text-info">
+                  <p className="song-title">
+                    {song.krtitle ? song.krtitle : song.title}
+                  </p>
+                  <p className="song-artist">{song.artist}</p>
+                </div>
+              </div>
+              <div className="call-item-summary">
+                {song.summary!.split('\n').map((line, i) => (
+                  <p key={i}>{line}</p>
+                ))}
+              </div>
+              <Image
+                src="/images/minus-circle-red.svg"
+                alt="삭제"
+                width={24}
+                height={24}
+                className="remove-button"
+                onClick={(e) => handleRemoveClick(song.slug!, e)}
+              />
+            </Link>
+          );
+        }
 
           if (selectMode) {
             return (

@@ -132,6 +132,7 @@
   border-radius: 12px;
   min-width: 200px;
   transition: background 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
 }
 
 .playlist-modal-content ul {
@@ -160,6 +161,19 @@
 
 .playlist-item-name {
   flex: 1;
+}
+
+.playlist-edit-input {
+  flex: 1;
+  padding: 0.25rem;
+  border-radius: 4px;
+  border: 1px solid var(--glass-border);
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+}
+
+.edit-icon {
+  cursor: pointer;
 }
 
 .playlist-color {
@@ -198,6 +212,27 @@
 
 .drag-handle {
   cursor: grab;
+}
+
+.fade-message {
+  position: absolute;
+  top: -1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  animation: fadeOut 2s forwards;
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 .delete-icon {
@@ -1072,4 +1107,79 @@
   .volume-bar {
     width: 50px;
   }
+}
+
+.edit-menu-wrapper {
+  position: relative;
+}
+
+.playlist-edit-popup {
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  right: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(20px);
+  padding: 0.75rem;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 40;
+  animation: slide-down 0.2s ease forwards;
+}
+
+@keyframes slide-down {
+  from {
+    transform: translateY(-0.5rem);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.playlist-edit-popup .edit-option {
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.playlist-edit-popup .edit-option.remove .button-text {
+  color: #d80000;
+}
+
+/* subtle horizontal wiggle in remove mode */
+.call-item.remove-mode {
+  animation: wiggle 0.3s ease-in-out infinite;
+}
+
+.call-item .remove-button {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: none;
+}
+
+.call-item.remove-mode .remove-button {
+  display: block;
+}
+
+@keyframes wiggle {
+  0% {
+    transform: translateX(-1px);
+  }
+  50% {
+    transform: translateX(1px);
+  }
+  100% {
+    transform: translateX(-1px);
+  }
+}
+
+/* message when playlist is empty */
+.call-list .empty-message {
+  text-align: center;
+  padding: 2rem 0;
+  color: #fff;
 }

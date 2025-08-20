@@ -51,10 +51,9 @@ const cancelStyle: React.CSSProperties = {
 };
 
 export default function SelectionOverlay({ count, onConfirm, onCancel }: Props) {
-  if (count === 0) return null;
   return (
     <>
-      <div style={infoStyle}>{count}곡 선택됨</div>
+      {count > 0 && <div style={infoStyle}>{count}곡 선택됨</div>}
       <div style={actionsStyle}>
         <button style={confirmStyle} onClick={onConfirm}>
           선택 완료
