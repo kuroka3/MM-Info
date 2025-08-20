@@ -36,7 +36,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [removeMode, setRemoveMode] = useState(false);
   const [editingExisting, setEditingExisting] = useState(false);
-  const editMenuRef = useRef<HTMLDivElement | null>(null);
+  const editMenuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const ignoreActiveChange = useRef(false);
 
@@ -263,7 +263,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
   useEffect(() => {
     if (selectMode) cancelSelection();
     if (removeMode) setRemoveMode(false);
-  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   const resetEditState = useCallback(() => {
     setSelectMode(false);
@@ -284,7 +284,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
     if (selectMode || removeMode || showNameModal) {
       resetEditState();
     }
-  }, [activePlaylist?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activePlaylist?.id]);
 
   const openDeleteModal = (index: number) => setDeleteIndex(index);
   const cancelDelete = () => setDeleteIndex(null);
@@ -304,9 +304,6 @@ export default function CallGuideIndexClient({ songs }: Props) {
     });
     setDeleteIndex(null);
   };
-
-  // TODO
-  const _renamePlaylist = (oldName: string, newName: string, slugs: string[]) => {};
 
   return (
     <>
@@ -439,9 +436,9 @@ export default function CallGuideIndexClient({ songs }: Props) {
           style={
             activePlaylist.color
               ? {
-                  background: activePlaylist.color,
-                  borderTop: `1px solid ${activePlaylist.color}`,
-                }
+                background: activePlaylist.color,
+                borderTop: `1px solid ${activePlaylist.color}`,
+              }
               : undefined
           }
         >
