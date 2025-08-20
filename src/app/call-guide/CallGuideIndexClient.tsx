@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import SelectionOverlay from '@/components/call-guide/SelectionOverlay';
 import PlaylistNameModal from '@/components/call-guide/PlaylistNameModal';
 import PlaylistDeleteModal from '@/components/call-guide/PlaylistDeleteModal';
@@ -36,6 +37,8 @@ export default function CallGuideIndexClient({ songs }: Props) {
   const [removeMode, setRemoveMode] = useState(false);
   const [editingExisting, setEditingExisting] = useState(false);
   const editMenuRef = useRef<HTMLDivElement | null>(null);
+  const pathname = usePathname();
+  const ignoreActiveChange = useRef(false);
 
   useEffect(() => {
     if (sortNeeded) {
@@ -200,6 +203,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
   const startNewPlaylist = () => {
     previousActive.current = activePlaylist;
     const def: Playlist = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+    ignoreActiveChange.current = true;
     setActivePlaylist(def);
     localStorage.setItem('callGuideActivePlaylist', JSON.stringify(def));
     setSelected(new Set());
@@ -212,6 +216,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
     if (!activePlaylist) return;
     previousActive.current = activePlaylist;
     const def: Playlist = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+    ignoreActiveChange.current = true;
     setActivePlaylist(def);
     localStorage.setItem('callGuideActivePlaylist', JSON.stringify(def));
     setSelected(new Set(activePlaylist.slugs));
@@ -256,6 +261,32 @@ export default function CallGuideIndexClient({ songs }: Props) {
     return () => document.removeEventListener('click', handleClick, true);
   }, [removeMode]);
 
+  useEffect(() => {
+    if (selectMode) cancelSelection();
+    if (removeMode) setRemoveMode(false);
+  }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const resetEditState = useCallback(() => {
+    setSelectMode(false);
+    setRemoveMode(false);
+    setSelected(new Set());
+    setShowNameModal(false);
+    setPlaylistName('');
+    setPlaylistColor('rgba(255,255,255,0.1)');
+    setEditingExisting(false);
+    previousActive.current = null;
+  }, []);
+
+  useEffect(() => {
+    if (ignoreActiveChange.current) {
+      ignoreActiveChange.current = false;
+      return;
+    }
+    if (selectMode || removeMode || showNameModal) {
+      resetEditState();
+    }
+  }, [activePlaylist?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const openDeleteModal = (index: number) => setDeleteIndex(index);
   const cancelDelete = () => setDeleteIndex(null);
   const confirmDelete = () => {
@@ -291,16 +322,18 @@ export default function CallGuideIndexClient({ songs }: Props) {
           />
           <span className="button-text">목록 리스트</span>
         </button>
-        <button className="glass-button" onClick={startNewPlaylist}>
-          <Image
-            src="/images/plus.svg"
-            alt="새 재생목록"
-            width={28}
-            height={28}
-            className="button-icon plus-icon"
-          />
-          <span className="button-text">새 재생목록</span>
-        </button>
+        {!selectMode && !removeMode && !showEditModal && !showNameModal && (
+          <button className="glass-button" onClick={startNewPlaylist}>
+            <Image
+              src="/images/plus.svg"
+              alt="새 재생목록"
+              width={28}
+              height={28}
+              className="button-icon plus-icon"
+            />
+            <span className="button-text">새 재생목록</span>
+          </button>
+        )}
         {activePlaylist?.id !== ALL_PLAYLIST_ID && (
           <div className="edit-menu-wrapper" ref={editMenuRef}>
             <button
@@ -312,12 +345,12 @@ export default function CallGuideIndexClient({ songs }: Props) {
             >
               <Image
                 src="/images/edit.svg"
-                alt="곡 편집"
+                alt="목록 편집"
                 width={24}
                 height={24}
                 className="button-icon"
               />
-              <span className="button-text">곡 편집</span>
+              <span className="button-text">목록 편집</span>
             </button>
             {showEditModal && (
               <PlaylistEditModal

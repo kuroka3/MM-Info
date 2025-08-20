@@ -388,18 +388,7 @@ function SongList(
     e.preventDefault();
     e.stopPropagation();
     const item = e.currentTarget.closest('.call-item') as HTMLElement | null;
-    const container = document.querySelector('.call-list');
-    if (!item || !container) return;
-
-    const rectMap = new Map<string, DOMRect>();
-    const children = Array.from(container.children) as HTMLElement[];
-    playlistSongs.forEach((s, i) => {
-      const el = children[i];
-      if (el) rectMap.set(s.slug!, el.getBoundingClientRect());
-    });
-    const remainingSlugs = playlistSongs
-      .filter((s) => s.slug !== slug)
-      .map((s) => s.slug!);
+    if (!item) return;
 
     item.style.animation = 'none';
     const anim = item.animate(
@@ -412,29 +401,6 @@ function SongList(
 
     anim.onfinish = () => {
       onRemoveSong(slug);
-      requestAnimationFrame(() => {
-        const newChildren = Array.from(container.children) as HTMLElement[];
-        remainingSlugs.forEach((s, i) => {
-          const el = newChildren[i];
-          const prevRect = rectMap.get(s);
-          if (el && prevRect) {
-            const newRect = el.getBoundingClientRect();
-            const dy = prevRect.top - newRect.top;
-            if (dy) {
-              el.animate(
-                [
-                  { transform: `translateY(${dy}px)` },
-                  { transform: 'translateY(0)' },
-                ],
-                {
-                  duration: 300,
-                  easing: 'cubic-bezier(0.455, 0.03, 0.515, 0.955)',
-                },
-              );
-            }
-          }
-        });
-      });
     };
   };
 
