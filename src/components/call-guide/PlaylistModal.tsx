@@ -13,6 +13,9 @@ interface Props {
   setActivePlaylist: React.Dispatch<React.SetStateAction<Playlist | null>>;
   onClose: () => void;
   onDeleteRequest: (index: number) => void;
+  defaultPlaylists?: Playlist[];
+  playlistsKey?: string;
+  activeKey?: string;
 }
 
 export default function PlaylistModal({
@@ -23,6 +26,9 @@ export default function PlaylistModal({
   setActivePlaylist,
   onClose,
   onDeleteRequest,
+  defaultPlaylists,
+  playlistsKey = 'callGuidePlaylists',
+  activeKey = 'callGuideActivePlaylist',
 }: Props) {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [colorIndex, setColorIndex] = useState<number | null>(null);
@@ -58,13 +64,13 @@ export default function PlaylistModal({
     setPlaylists((prev) => {
       const updated = [...prev];
       updated[index] = { ...updated[index], name: newName };
-      localStorage.setItem('callGuidePlaylists', JSON.stringify(updated));
+      localStorage.setItem(playlistsKey, JSON.stringify(updated));
       return updated;
     });
     if (activePlaylist?.id === target.id) {
       const active = { ...target, name: newName };
       setActivePlaylist(active);
-      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
+      localStorage.setItem(activeKey, JSON.stringify(active));
     }
     cancelEditing(false);
   };
@@ -75,7 +81,7 @@ export default function PlaylistModal({
       const updated = [...prev];
       const [moved] = updated.splice(dragIndex, 1);
       updated.splice(index, 0, moved);
-      localStorage.setItem('callGuidePlaylists', JSON.stringify(updated));
+      localStorage.setItem(playlistsKey, JSON.stringify(updated));
       return updated;
     });
     setDragIndex(null);
@@ -95,15 +101,16 @@ export default function PlaylistModal({
     setDragIndex(null);
   };
 
-  const selectPlaylist = (pl: Playlist | 'default') => {
-    const active: Playlist =
-      pl === 'default'
-        ? { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) }
-        : pl;
-    localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
-    setActivePlaylist(active);
+  const selectPlaylist = (pl: Playlist) => {
+    localStorage.setItem(activeKey, JSON.stringify(pl));
+    setActivePlaylist(pl);
     onClose();
   };
+
+  const defaults =
+    defaultPlaylists ?? [
+      { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) },
+    ];
 
   return (
     <div className="playlist-modal" onClick={onClose}>
@@ -117,7 +124,11 @@ export default function PlaylistModal({
         <h3>재생목록 선택</h3>
         <hr className="playlist-divider" />
         <ul>
-          <li onClick={() => selectPlaylist('default')}>전체 곡</li>
+          {defaults.map((pl) => (
+            <li key={pl.id} onClick={() => selectPlaylist(pl)}>
+              {pl.name}
+            </li>
+          ))}
           {playlists.map((pl, i) => (
             <li
               key={pl.id}
@@ -202,7 +213,7 @@ export default function PlaylistModal({
                           const color = c === 'rgba(255,255,255,0.1)' ? undefined : c;
                           updated[i] = { ...updated[i], color };
                           localStorage.setItem(
-                            'callGuidePlaylists',
+                            playlistsKey,
                             JSON.stringify(updated),
                           );
                           return updated;
@@ -214,7 +225,7 @@ export default function PlaylistModal({
                           };
                           setActivePlaylist(active);
                           localStorage.setItem(
-                            'callGuideActivePlaylist',
+                            activeKey,
                             JSON.stringify(active),
                           );
                         }

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import prisma from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 import CallGuideIndexClient from '../CallGuideIndexClient';
+import SpoilerGate from '@/components/SpoilerGate';
 
 export const metadata: Metadata = { title: '콜 가이드 - 스포 O' };
 export const revalidate = 60;
@@ -30,16 +31,18 @@ export default async function CallGuideAllPage() {
   });
 
   return (
-    <main>
-      <header className="header">
-        <div className="container header-content">
-          <h1 className="header-title">콜 가이드</h1>
-          <p className="header-subtitle">공연에 나오는 콜이 있는 모든 곡</p>
-        </div>
-      </header>
-      <section className="container call-section">
-        <CallGuideIndexClient songs={songs} />
-      </section>
-    </main>
+    <SpoilerGate overlayClassName="call-guide-spoiler">
+      <main>
+        <header className="header">
+          <div className="container header-content">
+            <h1 className="header-title">콜 가이드</h1>
+            <p className="header-subtitle">공연에 나오는 콜이 있는 모든 곡</p>
+          </div>
+        </header>
+        <section className="container call-section">
+          <CallGuideIndexClient songs={songs} />
+        </section>
+      </main>
+    </SpoilerGate>
   );
 }
