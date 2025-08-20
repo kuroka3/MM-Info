@@ -1073,3 +1073,60 @@
     width: 50px;
   }
 }
+
+.playlist-edit-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+}
+
+.playlist-edit-content {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(20px);
+  padding: 1rem;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.playlist-edit-content .edit-option {
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.playlist-edit-content .edit-option.remove .button-text {
+  color: #d80000;
+}
+
+.call-item.remove-mode {
+  animation: wiggle 0.3s ease-in-out infinite;
+}
+
+.call-item .remove-button {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: none;
+}
+
+.call-item.remove-mode .remove-button {
+  display: block;
+}
+
+@keyframes wiggle {
+  0% {
+    transform: rotate(-1deg);
+  }
+  50% {
+    transform: rotate(1deg);
+  }
+  100% {
+    transform: rotate(-1deg);
+  }
+}

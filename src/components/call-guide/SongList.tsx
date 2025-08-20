@@ -24,6 +24,8 @@ interface Props {
   selected: Set<string>;
   toggleSelect: (slug: string) => void;
   onSortNeededChange?: (needed: boolean) => void;
+  removeMode: boolean;
+  onRemoveSong: (slug: string) => void;
 }
 
 export type SongListHandle = {
@@ -40,6 +42,8 @@ function SongList(
     selected,
     toggleSelect,
     onSortNeededChange,
+    removeMode,
+    onRemoveSong,
   }: Props,
   ref: React.ForwardedRef<SongListHandle>,
 ) {
@@ -416,6 +420,49 @@ function SongList(
                   pointerEvents: 'none',
                 } as CSSProperties)
               : undefined;
+
+          if (removeMode) {
+            return (
+              <div
+                key={song.slug!}
+                className={`${itemClass} remove-mode`}
+                style={{ textDecoration: 'none', position: 'relative' }}
+              >
+                {colors.length > 0 && <div style={borderStyle} />}
+                <div className="song-index-wrapper">
+                  <span className="song-index">{order}</span>
+                </div>
+                <div className="call-info-link">
+                  <Image
+                    src={song.thumbnail!}
+                    alt={song.title}
+                    width={80}
+                    height={80}
+                    className="song-jacket"
+                  />
+                  <div className="song-text-info">
+                    <p className="song-title">
+                      {song.krtitle ? song.krtitle : song.title}
+                    </p>
+                    <p className="song-artist">{song.artist}</p>
+                  </div>
+                </div>
+                <div className="call-item-summary">
+                  {song.summary!.split('\n').map((line, i) => (
+                    <p key={i}>{line}</p>
+                  ))}
+                </div>
+                <Image
+                  src="/images/minus-circle-red.svg"
+                  alt="삭제"
+                  width={24}
+                  height={24}
+                  className="remove-button"
+                  onClick={() => onRemoveSong(song.slug!)}
+                />
+              </div>
+            );
+          }
 
           if (selectMode) {
             return (
