@@ -49,6 +49,10 @@
   color: var(--text-secondary);
 }
 
+.spoiler-overlay.call-guide-spoiler {
+  background: rgba(0, 0, 0, 0.85);
+}
+
 /* Loading Spinner */
 .loading-spinner-container {
   display: flex;

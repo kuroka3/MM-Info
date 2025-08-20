@@ -8,7 +8,7 @@ export type SongWithSetlist = Prisma.SongGetPayload<{
       take: 1;
     };
   };
-}>;
+}> & { safeIndex?: number };
 
 export interface Playlist {
   id: string;

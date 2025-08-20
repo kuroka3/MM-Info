@@ -44,10 +44,14 @@ import {
   ALL_PLAYLIST_ID,
   removeOrder,
 } from '@/utils/playlistOrder';
+import { SAFE_SONG_INDEX } from '@/data/safeSongIndex';
 
 export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const isSafeMode = searchParams.get('safe') === '1';
+  const playlistsKey = isSafeMode ? 'callGuideSafePlaylists' : 'callGuidePlaylists';
+  const activeKey = isSafeMode ? 'callGuideSafeActivePlaylist' : 'callGuideActivePlaylist';
   const [prevSong, setPrevSong] = useState<Song | null>(null);
   const playerRef = useRef<YTPlayer | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -76,6 +80,57 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const isPlayingRef = useRef(false);
   const isTogglingRef = useRef(false);
   const toggleWatchdogRef = useRef<number | null>(null);
+  const [spoilerAllowed, setSpoilerAllowed] = useState(false);
+  useEffect(() => {
+    setSpoilerAllowed(localStorage.getItem('spoilerConfirmed') === 'true');
+  }, []);
+
+  const safeAllRef = useRef<Playlist | null>(null);
+  useEffect(() => {
+    if (!isSafeMode) return;
+    const stored = JSON.parse(localStorage.getItem('callGuideSafeSongs') || '[]') as string[];
+    const safeSet = new Set<string>([...SAFE_SONG_INDEX, ...stored]);
+    if (!song.slug || !safeSet.has(song.slug)) {
+      router.replace('/call-guide/safe');
+      return;
+    }
+    let custom: Playlist[] = [];
+    const storedPls = localStorage.getItem(playlistsKey);
+    if (storedPls) {
+      try {
+        custom = JSON.parse(storedPls) as Playlist[];
+      } catch {
+        custom = [];
+      }
+    }
+    const safeAll: Playlist = {
+      id: 'safe-all',
+      name: '전체 곡',
+      slugs: songs.filter((s) => safeSet.has(s.slug!)).map((s) => s.slug!),
+    };
+    const album: Playlist = { id: 'album-songs', name: '앨범 곡', slugs: SAFE_SONG_INDEX };
+    safeAllRef.current = safeAll;
+    setPlaylists([album, ...custom]);
+    const list = searchParams.get('list');
+    const activeStored = localStorage.getItem(activeKey);
+    let active: Playlist | null = null;
+    if (list === 'safe-all') active = safeAll;
+    else if (list === 'album-songs') active = album;
+    else active = custom.find((p) => p.id === list) || null;
+    if (!active && activeStored) {
+      try {
+        const parsed = JSON.parse(activeStored) as Playlist;
+        if (parsed.id === 'safe-all') active = safeAll;
+        else if (parsed.id === 'album-songs') active = album;
+        else active = custom.find((p) => p.id === parsed.id) || null;
+      } catch {
+        active = null;
+      }
+    }
+    if (!active || !Array.isArray(active.slugs)) active = safeAll;
+    setActivePlaylist(active);
+    localStorage.setItem(activeKey, JSON.stringify(active));
+  }, [isSafeMode, songs, song.slug, searchParams, router, playlistsKey, activeKey]);
 
   const prevPlaylistIdRef = useRef<string | null>(null);
   const prevBaseRef = useRef<string[] | null>(null);
@@ -200,9 +255,9 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     if (!activePlaylist) return;
     const urlList = searchParams.get('list');
     if (urlList !== playlistId) {
-      router.replace(`/call-guide/${song.slug}?list=${playlistId}`);
+      router.replace(`/call-guide/${song.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
     }
-  }, [activePlaylist, playlistId, router, searchParams, song.slug]);
+  }, [activePlaylist, playlistId, router, searchParams, song.slug, isSafeMode]);
 
   useEffect(() => {
     if (!volumeLoaded) return;
@@ -271,7 +326,8 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   };
 
   useEffect(() => {
-    const storedPlaylists = localStorage.getItem('callGuidePlaylists');
+    if (isSafeMode) return;
+    const storedPlaylists = localStorage.getItem(playlistsKey);
     if (storedPlaylists) {
       try {
         const arr = JSON.parse(storedPlaylists) as Playlist[];
@@ -287,35 +343,35 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
 
         setPlaylists(migrated);
         if (JSON.stringify(arr) !== JSON.stringify(migrated)) {
-          localStorage.setItem('callGuidePlaylists', JSON.stringify(migrated));
+          localStorage.setItem(playlistsKey, JSON.stringify(migrated));
         }
       } catch { }
     }
 
-    const activeStored = localStorage.getItem('callGuideActivePlaylist');
+    const activeStored = localStorage.getItem(activeKey);
     let active: Playlist | null = null;
     if (activeStored) {
       try {
         active = JSON.parse(activeStored);
         if (active?.name === 'default' || active?.name === '전체 곡') {
           active = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
-          localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
+          localStorage.setItem(activeKey, JSON.stringify(active));
         }
       } catch { }
     }
     if (!active || !Array.isArray(active.slugs)) {
       active = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
-      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
+      localStorage.setItem(activeKey, JSON.stringify(active));
     } else if (!active.id) {
-      const currentList = JSON.parse(localStorage.getItem('callGuidePlaylists') || '[]') as Playlist[];
+      const currentList = JSON.parse(localStorage.getItem(playlistsKey) || '[]') as Playlist[];
       const match = currentList.find(pl => pl.name === active!.name && sameSet(pl.slugs, active!.slugs));
       const id = match?.id ?? generateShortId11();
       active = { ...active, id };
-      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
+      localStorage.setItem(activeKey, JSON.stringify(active));
     }
 
     setActivePlaylist(active);
-  }, [songs]);
+  }, [songs, isSafeMode, playlistsKey, activeKey]);
 
   const focusThenScroll = (idx: number) => {
     const el = lineRefs.current[idx];
@@ -430,11 +486,11 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       setPlaylistOrder(pending.newOrder);
       playlistOrderRef.current = pending.newOrder;
       if (storageKey) persistOrder(storageKey, pending.newOrder);
-      router.push(`/call-guide/${pending.nextSlug}?list=${playlistId}`);
+      router.push(`/call-guide/${pending.nextSlug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
       return;
     }
     if (predictedNext.slug) {
-      router.push(`/call-guide/${predictedNext.slug}?list=${playlistId}`);
+      router.push(`/call-guide/${predictedNext.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
     }
   };
 
@@ -460,17 +516,26 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const selectPlaylist = (pl: 'default' | Playlist) => {
     const selected: Playlist =
       pl === 'default'
-        ? { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) }
+        ? isSafeMode
+          ? safeAllRef.current || {
+              id: ALL_PLAYLIST_ID,
+              name: '전체 곡',
+              slugs: songs.map((s) => s.slug!),
+            }
+          : { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) }
         : pl;
 
     setActivePlaylist(selected);
-    localStorage.setItem('callGuideActivePlaylist', JSON.stringify(selected));
+    localStorage.setItem(activeKey, JSON.stringify(selected));
     closePlaylistModal();
 
     if (!selected.slugs.includes(song.slug!)) {
       const firstSlug = selected.slugs[0];
       const firstSong = songs.find((s) => s.slug === firstSlug);
-      if (firstSong) router.push(`/call-guide/${firstSong.slug}?list=${selected.id}`);
+      if (firstSong)
+        router.push(`/call-guide/${firstSong.slug}?list=${selected.id}${isSafeMode ? '&safe=1' : ''}`);
+    } else if (isSafeMode) {
+      router.replace(`/call-guide/${song.slug}?list=${selected.id}&safe=1`);
     }
   };
 
@@ -565,10 +630,13 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       updated.splice(index, 0, moved);
       const newActive = { ...activePlaylist, slugs: updated };
       setActivePlaylist(newActive);
-      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(newActive));
+      localStorage.setItem(activeKey, JSON.stringify(newActive));
       setPlaylists((pls) => {
         const updatedPls = pls.map((pl) => (pl.id === activePlaylist.id ? newActive : pl));
-        localStorage.setItem('callGuidePlaylists', JSON.stringify(updatedPls));
+        const toStore = isSafeMode
+          ? updatedPls.filter((p) => p.id !== 'safe-all' && p.id !== 'album-songs')
+          : updatedPls;
+        localStorage.setItem(playlistsKey, JSON.stringify(toStore));
         return updatedPls;
       });
       persistOrder(storageKey, updated);
@@ -627,10 +695,13 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       setActivePlaylist(newActive);
       setPlaylists((pls) => {
         const updated = pls.map((pl) => (pl.id === activePlaylist.id ? newActive : pl));
-        localStorage.setItem('callGuidePlaylists', JSON.stringify(updated));
+        const toStore = isSafeMode
+          ? updated.filter((p) => p.id !== 'safe-all' && p.id !== 'album-songs')
+          : updated;
+        localStorage.setItem(playlistsKey, JSON.stringify(toStore));
         return updated;
       });
-      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(newActive));
+      localStorage.setItem(activeKey, JSON.stringify(newActive));
       if (storageKey) persistOrder(storageKey, newOrder);
     }, { container: '.playlist-songs-popup' });
   };
@@ -810,7 +881,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
           rel: 0,
           modestbranding: 1,
           playsinline: 1,
-          autoplay: autoNextRef.current ? 1 : 0,
+          autoplay: spoilerAllowed && autoNextRef.current ? 1 : 0,
         },
         events: {
           onReady: (e: { target: YTPlayer }) => {
@@ -820,14 +891,14 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
             if (mutedRef.current) e.target.mute?.();
             else e.target.unMute?.();
             const iframe = e.target.getIframe?.();
-            iframe?.setAttribute('allow', 'autoplay');
+            if (spoilerAllowed) iframe?.setAttribute('allow', 'autoplay');
             iframe?.setAttribute('playsinline', '1');
             autoScrollRef.current = true;
             scrollToLine(activeLineRef.current);
             if (pendingSeekRef.current != null) {
               playerRef.current?.seekTo?.(pendingSeekRef.current, true);
             }
-            if (autoNextRef.current) {
+            if (autoNextRef.current && spoilerAllowed) {
               e.target.playVideo?.();
             }
           },
@@ -860,7 +931,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
               }
 
               if (autoNextRef.current && nextSlug) {
-                router.push(`/call-guide/${nextSlug}?list=${playlistId}`);
+                router.push(`/call-guide/${nextSlug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
               }
 
               return;
@@ -1229,13 +1300,13 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     ms.setActionHandler(
       'previoustrack',
       prevSong?.slug
-        ? () => router.push(`/call-guide/${prevSong.slug}?list=${playlistId}`)
+        ? () => router.push(`/call-guide/${prevSong.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`)
         : null,
     );
     ms.setActionHandler(
       'nexttrack',
       predictedNext?.slug
-        ? () => router.push(`/call-guide/${predictedNext.slug}?list=${playlistId}`)
+        ? () => router.push(`/call-guide/${predictedNext.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`)
         : null,
     );
   }, [song, playerRef, prevSong?.slug, predictedNext?.slug, router, playlistId]);
@@ -1264,12 +1335,12 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
 
   if (!song) return <main>노래를 찾을 수 없습니다.</main>;
 
-  return (
-    <SpoilerGate>
+  const body = (
+      <>
       <main>
         <div id="player" className="video-background" />
         <header className="header">
-          <Link href="/call-guide" className="container header-content" style={{ textDecoration: 'none' }}>
+          <Link href={isSafeMode ? '/call-guide/safe' : '/call-guide'} className="container header-content" style={{ textDecoration: 'none' }}>
             <h1 className="header-title">콜 가이드</h1>
             <p className="header-subtitle">{song.krtitle || song.title}</p>
           </Link>
@@ -1410,6 +1481,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                   playlistOrderRef={playlistOrderRef}
                   playlistId={playlistId}
                   onNext={handleNextClick}
+                  safeMode={isSafeMode}
                 />
                 <VolumeControls
                   ref={volumeControlsRef}
@@ -1440,7 +1512,6 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
             toggleRotation={toggleRotation}
           />
         )}
-
       </main>
       <ScrollTopButton className="between-bar" />
       {activePlaylist && (
@@ -1518,7 +1589,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                     onTouchEnd={draggable ? handleSongTouchEnd : undefined}
                     onClick={() => {
                       if (wasDraggingRef.current) return;
-                      router.push(`/call-guide/${slug}?list=${playlistId}`);
+                      router.push(`/call-guide/${slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
                       closePlaylistSongs();
                     }}
                   >
@@ -1531,6 +1602,10 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
           </div>
         </div>
       )}
-    </SpoilerGate>
+      </>
+  );
+
+  return isSafeMode ? body : (
+    <SpoilerGate overlayClassName="call-guide-spoiler">{body}</SpoilerGate>
   );
 }

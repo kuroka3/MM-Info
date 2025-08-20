@@ -5,11 +5,13 @@ import React, { useEffect, useLayoutEffect, useState } from 'react';
 interface Props {
   children: React.ReactNode;
   storageKey?: string;
+  overlayClassName?: string;
 }
 
 const SpoilerGate: React.FC<Props> = ({
   children,
   storageKey = 'spoilerConfirmed',
+  overlayClassName,
 }) => {
   const [showWarning, setShowWarning] = useState(true);
 
@@ -41,7 +43,7 @@ const SpoilerGate: React.FC<Props> = ({
     <>
       {children}
       {showWarning && (
-        <div className="spoiler-overlay">
+        <div className={`spoiler-overlay${overlayClassName ? ` ${overlayClassName}` : ''}`}>
           <p className="spoiler-warning">⚠️ 스포일러 주의</p>
           <p className="spoiler-question">내용을 정말 확인하시겠습니까?</p>
           <div className="spoiler-actions">

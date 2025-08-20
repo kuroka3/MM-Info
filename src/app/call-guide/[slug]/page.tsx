@@ -4,9 +4,11 @@ import { Prisma, type Song } from '@prisma/client';
 import CallGuideClient from './CallGuideClient';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import { SAFE_SONG_INDEX } from '@/data/safeSongIndex';
 
 type PageProps = {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export const revalidate = 60;
@@ -29,8 +31,10 @@ const getSongData = async (slug: string): Promise<{ song: Song; songs: Song[] }>
   });
 
   songs.sort((a, b) => {
-    const orderA = a.setlists[0]?.order ?? Number.MAX_SAFE_INTEGER;
-    const orderB = b.setlists[0]?.order ?? Number.MAX_SAFE_INTEGER;
+    const idxA = SAFE_SONG_INDEX.indexOf(a.slug!);
+    const idxB = SAFE_SONG_INDEX.indexOf(b.slug!);
+    const orderA = idxA === -1 ? Number.MAX_SAFE_INTEGER : idxA;
+    const orderB = idxB === -1 ? Number.MAX_SAFE_INTEGER : idxB;
     return orderA - orderB;
   });
 

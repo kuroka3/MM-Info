@@ -12,12 +12,13 @@ interface PrevButtonProps {
   currentSlug: string;
   playlistOrderRef: RefObject<string[]>;
   playlistId: string;
+  safeMode?: boolean;
 }
 
 export default function PrevButton({
   song, showTooltip, setShowTooltip,
   router, autoScrollRef,
-  currentSlug, playlistOrderRef, playlistId,
+  currentSlug, playlistOrderRef, playlistId, safeMode = false,
 }: PrevButtonProps) {
   const handlePrev = () => {
     if (!song) return;
@@ -30,7 +31,7 @@ export default function PrevButton({
     if (i < 0) return;
 
     const prevSlug = i > 0 ? order[i - 1] : order[order.length - 1];
-    router.push(`/call-guide/${prevSlug}?list=${encodeURIComponent(playlistId)}`);
+    router.push(`/call-guide/${prevSlug}?list=${encodeURIComponent(playlistId)}${safeMode ? '&safe=1' : ''}`);
   };
 
   return (
