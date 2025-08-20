@@ -381,6 +381,71 @@ function SongList(
     }
   };
 
+  const handleRemoveClick = (
+    slug: string,
+    e: React.MouseEvent<HTMLImageElement, MouseEvent>,
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const item = e.currentTarget.closest('.call-item') as HTMLElement | null;
+    const container = document.querySelector('.call-list');
+    if (!item || !container) return;
+
+    const rectMap = new Map<string, DOMRect>();
+    const children = Array.from(container.children) as HTMLElement[];
+    playlistSongs.forEach((s, i) => {
+      const el = children[i];
+      if (el) rectMap.set(s.slug!, el.getBoundingClientRect());
+    });
+    const remainingSlugs = playlistSongs
+      .filter((s) => s.slug !== slug)
+      .map((s) => s.slug!);
+
+    item.style.animation = 'none';
+    const anim = item.animate(
+      [
+        { transform: 'translateX(0)', opacity: 1 },
+        { transform: 'translateX(-150%)', opacity: 0 },
+      ],
+      { duration: 300, easing: 'cubic-bezier(0.4,0,1,1)' },
+    );
+
+    anim.onfinish = () => {
+      onRemoveSong(slug);
+      requestAnimationFrame(() => {
+        const newChildren = Array.from(container.children) as HTMLElement[];
+        remainingSlugs.forEach((s, i) => {
+          const el = newChildren[i];
+          const prevRect = rectMap.get(s);
+          if (el && prevRect) {
+            const newRect = el.getBoundingClientRect();
+            const dy = prevRect.top - newRect.top;
+            if (dy) {
+              el.animate(
+                [
+                  { transform: `translateY(${dy}px)` },
+                  { transform: 'translateY(0)' },
+                ],
+                {
+                  duration: 300,
+                  easing: 'cubic-bezier(0.455, 0.03, 0.515, 0.955)',
+                },
+              );
+            }
+          }
+        });
+      });
+    };
+  };
+
+  if (playlistSongs.length === 0) {
+    return (
+      <div className="call-list">
+        <p className="empty-message">재생목록에 곡이 없습니다</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="call-list">
@@ -421,48 +486,49 @@ function SongList(
                 } as CSSProperties)
               : undefined;
 
-          if (removeMode) {
-            return (
-              <div
-                key={song.slug!}
-                className={`${itemClass} remove-mode`}
-                style={{ textDecoration: 'none', position: 'relative' }}
-              >
-                {colors.length > 0 && <div style={borderStyle} />}
-                <div className="song-index-wrapper">
-                  <span className="song-index">{order}</span>
-                </div>
-                <div className="call-info-link">
-                  <Image
-                    src={song.thumbnail!}
-                    alt={song.title}
-                    width={80}
-                    height={80}
-                    className="song-jacket"
-                  />
-                  <div className="song-text-info">
-                    <p className="song-title">
-                      {song.krtitle ? song.krtitle : song.title}
-                    </p>
-                    <p className="song-artist">{song.artist}</p>
-                  </div>
-                </div>
-                <div className="call-item-summary">
-                  {song.summary!.split('\n').map((line, i) => (
-                    <p key={i}>{line}</p>
-                  ))}
-                </div>
-                <Image
-                  src="/images/minus-circle-red.svg"
-                  alt="삭제"
-                  width={24}
-                  height={24}
-                  className="remove-button"
-                  onClick={() => onRemoveSong(song.slug!)}
-                />
+        if (removeMode) {
+          return (
+            <Link
+              key={song.slug!}
+              href={`/call-guide/${song.slug}?list=${activePlaylist?.id ?? ALL_PLAYLIST_ID}`}
+              className={`${itemClass} remove-mode`}
+              style={{ textDecoration: 'none', position: 'relative' }}
+            >
+              {colors.length > 0 && <div style={borderStyle} />}
+              <div className="song-index-wrapper">
+                <span className="song-index">{order}</span>
               </div>
-            );
-          }
+              <div className="call-info-link">
+                <Image
+                  src={song.thumbnail!}
+                  alt={song.title}
+                  width={80}
+                  height={80}
+                  className="song-jacket"
+                />
+                <div className="song-text-info">
+                  <p className="song-title">
+                    {song.krtitle ? song.krtitle : song.title}
+                  </p>
+                  <p className="song-artist">{song.artist}</p>
+                </div>
+              </div>
+              <div className="call-item-summary">
+                {song.summary!.split('\n').map((line, i) => (
+                  <p key={i}>{line}</p>
+                ))}
+              </div>
+              <Image
+                src="/images/minus-circle-red.svg"
+                alt="삭제"
+                width={24}
+                height={24}
+                className="remove-button"
+                onClick={(e) => handleRemoveClick(song.slug!, e)}
+              />
+            </Link>
+          );
+        }
 
           if (selectMode) {
             return (

@@ -35,6 +35,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [removeMode, setRemoveMode] = useState(false);
   const [editingExisting, setEditingExisting] = useState(false);
+  const editMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (sortNeeded) {
@@ -242,8 +243,18 @@ export default function CallGuideIndexClient({ songs }: Props) {
       return prev;
     });
     localStorage.setItem('callGuideActivePlaylist', JSON.stringify(updated));
-    setRemoveMode(false);
   };
+
+  useEffect(() => {
+    if (!removeMode) return;
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.closest('.remove-button')) return;
+      setRemoveMode(false);
+    };
+    document.addEventListener('click', handleClick, true);
+    return () => document.removeEventListener('click', handleClick, true);
+  }, [removeMode]);
 
   const openDeleteModal = (index: number) => setDeleteIndex(index);
   const cancelDelete = () => setDeleteIndex(null);
@@ -291,22 +302,38 @@ export default function CallGuideIndexClient({ songs }: Props) {
           <span className="button-text">새 재생목록</span>
         </button>
         {activePlaylist?.id !== ALL_PLAYLIST_ID && (
-          <button
-            className="glass-button"
-            onClick={() => {
-              setRemoveMode(false);
-              setShowEditModal(true);
-            }}
-          >
-            <Image
-              src="/images/edit.svg"
-              alt="곡 편집"
-              width={24}
-              height={24}
-              className="button-icon"
-            />
-            <span className="button-text">곡 편집</span>
-          </button>
+          <div className="edit-menu-wrapper" ref={editMenuRef}>
+            <button
+              className="glass-button"
+              onClick={() => {
+                setRemoveMode(false);
+                setShowEditModal((v) => !v);
+              }}
+            >
+              <Image
+                src="/images/edit.svg"
+                alt="곡 편집"
+                width={24}
+                height={24}
+                className="button-icon"
+              />
+              <span className="button-text">곡 편집</span>
+            </button>
+            {showEditModal && (
+              <PlaylistEditModal
+                onAdd={() => {
+                  setShowEditModal(false);
+                  startAddSongs();
+                }}
+                onRemove={() => {
+                  setShowEditModal(false);
+                  startRemoveSongs();
+                }}
+                onClose={() => setShowEditModal(false)}
+                parentRef={editMenuRef}
+              />
+            )}
+          </div>
         )}
         {showSortButton && (
           <button
@@ -351,20 +378,6 @@ export default function CallGuideIndexClient({ songs }: Props) {
           setActivePlaylist={setActivePlaylist}
           onClose={closePlaylistModal}
           onDeleteRequest={openDeleteModal}
-        />
-      )}
-
-      {showEditModal && (
-        <PlaylistEditModal
-          onAdd={() => {
-            setShowEditModal(false);
-            startAddSongs();
-          }}
-          onRemove={() => {
-            setShowEditModal(false);
-            startRemoveSongs();
-          }}
-          onClose={() => setShowEditModal(false)}
         />
       )}
 
