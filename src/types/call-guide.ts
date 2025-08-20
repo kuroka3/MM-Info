@@ -11,6 +11,7 @@ export interface CallItem {
   start: number[];
   end: number[];
   pos: number[];
+  startRepeatIndex?: number;
 }
 
 export type TimeMap = Record<string, number>;

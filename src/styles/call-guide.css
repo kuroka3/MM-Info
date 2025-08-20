@@ -828,7 +828,7 @@
 .lyric-call {
   color: var(--text-tertiary);
   min-height: 1.5rem;
-  transition: color 0.3s ease, text-shadow 0.3s ease;
+  transition: color 0.3s ease, text-shadow 0.3s ease, left 0.3s ease;
   position: absolute;
   top: 0;
   left: 50%;
@@ -843,6 +843,29 @@
 
 .lyric-call:empty {
   visibility: hidden;
+}
+
+.call-suffix {
+  display: inline-flex;
+  align-items: flex-end;
+  font-size: 0.75em;
+  line-height: 1;
+  vertical-align: text-bottom;
+  margin-left: 0.1em;
+}
+
+.call-number {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  line-height: 1;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to   { width: 100%; }
 }
 
 .lyric-row {

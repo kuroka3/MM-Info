@@ -57,7 +57,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const tokenRefs = useRef<HTMLSpanElement[][]>([]);
   const lineRefs = useRef<HTMLDivElement[]>([]);
-  const [callPositions, setCallPositions] = useState<number[]>([]);
+  const [callPositions, setCallPositions] = useState<number[][]>([]);
   const autoScrollRef = useRef(true);
   const programmaticScrollRef = useRef(false);
   const programmaticScrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -692,6 +692,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
         start: toNumArray(obj.start),
         end: toNumArray(obj.end),
         pos: toNumArray(obj.pos).map((x) => Math.max(0, Math.trunc(x))),
+        startRepeatIndex: obj.startRepeatIndex != null ? Math.max(0, Math.trunc(Number(obj.startRepeatIndex))) : undefined,
       };
       return item.text ? item : null;
     };
@@ -1029,25 +1030,43 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const computeCallPositions = useCallback((): boolean => {
     let allOk = true;
     const next = lyrics.map((line, idx) => {
-      const pos = line.call?.pos;
-      if (pos == null) return 0;
-      const charEl = tokenRefs.current[idx]?.[pos] ?? null;
-      const lineEl = lineRefs.current[idx] ?? null;
-      if (!charEl || !lineEl) {
-        allOk = false;
-        return 0;
-      }
-      const charRect = charEl.getBoundingClientRect();
-      const lineRect = lineEl.getBoundingClientRect();
-      if (!charRect || !lineRect || lineRect.width === 0) {
-        allOk = false;
-        return 0;
-      }
-      return charRect.left - lineRect.left;
+      const res: number[] = [];
+      const calcPos = (posIdx: number | undefined) => {
+        if (posIdx == null) { allOk = false; return 0; }
+        const charEl = tokenRefs.current[idx]?.[posIdx] ?? null;
+        const lineEl = lineRefs.current[idx] ?? null;
+        if (!charEl || !lineEl) {
+          allOk = false;
+          return 0;
+        }
+        const charRect = charEl.getBoundingClientRect();
+        const lineRect = lineEl.getBoundingClientRect();
+        if (!charRect || !lineRect || lineRect.width === 0) {
+          allOk = false;
+          return 0;
+        }
+        return charRect.left - lineRect.left;
+      };
+
+      // main call position (reserve index 0)
+      res.push(line.call?.pos != null ? calcPos(line.call.pos) : 0);
+
+      line.calls?.forEach((c) => {
+        if (c.isRepeat) return;
+        const p0 = c.pos?.[0];
+        res.push(typeof p0 === 'number' ? calcPos(p0) : 0);
+      });
+
+      return res;
     });
     setCallPositions((prev) => {
       if (prev.length !== next.length) return next;
-      for (let i = 0; i < next.length; i++) if (prev[i] !== next[i]) return next;
+      for (let i = 0; i < next.length; i++) {
+        const prevLine = prev[i] ?? [];
+        const nextLine = next[i] ?? [];
+        if (prevLine.length !== nextLine.length) return next;
+        for (let j = 0; j < nextLine.length; j++) if (prevLine[j] !== nextLine[j]) return next;
+      }
       return prev;
     });
     return allOk;
@@ -1234,6 +1253,13 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const charActive = (token: Token) =>
     token.time != null && currentTime >= token.time;
 
+  const callItemActive = (item: CallItem) => {
+    const start = item.start?.[0];
+    const end = item.end?.[0];
+    if (start == null || end == null) return false;
+    return currentTime >= start && currentTime <= end;
+  };
+
   const progress = duration ? (displayTime / duration) * 100 : 0;
 
   if (!song) return <main>노래를 찾을 수 없습니다.</main>;
@@ -1273,7 +1299,9 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
             lineRefs={lineRefs}
             callPositions={callPositions}
             callActive={callActive}
+            callItemActive={callItemActive}
             charActive={charActive}
+            currentTime={currentTime}
             onLineClick={(idx) => {
               const t = lyrics[idx].jp[0]?.time ?? 0;
               pendingSeekRef.current = t;
