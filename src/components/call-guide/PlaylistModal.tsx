@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { ALL_PLAYLIST_ID } from '@/utils/playlistOrder';
 import type { Playlist, SongWithSetlist } from '@/types/callGuide';
@@ -26,6 +26,48 @@ export default function PlaylistModal({
 }: Props) {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [colorIndex, setColorIndex] = useState<number | null>(null);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editValue, setEditValue] = useState('');
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const [showMessage, setShowMessage] = useState(false);
+
+  useEffect(() => {
+    if (editingIndex !== null) {
+      inputRef.current?.focus();
+    }
+  }, [editingIndex]);
+
+  const cancelEditing = (showWarning: boolean) => {
+    if (showWarning && editValue.trim() === '') {
+      setShowMessage(true);
+      setTimeout(() => setShowMessage(false), 2000);
+    }
+    setEditingIndex(null);
+    setEditValue('');
+  };
+
+  const saveEditing = (index: number) => {
+    const newName = editValue.trim();
+    if (!newName) {
+      setShowMessage(true);
+      setTimeout(() => setShowMessage(false), 2000);
+      cancelEditing(false);
+      return;
+    }
+    const target = playlists[index];
+    setPlaylists((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], name: newName };
+      localStorage.setItem('callGuidePlaylists', JSON.stringify(updated));
+      return updated;
+    });
+    if (activePlaylist?.id === target.id) {
+      const active = { ...target, name: newName };
+      setActivePlaylist(active);
+      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
+    }
+    cancelEditing(false);
+  };
 
   const handleDrop = (index: number) => {
     if (dragIndex === null || dragIndex === index) return;
@@ -69,6 +111,9 @@ export default function PlaylistModal({
         className="playlist-modal-content"
         onClick={(e) => e.stopPropagation()}
       >
+        {showMessage && (
+          <div className="fade-message">최소 1글자 이상 입력해주세요.</div>
+        )}
         <h3>재생목록 선택</h3>
         <hr className="playlist-divider" />
         <ul>
@@ -77,7 +122,7 @@ export default function PlaylistModal({
             <li
               key={pl.id}
               data-index={i}
-              onClick={() => selectPlaylist(pl)}
+              onClick={() => (editingIndex === i ? undefined : selectPlaylist(pl))}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => handleDrop(i)}
               draggable
@@ -99,7 +144,35 @@ export default function PlaylistModal({
                 height={16}
                 className="drag-handle"
               />
-              <span className="playlist-item-name">{pl.name}</span>
+              {editingIndex === i ? (
+                <input
+                  ref={inputRef}
+                  className="playlist-edit-input"
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onBlur={() => cancelEditing(true)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') saveEditing(i);
+                    if (e.key === 'Escape') cancelEditing(false);
+                  }}
+                />
+              ) : (
+                <>
+                  <span className="playlist-item-name">{pl.name}</span>
+                  <Image
+                    src="/images/edit.svg"
+                    alt="수정"
+                    width={16}
+                    height={16}
+                    className="edit-icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingIndex(i);
+                      setEditValue(pl.name);
+                    }}
+                  />
+                </>
+              )}
               <span
                 className="playlist-color"
                 style={{ background: pl.color || 'rgba(255,255,255,0.3)' }}

@@ -132,6 +132,7 @@
   border-radius: 12px;
   min-width: 200px;
   transition: background 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
 }
 
 .playlist-modal-content ul {
@@ -160,6 +161,19 @@
 
 .playlist-item-name {
   flex: 1;
+}
+
+.playlist-edit-input {
+  flex: 1;
+  padding: 0.25rem;
+  border-radius: 4px;
+  border: 1px solid var(--glass-border);
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+}
+
+.edit-icon {
+  cursor: pointer;
 }
 
 .playlist-color {
@@ -198,6 +212,27 @@
 
 .drag-handle {
   cursor: grab;
+}
+
+.fade-message {
+  position: absolute;
+  top: -1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  animation: fadeOut 2s forwards;
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 .delete-icon {

@@ -127,7 +127,6 @@ export default function CallGuideIndexClient({ songs }: Props) {
   }, []);
 
   const confirmSelection = () => {
-    if (selected.size === 0) return;
     if (editingExisting && previousActive.current) {
       const updated = { ...previousActive.current, slugs: Array.from(selected) };
       setActivePlaylist(updated);

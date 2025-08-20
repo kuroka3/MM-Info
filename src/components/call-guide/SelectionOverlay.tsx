@@ -55,15 +55,7 @@ export default function SelectionOverlay({ count, onConfirm, onCancel }: Props) 
     <>
       {count > 0 && <div style={infoStyle}>{count}곡 선택됨</div>}
       <div style={actionsStyle}>
-        <button
-          style={{
-            ...confirmStyle,
-            opacity: count === 0 ? 0.5 : 1,
-            cursor: count === 0 ? 'not-allowed' : 'pointer',
-          }}
-          onClick={onConfirm}
-          disabled={count === 0}
-        >
+        <button style={confirmStyle} onClick={onConfirm}>
           선택 완료
         </button>
         <button style={cancelStyle} onClick={onCancel}>
