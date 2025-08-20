@@ -230,7 +230,12 @@ export default function CallGuideIndexClient({ songs }: Props) {
   };
 
   const handleRemoveSong = (slug: string) => {
-    if (!activePlaylist || activePlaylist.id === ALL_PLAYLIST_ID) return;
+    if (
+      !activePlaylist ||
+      activePlaylist.id === ALL_PLAYLIST_ID ||
+      activePlaylist.id === 'album-songs'
+    )
+      return;
     const updated = {
       ...activePlaylist,
       slugs: activePlaylist.slugs.filter((s) => s !== slug),
@@ -330,7 +335,8 @@ export default function CallGuideIndexClient({ songs }: Props) {
             <span className="button-text">새 재생목록</span>
           </button>
         )}
-        {activePlaylist?.id !== ALL_PLAYLIST_ID && (
+        {activePlaylist?.id !== ALL_PLAYLIST_ID &&
+          activePlaylist?.id !== 'album-songs' && (
           <div className="edit-menu-wrapper" ref={editMenuRef}>
             <button
               className="glass-button"
