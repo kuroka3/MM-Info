@@ -27,6 +27,9 @@ interface Props {
   removeMode: boolean;
   onRemoveSong: (slug: string) => void;
   linkExtraQuery?: string;
+  playlistsKey?: string;
+  activeKey?: string;
+  filterPersist?: (pls: Playlist[]) => Playlist[];
 }
 
 export type SongListHandle = {
@@ -46,6 +49,9 @@ function SongList(
     removeMode,
     onRemoveSong,
     linkExtraQuery = '',
+    playlistsKey = 'callGuidePlaylists',
+    activeKey = 'callGuideActivePlaylist',
+    filterPersist,
   }: Props,
   ref: React.ForwardedRef<SongListHandle>,
 ) {
@@ -138,13 +144,14 @@ function SongList(
     setActivePlaylist((prev) => {
       if (!prev) return prev;
       const updated = { ...prev, slugs: updatedSlugs };
-      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(updated));
+      localStorage.setItem(activeKey, JSON.stringify(updated));
       setPlaylists((pls) => {
         const idx = pls.findIndex((p) => p.id === prev.id);
         if (idx >= 0) {
           const newPls = [...pls];
           newPls[idx] = { ...newPls[idx], slugs: updatedSlugs };
-          localStorage.setItem('callGuidePlaylists', JSON.stringify(newPls));
+          const toStore = filterPersist ? filterPersist(newPls) : newPls;
+          localStorage.setItem(playlistsKey, JSON.stringify(toStore));
           return newPls;
         }
         return pls;
@@ -250,13 +257,14 @@ function SongList(
     setActivePlaylist((prev) => {
       if (!prev) return prev;
       const updated = { ...prev, slugs: updatedSlugs };
-      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(updated));
+      localStorage.setItem(activeKey, JSON.stringify(updated));
       setPlaylists((pls) => {
         const idx = pls.findIndex((p) => p.id === prev.id);
         if (idx >= 0) {
           const newPls = [...pls];
           newPls[idx] = { ...newPls[idx], slugs: updatedSlugs };
-          localStorage.setItem('callGuidePlaylists', JSON.stringify(newPls));
+          const toStore = filterPersist ? filterPersist(newPls) : newPls;
+          localStorage.setItem(playlistsKey, JSON.stringify(toStore));
           return newPls;
         }
         return pls;
@@ -341,13 +349,14 @@ function SongList(
     setActivePlaylist((prev) => {
       if (!prev) return prev;
       const updated = { ...prev, slugs: sortedSlugs };
-      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(updated));
+      localStorage.setItem(activeKey, JSON.stringify(updated));
       setPlaylists((pls) => {
         const idx = pls.findIndex((p) => p.id === prev.id);
         if (idx >= 0) {
           const newPls = [...pls];
           newPls[idx] = { ...newPls[idx], slugs: sortedSlugs };
-          localStorage.setItem('callGuidePlaylists', JSON.stringify(newPls));
+          const toStore = filterPersist ? filterPersist(newPls) : newPls;
+          localStorage.setItem(playlistsKey, JSON.stringify(toStore));
           return newPls;
         }
         return pls;
@@ -380,8 +389,9 @@ function SongList(
 
   const handleSongClick = () => {
     if (!activePlaylist) {
-      const def: Playlist = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
-      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(def));
+      const defaultId = activeKey === 'callGuideSafeActivePlaylist' ? 'safe-all' : ALL_PLAYLIST_ID;
+      const def: Playlist = { id: defaultId, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+      localStorage.setItem(activeKey, JSON.stringify(def));
       setActivePlaylist(def);
     }
   };

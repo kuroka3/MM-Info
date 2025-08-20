@@ -51,6 +51,8 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isSafeMode = searchParams.get('safe') === '1';
+  const playlistsKey = isSafeMode ? 'callGuideSafePlaylists' : 'callGuidePlaylists';
+  const activeKey = isSafeMode ? 'callGuideSafeActivePlaylist' : 'callGuideActivePlaylist';
   const [prevSong, setPrevSong] = useState<Song | null>(null);
   const playerRef = useRef<YTPlayer | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -92,17 +94,37 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       router.replace('/call-guide/safe');
       return;
     }
+    let custom: Playlist[] = [];
+    const storedPls = localStorage.getItem(playlistsKey);
+    if (storedPls) {
+      try {
+        custom = JSON.parse(storedPls) as Playlist[];
+      } catch {
+        custom = [];
+      }
+    }
     const safeAll: Playlist = {
       id: 'safe-all',
       name: '전체 곡',
       slugs: songs.filter((s) => safeSet.has(s.slug!)).map((s) => s.slug!),
     };
     const album: Playlist = { id: 'album-songs', name: '앨범 곡', slugs: ALBUM_SLUGS };
-    const pls = [safeAll, album];
+    const pls = [safeAll, album, ...custom];
     setPlaylists(pls);
     const list = searchParams.get('list');
-    setActivePlaylist(pls.find((p) => p.id === list) ?? pls[0] ?? null);
-  }, [isSafeMode, songs, song.slug, searchParams, router]);
+    const activeStored = localStorage.getItem(activeKey);
+    let active = pls.find((p) => p.id === list) || null;
+    if (!active && activeStored) {
+      try {
+        active = JSON.parse(activeStored) as Playlist;
+      } catch {
+        active = null;
+      }
+    }
+    if (!active || !Array.isArray(active.slugs)) active = safeAll;
+    setActivePlaylist(active);
+    localStorage.setItem(activeKey, JSON.stringify(active));
+  }, [isSafeMode, songs, song.slug, searchParams, router, playlistsKey, activeKey]);
 
   const prevPlaylistIdRef = useRef<string | null>(null);
   const prevBaseRef = useRef<string[] | null>(null);
@@ -299,7 +321,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
 
   useEffect(() => {
     if (isSafeMode) return;
-    const storedPlaylists = localStorage.getItem('callGuidePlaylists');
+    const storedPlaylists = localStorage.getItem(playlistsKey);
     if (storedPlaylists) {
       try {
         const arr = JSON.parse(storedPlaylists) as Playlist[];
@@ -315,35 +337,35 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
 
         setPlaylists(migrated);
         if (JSON.stringify(arr) !== JSON.stringify(migrated)) {
-          localStorage.setItem('callGuidePlaylists', JSON.stringify(migrated));
+          localStorage.setItem(playlistsKey, JSON.stringify(migrated));
         }
       } catch { }
     }
 
-    const activeStored = localStorage.getItem('callGuideActivePlaylist');
+    const activeStored = localStorage.getItem(activeKey);
     let active: Playlist | null = null;
     if (activeStored) {
       try {
         active = JSON.parse(activeStored);
         if (active?.name === 'default' || active?.name === '전체 곡') {
           active = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
-          localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
+          localStorage.setItem(activeKey, JSON.stringify(active));
         }
       } catch { }
     }
     if (!active || !Array.isArray(active.slugs)) {
       active = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
-      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
+      localStorage.setItem(activeKey, JSON.stringify(active));
     } else if (!active.id) {
-      const currentList = JSON.parse(localStorage.getItem('callGuidePlaylists') || '[]') as Playlist[];
+      const currentList = JSON.parse(localStorage.getItem(playlistsKey) || '[]') as Playlist[];
       const match = currentList.find(pl => pl.name === active!.name && sameSet(pl.slugs, active!.slugs));
       const id = match?.id ?? generateShortId11();
       active = { ...active, id };
-      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(active));
+      localStorage.setItem(activeKey, JSON.stringify(active));
     }
 
     setActivePlaylist(active);
-  }, [songs, isSafeMode]);
+  }, [songs, isSafeMode, playlistsKey, activeKey]);
 
   const focusThenScroll = (idx: number) => {
     const el = lineRefs.current[idx];
@@ -494,8 +516,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
         : pl;
 
     setActivePlaylist(selected);
-    if (!isSafeMode)
-      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(selected));
+    localStorage.setItem(activeKey, JSON.stringify(selected));
     closePlaylistModal();
 
     if (!selected.slugs.includes(song.slug!)) {
@@ -599,10 +620,13 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       updated.splice(index, 0, moved);
       const newActive = { ...activePlaylist, slugs: updated };
       setActivePlaylist(newActive);
-      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(newActive));
+      localStorage.setItem(activeKey, JSON.stringify(newActive));
       setPlaylists((pls) => {
         const updatedPls = pls.map((pl) => (pl.id === activePlaylist.id ? newActive : pl));
-        localStorage.setItem('callGuidePlaylists', JSON.stringify(updatedPls));
+        const toStore = isSafeMode
+          ? updatedPls.filter((p) => p.id !== 'safe-all' && p.id !== 'album-songs')
+          : updatedPls;
+        localStorage.setItem(playlistsKey, JSON.stringify(toStore));
         return updatedPls;
       });
       persistOrder(storageKey, updated);
@@ -661,10 +685,13 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       setActivePlaylist(newActive);
       setPlaylists((pls) => {
         const updated = pls.map((pl) => (pl.id === activePlaylist.id ? newActive : pl));
-        localStorage.setItem('callGuidePlaylists', JSON.stringify(updated));
+        const toStore = isSafeMode
+          ? updated.filter((p) => p.id !== 'safe-all' && p.id !== 'album-songs')
+          : updated;
+        localStorage.setItem(playlistsKey, JSON.stringify(toStore));
         return updated;
       });
-      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(newActive));
+      localStorage.setItem(activeKey, JSON.stringify(newActive));
       if (storageKey) persistOrder(storageKey, newOrder);
     }, { container: '.playlist-songs-popup' });
   };
