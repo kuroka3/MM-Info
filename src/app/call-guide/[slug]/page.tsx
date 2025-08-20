@@ -7,6 +7,7 @@ import type { Metadata } from 'next';
 
 type PageProps = {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export const revalidate = 60;

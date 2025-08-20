@@ -45,9 +45,12 @@ import {
   removeOrder,
 } from '@/utils/playlistOrder';
 
+const ALBUM_SLUGS = ['lustrous','dama-rock','lavie','hiasobi','maga-maga','genten','street-light'];
+
 export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const isSafeMode = searchParams.get('safe') === '1';
   const [prevSong, setPrevSong] = useState<Song | null>(null);
   const playerRef = useRef<YTPlayer | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -76,6 +79,30 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const isPlayingRef = useRef(false);
   const isTogglingRef = useRef(false);
   const toggleWatchdogRef = useRef<number | null>(null);
+  const [spoilerAllowed, setSpoilerAllowed] = useState(false);
+  useEffect(() => {
+    setSpoilerAllowed(localStorage.getItem('spoilerConfirmed') === 'true');
+  }, []);
+
+  useEffect(() => {
+    if (!isSafeMode) return;
+    const stored = JSON.parse(localStorage.getItem('callGuideSafeSongs') || '[]') as string[];
+    const safeSet = new Set<string>([...ALBUM_SLUGS, ...stored]);
+    if (!song.slug || !safeSet.has(song.slug)) {
+      router.replace('/call-guide/safe');
+      return;
+    }
+    const safeAll: Playlist = {
+      id: 'safe-all',
+      name: '전체 곡',
+      slugs: songs.filter((s) => safeSet.has(s.slug!)).map((s) => s.slug!),
+    };
+    const album: Playlist = { id: 'album-songs', name: '앨범 곡', slugs: ALBUM_SLUGS };
+    const pls = [safeAll, album];
+    setPlaylists(pls);
+    const list = searchParams.get('list');
+    setActivePlaylist(pls.find((p) => p.id === list) ?? pls[0] ?? null);
+  }, [isSafeMode, songs, song.slug, searchParams, router]);
 
   const prevPlaylistIdRef = useRef<string | null>(null);
   const prevBaseRef = useRef<string[] | null>(null);
@@ -200,9 +227,9 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     if (!activePlaylist) return;
     const urlList = searchParams.get('list');
     if (urlList !== playlistId) {
-      router.replace(`/call-guide/${song.slug}?list=${playlistId}`);
+      router.replace(`/call-guide/${song.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
     }
-  }, [activePlaylist, playlistId, router, searchParams, song.slug]);
+  }, [activePlaylist, playlistId, router, searchParams, song.slug, isSafeMode]);
 
   useEffect(() => {
     if (!volumeLoaded) return;
@@ -271,6 +298,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   };
 
   useEffect(() => {
+    if (isSafeMode) return;
     const storedPlaylists = localStorage.getItem('callGuidePlaylists');
     if (storedPlaylists) {
       try {
@@ -315,7 +343,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     }
 
     setActivePlaylist(active);
-  }, [songs]);
+  }, [songs, isSafeMode]);
 
   const focusThenScroll = (idx: number) => {
     const el = lineRefs.current[idx];
@@ -332,8 +360,8 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   };
 
   const storageKey = useMemo(
-    () => (playlistId ? makeOrderStorageKey(playlistId) : ''),
-    [playlistId],
+    () => (isSafeMode ? '' : playlistId ? makeOrderStorageKey(playlistId) : ''),
+    [playlistId, isSafeMode],
   );
 
   const handleToggleShuffle = useCallback(() => {
@@ -430,11 +458,11 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       setPlaylistOrder(pending.newOrder);
       playlistOrderRef.current = pending.newOrder;
       if (storageKey) persistOrder(storageKey, pending.newOrder);
-      router.push(`/call-guide/${pending.nextSlug}?list=${playlistId}`);
+      router.push(`/call-guide/${pending.nextSlug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
       return;
     }
     if (predictedNext.slug) {
-      router.push(`/call-guide/${predictedNext.slug}?list=${playlistId}`);
+      router.push(`/call-guide/${predictedNext.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
     }
   };
 
@@ -460,17 +488,23 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const selectPlaylist = (pl: 'default' | Playlist) => {
     const selected: Playlist =
       pl === 'default'
-        ? { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) }
+        ? (isSafeMode
+            ? playlists[0]
+            : { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) })
         : pl;
 
     setActivePlaylist(selected);
-    localStorage.setItem('callGuideActivePlaylist', JSON.stringify(selected));
+    if (!isSafeMode)
+      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(selected));
     closePlaylistModal();
 
     if (!selected.slugs.includes(song.slug!)) {
       const firstSlug = selected.slugs[0];
       const firstSong = songs.find((s) => s.slug === firstSlug);
-      if (firstSong) router.push(`/call-guide/${firstSong.slug}?list=${selected.id}`);
+      if (firstSong)
+        router.push(`/call-guide/${firstSong.slug}?list=${selected.id}${isSafeMode ? '&safe=1' : ''}`);
+    } else if (isSafeMode) {
+      router.replace(`/call-guide/${song.slug}?list=${selected.id}&safe=1`);
     }
   };
 
@@ -810,7 +844,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
           rel: 0,
           modestbranding: 1,
           playsinline: 1,
-          autoplay: autoNextRef.current ? 1 : 0,
+          autoplay: spoilerAllowed && autoNextRef.current ? 1 : 0,
         },
         events: {
           onReady: (e: { target: YTPlayer }) => {
@@ -820,7 +854,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
             if (mutedRef.current) e.target.mute?.();
             else e.target.unMute?.();
             const iframe = e.target.getIframe?.();
-            iframe?.setAttribute('allow', 'autoplay');
+            if (spoilerAllowed) iframe?.setAttribute('allow', 'autoplay');
             iframe?.setAttribute('playsinline', '1');
             autoScrollRef.current = true;
             scrollToLine(activeLineRef.current);
@@ -860,7 +894,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
               }
 
               if (autoNextRef.current && nextSlug) {
-                router.push(`/call-guide/${nextSlug}?list=${playlistId}`);
+                router.push(`/call-guide/${nextSlug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
               }
 
               return;
@@ -1229,13 +1263,13 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     ms.setActionHandler(
       'previoustrack',
       prevSong?.slug
-        ? () => router.push(`/call-guide/${prevSong.slug}?list=${playlistId}`)
+        ? () => router.push(`/call-guide/${prevSong.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`)
         : null,
     );
     ms.setActionHandler(
       'nexttrack',
       predictedNext?.slug
-        ? () => router.push(`/call-guide/${predictedNext.slug}?list=${playlistId}`)
+        ? () => router.push(`/call-guide/${predictedNext.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`)
         : null,
     );
   }, [song, playerRef, prevSong?.slug, predictedNext?.slug, router, playlistId]);
@@ -1264,12 +1298,12 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
 
   if (!song) return <main>노래를 찾을 수 없습니다.</main>;
 
-  return (
-    <SpoilerGate>
+  const body = (
+      <>
       <main>
         <div id="player" className="video-background" />
         <header className="header">
-          <Link href="/call-guide" className="container header-content" style={{ textDecoration: 'none' }}>
+          <Link href={isSafeMode ? '/call-guide/safe' : '/call-guide'} className="container header-content" style={{ textDecoration: 'none' }}>
             <h1 className="header-title">콜 가이드</h1>
             <p className="header-subtitle">{song.krtitle || song.title}</p>
           </Link>
@@ -1410,6 +1444,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                   playlistOrderRef={playlistOrderRef}
                   playlistId={playlistId}
                   onNext={handleNextClick}
+                  safeMode={isSafeMode}
                 />
                 <VolumeControls
                   ref={volumeControlsRef}
@@ -1440,7 +1475,6 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
             toggleRotation={toggleRotation}
           />
         )}
-
       </main>
       <ScrollTopButton className="between-bar" />
       {activePlaylist && (
@@ -1518,7 +1552,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
                     onTouchEnd={draggable ? handleSongTouchEnd : undefined}
                     onClick={() => {
                       if (wasDraggingRef.current) return;
-                      router.push(`/call-guide/${slug}?list=${playlistId}`);
+                      router.push(`/call-guide/${slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
                       closePlaylistSongs();
                     }}
                   >
@@ -1531,6 +1565,10 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
           </div>
         </div>
       )}
-    </SpoilerGate>
+      </>
+  );
+
+  return isSafeMode ? body : (
+    <SpoilerGate overlayClassName="call-guide-spoiler">{body}</SpoilerGate>
   );
 }

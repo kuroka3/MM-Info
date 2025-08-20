@@ -29,6 +29,7 @@ interface PlayerButtonsProps {
   currentSlug: string;
   playlistOrderRef: RefObject<string[]>;
   onNext: () => void;
+  safeMode?: boolean;
 }
 
 export default function PlayerButtons({
@@ -49,6 +50,7 @@ export default function PlayerButtons({
   playlistOrderRef,
   playlistId,
   onNext,
+  safeMode = false,
 }: PlayerButtonsProps) {
   const handleTogglePlay = useCallback(() => {
     const p = playerRef.current;
@@ -68,6 +70,7 @@ export default function PlayerButtons({
         currentSlug={currentSlug}
         playlistOrderRef={playlistOrderRef}
         playlistId={playlistId}
+        safeMode={safeMode}
       />
       <PlayPauseButton
         isPlaying={isPlaying}

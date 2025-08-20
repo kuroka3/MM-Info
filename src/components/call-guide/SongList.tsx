@@ -26,6 +26,7 @@ interface Props {
   onSortNeededChange?: (needed: boolean) => void;
   removeMode: boolean;
   onRemoveSong: (slug: string) => void;
+  linkExtraQuery?: string;
 }
 
 export type SongListHandle = {
@@ -44,6 +45,7 @@ function SongList(
     onSortNeededChange,
     removeMode,
     onRemoveSong,
+    linkExtraQuery = '',
   }: Props,
   ref: React.ForwardedRef<SongListHandle>,
 ) {
@@ -54,7 +56,10 @@ function SongList(
   const swappingRef = useRef(false);
   const swapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const isDefaultPlaylist = activePlaylist?.id === ALL_PLAYLIST_ID;
+  const isDefaultPlaylist =
+    activePlaylist?.id === ALL_PLAYLIST_ID ||
+    activePlaylist?.id === 'safe-all' ||
+    activePlaylist?.id === 'album-songs';
 
   const getSongOrder = useMemo(
     () => (slug: string) => songs.findIndex((s) => s.slug === slug),
@@ -456,7 +461,7 @@ function SongList(
           return (
             <Link
               key={song.slug!}
-              href={`/call-guide/${song.slug}?list=${activePlaylist?.id ?? ALL_PLAYLIST_ID}`}
+              href={`/call-guide/${song.slug}?list=${activePlaylist?.id ?? ALL_PLAYLIST_ID}${linkExtraQuery}`}
               className={`${itemClass} remove-mode`}
               style={{ textDecoration: 'none', position: 'relative' }}
             >
@@ -538,7 +543,7 @@ function SongList(
           return (
             <Link
               key={song.slug!}
-              href={`/call-guide/${song.slug}?list=${activePlaylist?.id ?? ALL_PLAYLIST_ID}`}
+              href={`/call-guide/${song.slug}?list=${activePlaylist?.id ?? ALL_PLAYLIST_ID}${linkExtraQuery}`}
               className={itemClass}
               style={{ textDecoration: 'none' }}
               onClick={handleSongClick}
