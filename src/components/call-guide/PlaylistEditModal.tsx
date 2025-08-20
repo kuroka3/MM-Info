@@ -3,11 +3,13 @@
 import React, { useEffect } from 'react';
 import Image from 'next/image';
 
+type ParentRef = { readonly current: HTMLDivElement | null };
+
 interface Props {
   onAdd: () => void;
   onRemove: () => void;
   onClose: () => void;
-  parentRef: React.RefObject<HTMLDivElement>;
+  parentRef: ParentRef;
 }
 
 export default function PlaylistEditModal({
