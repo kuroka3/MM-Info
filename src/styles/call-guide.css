@@ -1224,6 +1224,11 @@
   backdrop-filter: blur(20px);
   text-decoration: none;
   color: inherit;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.call-guide-entry .glass-block:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .call-guide-entry .glass-block.green {
@@ -1232,4 +1237,24 @@
 
 .call-guide-entry .glass-block.red {
   border-color: #d80000;
+}
+
+.call-guide-entry .glass-block.green:hover {
+  box-shadow: 0 0 10px #39c5bb;
+}
+
+.call-guide-entry .glass-block.red:hover {
+  box-shadow: 0 0 10px #d80000;
+}
+
+.call-guide-entry .glass-block h2 {
+  font-size: 2.5rem;
+}
+
+.call-guide-entry .glass-block.green h2 {
+  color: #39c5bb;
+}
+
+.call-guide-entry .glass-block.red h2 {
+  color: #d80000;
 }

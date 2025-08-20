@@ -22,8 +22,8 @@ import {
   ensureUniquePlaylistId,
 } from '@/utils/playlistOrder';
 import { SongWithSetlist, Playlist } from '@/types/callGuide';
+import { SAFE_SONG_INDEX } from '@/data/safeSongIndex';
 
-const ALBUM_SLUGS = ['lustrous','dama-rock','lavie','hiasobi','maga-maga','genten','street-light'];
 const SAFE_ALL_ID = 'safe-all';
 
 interface Props {
@@ -34,8 +34,17 @@ export default function SafeCallGuideIndexClient({ songs }: Props) {
   const [safeSongs, setSafeSongs] = useState<SongWithSetlist[]>([]);
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem('callGuideSafeSongs') || '[]') as string[];
-    const safeSet = new Set<string>([...ALBUM_SLUGS, ...stored]);
-    const filtered = songs.filter((s) => safeSet.has(s.slug!));
+    const orderMap = new Map<string, number>();
+    SAFE_SONG_INDEX.forEach((slug, i) => orderMap.set(slug, i + 1));
+    stored.forEach((slug) => {
+      if (!orderMap.has(slug)) {
+        orderMap.set(slug, orderMap.size + 1);
+      }
+    });
+    const filtered = songs
+      .filter((s) => s.slug && orderMap.has(s.slug))
+      .sort((a, b) => (orderMap.get(a.slug!)! - orderMap.get(b.slug!)!))
+      .map((s) => ({ ...s, safeIndex: orderMap.get(s.slug!) }));
     setSafeSongs(filtered);
   }, [songs]);
 
@@ -64,7 +73,7 @@ export default function SafeCallGuideIndexClient({ songs }: Props) {
     [safeSongs],
   );
   const albumPlaylist = React.useMemo(
-    () => ({ id: 'album-songs', name: '앨범 곡', slugs: ALBUM_SLUGS }),
+    () => ({ id: 'album-songs', name: '앨범 곡', slugs: SAFE_SONG_INDEX }),
     [],
   );
 

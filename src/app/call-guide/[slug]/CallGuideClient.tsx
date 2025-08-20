@@ -44,8 +44,7 @@ import {
   ALL_PLAYLIST_ID,
   removeOrder,
 } from '@/utils/playlistOrder';
-
-const ALBUM_SLUGS = ['lustrous','dama-rock','lavie','hiasobi','maga-maga','genten','street-light'];
+import { SAFE_SONG_INDEX } from '@/data/safeSongIndex';
 
 export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const router = useRouter();
@@ -90,7 +89,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   useEffect(() => {
     if (!isSafeMode) return;
     const stored = JSON.parse(localStorage.getItem('callGuideSafeSongs') || '[]') as string[];
-    const safeSet = new Set<string>([...ALBUM_SLUGS, ...stored]);
+    const safeSet = new Set<string>([...SAFE_SONG_INDEX, ...stored]);
     if (!song.slug || !safeSet.has(song.slug)) {
       router.replace('/call-guide/safe');
       return;
@@ -109,7 +108,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       name: '전체 곡',
       slugs: songs.filter((s) => safeSet.has(s.slug!)).map((s) => s.slug!),
     };
-    const album: Playlist = { id: 'album-songs', name: '앨범 곡', slugs: ALBUM_SLUGS };
+    const album: Playlist = { id: 'album-songs', name: '앨범 곡', slugs: SAFE_SONG_INDEX };
     safeAllRef.current = safeAll;
     setPlaylists([album, ...custom]);
     const list = searchParams.get('list');
