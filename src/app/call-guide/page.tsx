@@ -13,13 +13,13 @@ export default function CallGuideHome() {
         </div>
       </header>
       <section className="container call-guide-entry">
-        <Link href="/call-guide/safe" className="glass-block red">
+        <Link href="/call-guide/safe" className="glass-block green">
           <h2>스포 X</h2>
           <p>
             <strong>앨범곡</strong> 중에 콜이 있는 곡만 있는 스포일러 없는 페이지
           </p>
         </Link>
-        <Link href="/call-guide/all" className="glass-block green">
+        <Link href="/call-guide/all" className="glass-block red">
           <h2>스포 O</h2>
           <p>
             공연에 나오는 <strong>모든 곡</strong> 중에 콜이 있는 곡만 있는 페이지

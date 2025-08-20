@@ -1258,3 +1258,13 @@
 .call-guide-entry .glass-block.red h2 {
   color: #d80000;
 }
+
+.call-guide-entry .glass-block p strong {
+  font-size: 2rem;
+}
+
+@media (max-width: 600px) {
+  .call-guide-entry {
+    flex-direction: column;
+  }
+}
