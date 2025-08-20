@@ -1,4 +1,4 @@
-import type { Call } from '@/types/call-guide';
+import type { Call, CallItem } from '@/types/call-guide';
 import type { Song } from '@prisma/client';
 import type { Playlist } from '@/types/callGuide';
 
@@ -12,6 +12,7 @@ export interface ProcessedLine {
   pron: Token[];
   ko: Token[];
   call?: Call;
+  calls?: CallItem[];
 }
 
 export interface YTPlayer {

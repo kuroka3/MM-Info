@@ -14,7 +14,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import SpoilerGate from '@/components/SpoilerGate';
 import ScrollTopButton from '@/components/ScrollTopButton';
 import type { Song } from '@prisma/client';
-import type { LyricLine } from '@/types/call-guide';
+import type { LyricLine, CallItem } from '@/types/call-guide';
 import PlaylistSelectModal from '@/components/call-guide/PlaylistSelectModal';
 import useStoredState from '@/hooks/useStoredState';
 import useThrottle from '@/hooks/useThrottle';
@@ -674,6 +674,36 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     return res as Token[];
   };
 
+  function normalizeCalls(input?: unknown): CallItem[] | undefined {
+    if (!input) return undefined;
+
+    const toNumArray = (v: unknown): number[] => {
+      if (Array.isArray(v)) return v.map(Number).filter((x) => Number.isFinite(x));
+      const n = Number(v);
+      return Number.isFinite(n) ? [n] : [];
+    };
+
+    const toItem = (raw: unknown): CallItem | null => {
+      if (!raw || typeof raw !== 'object') return null;
+      const obj = raw as Record<string, unknown>;
+      const item: CallItem = {
+        isRepeat: !!obj.isRepeat,
+        text: String(obj.text ?? ''),
+        start: toNumArray(obj.start),
+        end: toNumArray(obj.end),
+        pos: toNumArray(obj.pos).map((x) => Math.max(0, Math.trunc(x))),
+      };
+      return item.text ? item : null;
+    };
+
+    if (Array.isArray(input)) {
+      const out = (input as unknown[]).map(toItem).filter((x): x is CallItem => !!x);
+      return out.length ? out : undefined;
+    }
+    const single = toItem(input);
+    return single ? [single] : undefined;
+  }
+
   const lyrics = useMemo<ProcessedLine[]>(() => {
     if (!song || !song.lyrics) return [];
     const parsedLyrics = song.lyrics as unknown as LyricLine[];
@@ -694,11 +724,14 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
         });
       }
 
+      const calls = normalizeCalls(line.calls);
+
       return {
         jp: interpolateTokens(jp),
         pron: interpolateTokens(pron),
         ko: interpolateTokens(ko),
         call: line.call,
+        ...(calls ? { calls } : {}),
       };
     });
   }, [song]);

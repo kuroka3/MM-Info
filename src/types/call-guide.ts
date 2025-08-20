@@ -5,6 +5,14 @@ export interface Call {
   pos?: number;
 }
 
+export interface CallItem {
+  isRepeat: boolean;
+  text: string;
+  start: number[];
+  end: number[];
+  pos: number[];
+}
+
 export type TimeMap = Record<string, number>;
 
 export interface LyricLine {
@@ -13,4 +21,5 @@ export interface LyricLine {
   ko: string;
   times?: TimeMap;
   call?: Call;
+  calls?: CallItem[];
 }
