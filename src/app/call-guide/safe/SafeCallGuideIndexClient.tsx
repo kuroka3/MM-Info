@@ -273,7 +273,12 @@ export default function SafeCallGuideIndexClient({ songs }: Props) {
   };
 
   const handleRemoveSong = (slug: string) => {
-    if (!activePlaylist || activePlaylist.id === SAFE_ALL_ID) return;
+    if (
+      !activePlaylist ||
+      activePlaylist.id === SAFE_ALL_ID ||
+      activePlaylist.id === 'album-songs'
+    )
+      return;
     const updated = {
       ...activePlaylist,
       slugs: activePlaylist.slugs.filter((s) => s !== slug),
@@ -375,7 +380,8 @@ export default function SafeCallGuideIndexClient({ songs }: Props) {
             <span className="button-text">새 재생목록</span>
           </button>
         )}
-        {activePlaylist?.id !== SAFE_ALL_ID && (
+        {activePlaylist?.id !== SAFE_ALL_ID &&
+          activePlaylist?.id !== 'album-songs' && (
           <div className="edit-menu-wrapper" ref={editMenuRef}>
             <button
               className="glass-button"
