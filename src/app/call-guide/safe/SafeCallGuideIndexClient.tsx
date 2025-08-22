@@ -16,6 +16,7 @@ import PlaylistEditModal from '@/components/call-guide/PlaylistEditModal';
 import SongList, {
   type SongListHandle,
 } from '@/components/call-guide/SongList';
+import SongSearchOverlay from '@/components/call-guide/SongSearchOverlay';
 import {
   makeOrderStorageKey,
   generateShortId11,
@@ -32,8 +33,10 @@ interface Props {
 
 export default function SafeCallGuideIndexClient({ songs }: Props) {
   const [safeSongs, setSafeSongs] = useState<SongWithSetlist[]>([]);
-  useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem('callGuideSafeSongs') || '[]') as string[];
+  const computeSafeSongs = useCallback(() => {
+    const stored = JSON.parse(
+      localStorage.getItem('callGuideSafeSongs') || '[]',
+    ) as string[];
     const orderMap = new Map<string, number>();
     SAFE_SONG_INDEX.forEach((slug, i) => orderMap.set(slug, i + 1));
     stored.forEach((slug) => {
@@ -41,12 +44,15 @@ export default function SafeCallGuideIndexClient({ songs }: Props) {
         orderMap.set(slug, orderMap.size + 1);
       }
     });
-    const filtered = songs
+    return songs
       .filter((s) => s.slug && orderMap.has(s.slug))
-      .sort((a, b) => (orderMap.get(a.slug!)! - orderMap.get(b.slug!)!))
+      .sort((a, b) => orderMap.get(a.slug!)! - orderMap.get(b.slug!)!)
       .map((s) => ({ ...s, safeIndex: orderMap.get(s.slug!) }));
-    setSafeSongs(filtered);
   }, [songs]);
+
+  useEffect(() => {
+    setSafeSongs(computeSafeSongs());
+  }, [computeSafeSongs]);
 
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -65,6 +71,7 @@ export default function SafeCallGuideIndexClient({ songs }: Props) {
   const [showEditModal, setShowEditModal] = useState(false);
   const [removeMode, setRemoveMode] = useState(false);
   const [editingExisting, setEditingExisting] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
   const editMenuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const ignoreActiveChange = useRef(false);
@@ -358,6 +365,16 @@ export default function SafeCallGuideIndexClient({ songs }: Props) {
   return (
     <>
       <div className="call-guide-actions">
+        <button className="glass-button" onClick={() => setShowSearch(true)}>
+          <Image
+            src="/images/search.svg"
+            alt="곡 검색"
+            width={24}
+            height={24}
+            className="button-icon"
+          />
+          <span className="button-text">곡 검색</span>
+        </button>
         <button className="glass-button" onClick={openPlaylistModal}>
           <Image
             src="/images/list.svg"
@@ -515,6 +532,15 @@ export default function SafeCallGuideIndexClient({ songs }: Props) {
             전체 곡
           </button>
         </div>
+      )}
+
+      {showSearch && (
+        <SongSearchOverlay
+          songs={songs}
+          safeSongs={safeSongs}
+          onClose={() => setShowSearch(false)}
+          onUnlock={() => setSafeSongs(computeSafeSongs())}
+        />
       )}
     </>
   );

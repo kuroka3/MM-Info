@@ -1268,3 +1268,133 @@
     flex-direction: column;
   }
 }
+
+/* Search overlay */
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1000;
+}
+
+.search-bar {
+  margin-top: 25vh;
+  display: flex;
+  align-items: center;
+  width: 80%;
+  max-width: 400px;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+  backdrop-filter: blur(20px);
+}
+
+.search-bar input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fff;
+  font-size: 1rem;
+  margin-left: 0.5rem;
+}
+
+.search-icon {
+  opacity: 0.6;
+}
+
+.search-messages {
+  margin-top: 2rem;
+  text-align: center;
+  width: 80%;
+  max-width: 500px;
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.search-messages .warn {
+  color: #ff4d4d;
+}
+
+.search-result {
+  margin-top: 1.5rem;
+  width: 80%;
+  max-width: 400px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #fff;
+  cursor: pointer;
+}
+
+.search-result .status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.search-result .status-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.unlock-message {
+  margin-top: 1rem;
+  color: #fff;
+}
+
+.search-confirm {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.85);
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: center;
+  color: #fff;
+  z-index: 1001;
+}
+
+.search-confirm-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.search-confirm-buttons button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.search-confirm-buttons .yes {
+  background: #39c5bb;
+  color: #000;
+}
+
+.search-confirm-buttons .no {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+@keyframes slide-out {
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+.slide-out {
+  animation: slide-out 0.3s ease-in forwards;
+}
