@@ -66,7 +66,7 @@ export default async function CallGuideSongPage({ params }: PageProps) {
   const { song, songs } = await getSongData(slug);
   return (
     <Suspense fallback={null}>
-      <CallGuideClient song={song} songs={songs} />
+      <CallGuideClient key={song.slug} song={song} songs={songs} />
     </Suspense>
   );
 }
