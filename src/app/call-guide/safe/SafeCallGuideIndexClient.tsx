@@ -368,12 +368,12 @@ export default function SafeCallGuideIndexClient({ songs }: Props) {
         <button className="glass-button" onClick={() => setShowSearch(true)}>
           <Image
             src="/images/search.svg"
-            alt="곡 검색"
+            alt="곡 검색/해금"
             width={24}
             height={24}
             className="button-icon"
           />
-          <span className="button-text">곡 검색</span>
+          <span className="button-text">곡 검색/해금</span>
         </button>
         <button className="glass-button" onClick={openPlaylistModal}>
           <Image
