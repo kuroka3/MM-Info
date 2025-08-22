@@ -17,7 +17,6 @@ import type { Song } from '@prisma/client';
 import type { LyricLine, CallItem } from '@/types/call-guide';
 import PlaylistSelectModal from '@/components/call-guide/PlaylistSelectModal';
 import useStoredState from '@/hooks/useStoredState';
-import useThrottle from '@/hooks/useThrottle';
 import type { Playlist } from '@/types/callGuide';
 import { animateReorder } from '@/utils/flip';
 import LyricsDisplay from './LyricsDisplay';
@@ -592,7 +591,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     }
   }, [showPlaylistSongs, playlistOrder, song.slug, activePlaylist]);
 
-  const adjust = useThrottle(() => {
+  const adjust = useCallback(() => {
     const buttons = playerButtonsRef.current;
     const volume = volumeControlsRef.current;
     const container = buttons?.parentElement;
@@ -601,7 +600,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     const total = buttons.offsetWidth + gap + volume.offsetWidth;
     if (total > container.offsetWidth) volume.classList.add('compact');
     else volume.classList.remove('compact');
-  }, 200);
+  }, []);
 
   useEffect(() => {
     if (!settingsLoaded) return;
@@ -1159,8 +1158,6 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     };
   }, [computeCallPositions, lyrics]);
 
-  const throttledComputeCallPositions = useThrottle(() => { computeCallPositions(); }, 200);
-
   type DocumentWithFonts = Document & { fonts?: { ready?: Promise<unknown> } };
   useEffect(() => {
     const ready = (document as DocumentWithFonts).fonts?.ready;
@@ -1168,19 +1165,25 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       ready.then(() => { requestAnimationFrame(() => computeCallPositions()); });
     }
   }, [computeCallPositions]);
+  const handleResize = useCallback(() => {
+    computeCallPositions();
+    requestAnimationFrame(() => computeCallPositions());
+  }, [computeCallPositions]);
 
   useEffect(() => {
-    window.addEventListener('resize', throttledComputeCallPositions);
-    return () => window.removeEventListener('resize', throttledComputeCallPositions);
-  }, [throttledComputeCallPositions]);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [handleResize]);
 
   useEffect(() => {
     const els = lineRefs.current.filter(Boolean);
     if (!els.length) return;
-    const ro = new ResizeObserver(() => { throttledComputeCallPositions(); });
+    const ro = new ResizeObserver(() => {
+      handleResize();
+    });
     els.forEach((el) => ro.observe(el));
     return () => ro.disconnect();
-  }, [lyrics, throttledComputeCallPositions]);
+  }, [lyrics, handleResize]);
 
   useEffect(() => {
     const gap = gaps.find((g) => currentTime >= g.start && currentTime < g.end);
@@ -1278,10 +1281,10 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   ]);
 
 
-  const onScroll = useThrottle(() => {
+  const onScroll = useCallback(() => {
     if (programmaticScrollRef.current) return;
     autoScrollRef.current = false;
-  }, 100);
+  }, []);
 
   useEffect(() => {
     window.addEventListener('scroll', onScroll, { passive: true });
