@@ -184,6 +184,14 @@
   cursor: pointer;
 }
 
+.playlist-color-indicator {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  flex-shrink: 0;
+}
+
 .color-palette {
   position: absolute;
   top: 100%;
@@ -1341,6 +1349,18 @@
   align-items: center;
   color: #fff;
   cursor: pointer;
+}
+
+.search-result-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.search-result-thumb {
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
 }
 
 .search-result .status {

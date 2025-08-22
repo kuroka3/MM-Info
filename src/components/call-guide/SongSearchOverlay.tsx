@@ -91,6 +91,7 @@ export default function SongSearchOverlay({ songs, safeSongs, onClose, onUnlock 
         setResult(null);
         setQuery('');
         setUnlockedMsg('');
+        setSearched(false);
       }, 400);
     }
     closeConfirm();
@@ -114,22 +115,31 @@ export default function SongSearchOverlay({ songs, safeSongs, onClose, onUnlock 
         <input
           placeholder="검색"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => {
+            const val = e.target.value;
+            setQuery(val);
+            if (val === '') {
+              setResult(null);
+              setSearched(false);
+            }
+          }}
           autoFocus
         />
       </form>
-      <div className="search-messages">
-        <p className="warn"><strong>⚠️ 주의!</strong> 곡 검색 시 <strong>스포일러</strong>가 포함될 수 있습니다.</p>
-        <p className="warn">
-          검색한 곡은 스포일러에서 <strong>해금</strong>하여 스포 X의 전체 곡 리스트에
-          추가할 수 있습니다.
-        </p>
-        <p>
-          * 곡의 <strong>전체 제목</strong>을 원 제목(일본어 / 영어)이나 번역된 한글 제목으로
-          입력해주세요.
-        </p>
-        <p>* 일부 곡은 한글 약어 입력도 가능합니다.</p>
-      </div>
+      {!searched && (
+        <div className="search-messages">
+          <p className="warn"><strong>⚠️ 주의!</strong> 곡 검색 시 <strong>스포일러</strong>가 포함될 수 있습니다.</p>
+          <p className="warn">
+            검색한 곡은 스포일러에서 <strong>해금</strong>하여 스포 X의 전체 곡 리스트에
+            추가할 수 있습니다.
+          </p>
+          <p>
+            * 곡의 <strong>전체 제목</strong>을 원 제목(일본어 / 영어)이나 번역된 한글 제목으로
+            입력해주세요.
+          </p>
+          <p>* 일부 곡은 한글 약어 입력도 가능합니다.</p>
+        </div>
+      )}
       {result && (
         <div
           className="search-result"
@@ -138,7 +148,18 @@ export default function SongSearchOverlay({ songs, safeSongs, onClose, onUnlock 
             if (!already) setConfirmSong(result);
           }}
         >
-          <span>{result.krtitle || result.title}</span>
+          <div className="search-result-info">
+            {result.thumbnail && (
+              <Image
+                src={result.thumbnail}
+                alt=""
+                width={60}
+                height={60}
+                className="song-jacket search-result-thumb"
+              />
+            )}
+            <span>{result.krtitle || result.title}</span>
+          </div>
           <span className="status">
             {already ? (
               <>
@@ -172,13 +193,16 @@ export default function SongSearchOverlay({ songs, safeSongs, onClose, onUnlock 
       {unlockedMsg && <div className="unlock-message">{unlockedMsg}</div>}
       {confirmSong && (
         <div className={`search-confirm${confirmClosing ? ' pop-out' : ''}`}>
-          <p>{`${confirmSong.krtitle || confirmSong.title}을 해금하시겠습니까?`}</p>
+          <p>
+            <strong>{confirmSong.krtitle || confirmSong.title}</strong>
+            <br />해금하시겠습니까?
+          </p>
           <div className="search-confirm-buttons">
-            <button type="button" className="no" onClick={closeConfirm}>
-              아니오
-            </button>
             <button type="button" className="yes" onClick={addSong}>
               예
+            </button>
+            <button type="button" className="no" onClick={closeConfirm}>
+              아니오
             </button>
           </div>
         </div>

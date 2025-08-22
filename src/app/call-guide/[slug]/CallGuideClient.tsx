@@ -524,16 +524,20 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
           : { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) }
         : pl;
 
-    setActivePlaylist(selected);
-    localStorage.setItem(activeKey, JSON.stringify(selected));
     closePlaylistModal();
 
     if (!selected.slugs.includes(song.slug!)) {
+      localStorage.setItem(activeKey, JSON.stringify(selected));
       const firstSlug = selected.slugs[0];
       const firstSong = songs.find((s) => s.slug === firstSlug);
       if (firstSong)
         router.push(`/call-guide/${firstSong.slug}?list=${selected.id}${isSafeMode ? '&safe=1' : ''}`);
-    } else if (isSafeMode) {
+      return;
+    }
+
+    setActivePlaylist(selected);
+    localStorage.setItem(activeKey, JSON.stringify(selected));
+    if (isSafeMode) {
       router.replace(`/call-guide/${song.slug}?list=${selected.id}&safe=1`);
     }
   };
