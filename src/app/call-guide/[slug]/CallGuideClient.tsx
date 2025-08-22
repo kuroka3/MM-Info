@@ -60,7 +60,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const tokenRefs = useRef<HTMLSpanElement[][]>([]);
   const lineRefs = useRef<HTMLDivElement[]>([]);
-  const [callPositions, setCallPositions] = useState<number[][]>([]);
+  const [callPositions, setCallPositions] = useState<(number | undefined)[][]>([]);
   const autoScrollRef = useRef(true);
   const programmaticScrollRef = useRef(false);
   const programmaticScrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1100,31 +1100,34 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const computeCallPositions = useCallback((): boolean => {
     let allOk = true;
     const next = lyrics.map((line, idx) => {
-      const res: number[] = [];
-      const calcPos = (posIdx: number | undefined) => {
-        if (posIdx == null) { allOk = false; return 0; }
+      const res: (number | undefined)[] = [];
+      const calcPos = (posIdx: number | undefined): number | undefined => {
+        if (posIdx == null) {
+          allOk = false;
+          return undefined;
+        }
         const charEl = tokenRefs.current[idx]?.[posIdx] ?? null;
         const lineEl = lineRefs.current[idx] ?? null;
         if (!charEl || !lineEl) {
           allOk = false;
-          return 0;
+          return undefined;
         }
         const charRect = charEl.getBoundingClientRect();
         const lineRect = lineEl.getBoundingClientRect();
         if (!charRect || !lineRect || lineRect.width === 0) {
           allOk = false;
-          return 0;
+          return undefined;
         }
         return charRect.left - lineRect.left;
       };
 
       // main call position (reserve index 0)
-      res.push(line.call?.pos != null ? calcPos(line.call.pos) : 0);
+      res.push(line.call?.pos != null ? calcPos(line.call.pos) : undefined);
 
       line.calls?.forEach((c) => {
         if (c.isRepeat) return;
         const p0 = c.pos?.[0];
-        res.push(typeof p0 === 'number' ? calcPos(p0) : 0);
+        res.push(typeof p0 === 'number' ? calcPos(p0) : undefined);
       });
 
       return res;
@@ -1146,7 +1149,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     let raf1 = 0, raf2 = 0, rafLoop = 0, tries = 0;
     const tick = () => {
       const ok = computeCallPositions();
-      if (!ok && tries++ < 10) rafLoop = requestAnimationFrame(tick);
+      if (!ok && tries++ < 60) rafLoop = requestAnimationFrame(tick);
     };
     raf1 = requestAnimationFrame(() => {
       raf2 = requestAnimationFrame(tick);

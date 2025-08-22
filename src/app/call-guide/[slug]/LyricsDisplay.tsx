@@ -9,7 +9,7 @@ interface LyricsDisplayProps {
   activeLine: number;
   tokenRefs: React.MutableRefObject<HTMLSpanElement[][]>;
   lineRefs: React.MutableRefObject<HTMLDivElement[]>;
-  callPositions: number[][];
+  callPositions: (number | undefined)[][];
   callActive: (line: ProcessedLine) => boolean;
   callItemActive: (item: CallItem) => boolean;
   charActive: (token: Token) => boolean;
