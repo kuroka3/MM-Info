@@ -102,7 +102,7 @@ export default function SongSearchOverlay({ songs, safeSongs, onClose, onUnlock 
         />
       </form>
       <div className="search-messages">
-        <p className="warn">⚠️ 주의! 곡 검색 시 스포일러가 포함될 수 있습니다.</p>
+        <p className="warn"><strong>⚠️ 주의!</strong> 곡 검색 시 <strong>스포일러</strong>가 포함될 수 있습니다.</p>
         <p className="warn">
           검색한 곡은 스포일러에서 <strong>해금</strong>하여 스포 X의 전체 곡 리스트에
           추가할 수 있습니다.
