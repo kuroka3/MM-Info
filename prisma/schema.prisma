@@ -24,6 +24,7 @@ model Song {
   thumbnail String?
   part      String[]
   setlists  SetlistSong[]
+  anotherName String[] @default([])
 }
 
 model Venue {
