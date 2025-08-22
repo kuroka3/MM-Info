@@ -43,11 +43,12 @@ export default function LyricsDisplay({
         >
           <div
             className={`lyric-call${callActive(line) ? ' active' : ''}`}
-            style={
-              line.call?.pos != null
-                ? { left: callPositions[idx]?.[0], transform: 'none' }
-                : undefined
-            }
+            style={(() => {
+              const left = callPositions[idx]?.[0];
+              return line.call?.pos != null && left != null
+                ? { left, transform: 'none' }
+                : undefined;
+            })()}
           >
             {line.call?.text ?? ''}
           </div>
@@ -138,11 +139,12 @@ export default function LyricsDisplay({
                 <div
                   key={cIdx}
                   className={`lyric-call${callItemActive(c) ? ' active' : ''}`}
-                  style={
-                    pos0 != null
-                      ? { left: callPositions[idx]?.[nonRepeatIdx], transform: 'none' }
-                      : undefined
-                  }
+                  style={(() => {
+                    const left = callPositions[idx]?.[nonRepeatIdx];
+                    return pos0 != null && left != null
+                      ? { left, transform: 'none' }
+                      : undefined;
+                  })()}
                 >
                   {c.text}
                 </div>
