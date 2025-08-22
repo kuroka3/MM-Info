@@ -517,10 +517,10 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       pl === 'default'
         ? isSafeMode
           ? safeAllRef.current || {
-              id: ALL_PLAYLIST_ID,
-              name: '전체 곡',
-              slugs: songs.map((s) => s.slug!),
-            }
+            id: ALL_PLAYLIST_ID,
+            name: '전체 곡',
+            slugs: songs.map((s) => s.slug!),
+          }
           : { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) }
         : pl;
 
@@ -1099,29 +1099,25 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
 
   const computeCallPositions = useCallback((): boolean => {
     let allOk = true;
+    let anySet = false;
+
+    const norm = (v: number) => Math.round(v);
+
     const next = lyrics.map((line, idx) => {
       const res: (number | undefined)[] = [];
+
       const calcPos = (posIdx: number | undefined): number | undefined => {
-        if (posIdx == null) {
-          allOk = false;
-          return undefined;
-        }
-        const charEl = tokenRefs.current[idx]?.[posIdx] ?? null;
-        const lineEl = lineRefs.current[idx] ?? null;
-        if (!charEl || !lineEl) {
-          allOk = false;
-          return undefined;
-        }
+        if (posIdx == null) return undefined;
+        const charEl = tokenRefs.current?.[idx]?.[posIdx] ?? null;
+        const lineEl = lineRefs.current?.[idx] ?? null;
+        if (!charEl || !lineEl) return undefined;
         const charRect = charEl.getBoundingClientRect();
         const lineRect = lineEl.getBoundingClientRect();
-        if (!charRect || !lineRect || lineRect.width === 0) {
-          allOk = false;
-          return undefined;
-        }
-        return charRect.left - lineRect.left;
+        if (!charRect || !lineRect || lineRect.width === 0) return undefined;
+        const left = charRect.left - lineRect.left;
+        return Number.isFinite(left) ? norm(left) : undefined;
       };
 
-      // main call position (reserve index 0)
       res.push(line.call?.pos != null ? calcPos(line.call.pos) : undefined);
 
       line.calls?.forEach((c) => {
@@ -1130,34 +1126,68 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
         res.push(typeof p0 === 'number' ? calcPos(p0) : undefined);
       });
 
+      for (let j = 0; j < res.length; j++) {
+        if (res[j] != null) {
+          anySet = true;
+        } else {
+          allOk = false;
+        }
+      }
+
       return res;
     });
+
     setCallPositions((prev) => {
       if (prev.length !== next.length) return next;
       for (let i = 0; i < next.length; i++) {
         const prevLine = prev[i] ?? [];
         const nextLine = next[i] ?? [];
         if (prevLine.length !== nextLine.length) return next;
-        for (let j = 0; j < nextLine.length; j++) if (prevLine[j] !== nextLine[j]) return next;
+        for (let j = 0; j < nextLine.length; j++) {
+          if (prevLine[j] !== nextLine[j]) return next;
+        }
       }
       return prev;
     });
-    return allOk;
-  }, [lyrics]);
+
+    return anySet && allOk;
+  }, [lyrics, tokenRefs, lineRefs]);
 
   useLayoutEffect(() => {
-    let raf1 = 0, raf2 = 0, rafLoop = 0, tries = 0;
-    const tick = () => {
+    let cancelled = false;
+    let raf = 0;
+    let tries = 0;
+    const MAX_TRIES = 60;
+
+    const measure = () => {
+      if (cancelled) return;
       const ok = computeCallPositions();
-      if (!ok && tries++ < 60) rafLoop = requestAnimationFrame(tick);
+      if (!ok && tries++ < MAX_TRIES) {
+        raf = requestAnimationFrame(measure);
+      }
     };
-    raf1 = requestAnimationFrame(() => {
-      raf2 = requestAnimationFrame(tick);
+
+    const start = () => {
+      if (cancelled) return;
+      raf = requestAnimationFrame(measure);
+    };
+
+    if (document.fonts && document.fonts.status !== 'loaded') {
+      document.fonts.ready.then(() => { if (!cancelled) start(); });
+    } else {
+      start();
+    }
+
+    const ro = new ResizeObserver(() => {
+      tries = 0;
+      measure();
     });
+    ro.observe(document.documentElement);
+
     return () => {
-      cancelAnimationFrame(raf1);
-      cancelAnimationFrame(raf2);
-      cancelAnimationFrame(rafLoop);
+      cancelled = true;
+      if (raf) cancelAnimationFrame(raf);
+      ro.disconnect();
     };
   }, [computeCallPositions, lyrics]);
 
@@ -1342,7 +1372,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   if (!song) return <main>노래를 찾을 수 없습니다.</main>;
 
   const body = (
-      <>
+    <>
       <main>
         <div id="player" className="video-background" />
         <header className="header">
@@ -1608,7 +1638,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
           </div>
         </div>
       )}
-      </>
+    </>
   );
 
   return isSafeMode ? body : (
