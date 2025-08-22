@@ -15,7 +15,20 @@ export default async function SafeCallGuidePage() {
       summary: { not: null },
       lyrics: { not: Prisma.JsonNull },
     },
-    include: {
+    select: {
+      id: true,
+      title: true,
+      krtitle: true,
+      artist: true,
+      slug: true,
+      videoId: true,
+      summary: true,
+      lyrics: true,
+      spotify: true,
+      youtube: true,
+      thumbnail: true,
+      part: true,
+      anotherName: true,
       setlists: {
         select: { order: true, higawari: true, locationgawari: true },
         orderBy: { order: 'asc' },
