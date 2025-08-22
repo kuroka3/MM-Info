@@ -7,8 +7,8 @@ import type { CallItem } from '@/types/call-guide';
 interface LyricsDisplayProps {
   lyrics: ProcessedLine[];
   activeLine: number;
-  tokenRefs: React.MutableRefObject<HTMLSpanElement[][]>;
-  lineRefs: React.MutableRefObject<HTMLDivElement[]>;
+  tokenRefs: React.RefObject<HTMLSpanElement[][]>;
+  lineRefs: React.RefObject<HTMLDivElement[]>;
   callPositions: (number | undefined)[][];
   callActive: (line: ProcessedLine) => boolean;
   callItemActive: (item: CallItem) => boolean;
@@ -37,7 +37,9 @@ export default function LyricsDisplay({
           className={`lyric-line${idx === activeLine ? ' focused' : ''}`}
           tabIndex={-1}
           ref={(el) => {
-            lineRefs.current[idx] = el!;
+            if (lineRefs.current) {
+              lineRefs.current[idx] = el!;
+            }
           }}
           onClick={() => onLineClick(idx)}
         >
@@ -47,7 +49,7 @@ export default function LyricsDisplay({
               const left = callPositions[idx]?.[0];
               return line.call?.pos != null && left != null
                 ? { left, transform: 'none' }
-                : undefined;
+                : { visibility: 'hidden' };
             })()}
           >
             {line.call?.text ?? ''}
@@ -77,11 +79,11 @@ export default function LyricsDisplay({
                   stage < starts.length &&
                   currentTime >= (starts[stage] ?? Infinity) &&
                   currentTime <= (ends[stage] ?? -Infinity);
-                const lineEl = lineRefs.current[idx];
+                const lineEl = lineRefs.current?.[idx];
                 const elements: React.ReactNode[] = [];
                 if (stage > 0) {
                   const firstIdx = positions[0];
-                  const firstEl = tokenRefs.current[idx]?.[firstIdx];
+                  const firstEl = tokenRefs.current?.[idx]?.[firstIdx];
                   const firstLeft =
                     lineEl && firstEl
                       ? firstEl.getBoundingClientRect().left - lineEl.getBoundingClientRect().left
@@ -90,7 +92,7 @@ export default function LyricsDisplay({
                     <div
                       key={`${cIdx}-arrow`}
                       className="lyric-call"
-                      style={firstLeft != null ? { left: firstLeft, transform: 'none' } : undefined}
+                      style={firstLeft != null ? { left: firstLeft, transform: 'none' } : { visibility: 'hidden' }}
                     >
                       {'→'}
                     </div>,
@@ -117,7 +119,7 @@ export default function LyricsDisplay({
                   </>
                 );
                 const charIdx = positions[stage];
-                const charEl = tokenRefs.current[idx]?.[charIdx];
+                const charEl = tokenRefs.current?.[idx]?.[charIdx];
                 const left =
                   lineEl && charEl
                     ? charEl.getBoundingClientRect().left - lineEl.getBoundingClientRect().left
@@ -126,7 +128,7 @@ export default function LyricsDisplay({
                   <div
                     key={cIdx}
                     className={`lyric-call${active ? ' active' : ''}`}
-                    style={left != null ? { left, transform: 'none' } : undefined}
+                    style={left != null ? { left, transform: 'none' } : { visibility: 'hidden' }}
                   >
                     {label}
                   </div>,
@@ -143,7 +145,7 @@ export default function LyricsDisplay({
                     const left = callPositions[idx]?.[nonRepeatIdx];
                     return pos0 != null && left != null
                       ? { left, transform: 'none' }
-                      : undefined;
+                      : { visibility: 'hidden' };
                   })()}
                 >
                   {c.text}
@@ -156,6 +158,7 @@ export default function LyricsDisplay({
               <span
                 key={i}
                 ref={(el) => {
+                  if (!tokenRefs.current) return;
                   if (!tokenRefs.current[idx]) tokenRefs.current[idx] = [];
                   tokenRefs.current[idx][i] = el!;
                 }}
