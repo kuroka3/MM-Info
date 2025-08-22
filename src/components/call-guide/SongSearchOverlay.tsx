@@ -17,14 +17,22 @@ export default function SongSearchOverlay({ songs, safeSongs, onClose, onUnlock 
   const [confirmSong, setConfirmSong] = useState<SongWithSetlist | null>(null);
   const [unlockedMsg, setUnlockedMsg] = useState('');
   const resultRef = useRef<HTMLDivElement>(null);
+  const [searched, setSearched] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const [confirmClosing, setConfirmClosing] = useState(false);
+
+  const handleClose = useCallback(() => {
+    setClosing(true);
+    setTimeout(onClose, 200);
+  }, [onClose]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') handleClose();
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [onClose]);
+  }, [handleClose]);
 
   const toHalfWidth = (str: string) =>
     str
@@ -43,6 +51,7 @@ export default function SongSearchOverlay({ songs, safeSongs, onClose, onUnlock 
     const n = normalize(query);
     if (!n) {
       setResult(null);
+      setSearched(false);
       return;
     }
     const match = songs.find((s) => {
@@ -50,6 +59,7 @@ export default function SongSearchOverlay({ songs, safeSongs, onClose, onUnlock 
       return names.some((name) => name && normalize(name) === n);
     });
     setResult(match ?? null);
+    setSearched(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -58,6 +68,13 @@ export default function SongSearchOverlay({ songs, safeSongs, onClose, onUnlock 
   };
 
   const already = result ? safeSongs.some((s) => s.slug === result.slug) : false;
+  const closeConfirm = () => {
+    setConfirmClosing(true);
+    setTimeout(() => {
+      setConfirmSong(null);
+      setConfirmClosing(false);
+    }, 200);
+  };
 
   const addSong = () => {
     if (!result) return;
@@ -76,14 +93,14 @@ export default function SongSearchOverlay({ songs, safeSongs, onClose, onUnlock 
         setUnlockedMsg('');
       }, 400);
     }
-    setConfirmSong(null);
+    closeConfirm();
   };
 
   return (
     <div
-      className="search-overlay"
+      className={`search-overlay${closing ? ' fade-out' : ''}`}
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget) handleClose();
       }}
     >
       <form className="search-bar" onSubmit={handleSubmit}>
@@ -149,12 +166,15 @@ export default function SongSearchOverlay({ songs, safeSongs, onClose, onUnlock 
           </span>
         </div>
       )}
+      {!result && searched && (
+        <div className="search-no-result">검색 결과가 없습니다.</div>
+      )}
       {unlockedMsg && <div className="unlock-message">{unlockedMsg}</div>}
       {confirmSong && (
-        <div className="search-confirm">
+        <div className={`search-confirm${confirmClosing ? ' pop-out' : ''}`}>
           <p>{`${confirmSong.krtitle || confirmSong.title}을 해금하시겠습니까?`}</p>
           <div className="search-confirm-buttons">
-            <button type="button" className="no" onClick={() => setConfirmSong(null)}>
+            <button type="button" className="no" onClick={closeConfirm}>
               아니오
             </button>
             <button type="button" className="yes" onClick={addSong}>
