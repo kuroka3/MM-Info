@@ -89,31 +89,30 @@ export default function CallGuideIndexClient({ songs }: Props) {
       setPlaylists([]);
     }
 
+    const defaultPlaylist = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
     const activeStored = localStorage.getItem('callGuideActivePlaylist');
     if (activeStored) {
       try {
         let parsed = JSON.parse(activeStored) as Playlist | null;
         if (!parsed || !Array.isArray(parsed.slugs)) {
-          parsed = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+          parsed = defaultPlaylist;
         } else if (!parsed.id) {
           const match = migrated.find(pl => pl.name === parsed!.name && Array.isArray(pl.slugs) && pl.slugs.length === parsed!.slugs.length && pl.slugs.every(s => parsed!.slugs.includes(s)));
           const id = match?.id ?? generateShortId11();
           parsed = { ...parsed, id };
         }
-        if (parsed.name === 'default') {
-          parsed = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+        if (parsed.id === ALL_PLAYLIST_ID || parsed.name === 'default') {
+          parsed = defaultPlaylist;
         }
         localStorage.setItem('callGuideActivePlaylist', JSON.stringify(parsed));
         setActivePlaylist(parsed);
       } catch {
-        const def = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
-        localStorage.setItem('callGuideActivePlaylist', JSON.stringify(def));
-        setActivePlaylist(def);
+        localStorage.setItem('callGuideActivePlaylist', JSON.stringify(defaultPlaylist));
+        setActivePlaylist(defaultPlaylist);
       }
     } else {
-      const def = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
-      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(def));
-      setActivePlaylist(def);
+      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(defaultPlaylist));
+      setActivePlaylist(defaultPlaylist);
     }
   }, [songs]);
 
