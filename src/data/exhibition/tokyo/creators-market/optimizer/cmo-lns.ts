@@ -1,6 +1,6 @@
 // cmo-lns.ts
-import { CMOBooth, CMOSchedulerCore, CMOScheduleResult } from "./cmo-engine.js";
-import { CMO_buildByRegret, CMO_totalMinutes } from "./cmo-heuristics.js";
+import { CMOBooth, CMOSchedulerCore, CMOScheduleResult } from "./cmo-engine";
+import { CMO_buildByRegret, CMO_totalMinutes } from "./cmo-heuristics";
 
 // -----------------------------
 // Slack 계산: 각 방문의 ‘데드라인 여유’ 근사

@@ -1,5 +1,5 @@
 // cmo-risk.ts
-import { CMOBooth, CMOSchedulerCore } from "./cmo-engine.js";
+import { CMOBooth, CMOSchedulerCore } from "./cmo-engine";
 
 // ---------- RNG & 통계 유틸 ----------
 export class CMORng {

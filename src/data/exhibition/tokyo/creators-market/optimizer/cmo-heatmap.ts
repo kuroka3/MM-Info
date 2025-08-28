@@ -2,7 +2,7 @@
 import {
   CMOBooth, CMOBoothId, CMORow,
   CMOGeometry, CMOShowCrowdModel, CMOSchedulerCore
-} from "./cmo-engine.js";
+} from "./cmo-engine";
 
 /** 시간축 유틸: 10:00 기준 분단위 → "HH:MM" */
 export function CMO_fmtTime(minSince10: number) {

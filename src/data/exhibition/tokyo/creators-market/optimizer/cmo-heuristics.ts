@@ -1,7 +1,7 @@
 // cmo-heuristics.ts
 import {
   CMOBooth, CMOSchedulerCore, CMOScheduleResult,
-} from "./cmo-engine.js";
+} from "./cmo-engine";
 
 // --------------------------------------
 // 간단 캐시형: 기존 route 점수 재사용 가능
