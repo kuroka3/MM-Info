@@ -98,9 +98,9 @@ export function CMO_localSearch(route: CMOBooth[], core: CMOSchedulerCore, maxPa
   let sc = core.scheduleFixed(cur);
   for (let pass = 0; pass < maxPass; pass++) {
     let any = false;
-    let r1 = CMO_twoOptOnce(cur, core);
+    const r1 = CMO_twoOptOnce(cur, core);
     if (r1.improved) { cur = r1.route; sc = r1.score; any = true; }
-    let r2 = CMO_relocateOnce(cur, core);
+    const r2 = CMO_relocateOnce(cur, core);
     if (r2.improved) { cur = r2.route; sc = r2.score; any = true; }
     if (!any) break;
   }

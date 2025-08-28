@@ -86,7 +86,7 @@ export function CMO_buildByRegret(
   kOrder = 3,
   maxIter = 10_000
 ) {
-  let route = seedRoute.slice();
+  const route = seedRoute.slice();
   const remain = pool.slice();
   let base = core.scheduleFixed(route);
   let iter = 0;

@@ -99,7 +99,7 @@ export function CMO_monteCarlo(
       // 정확히 하려면 직전 위치 기억하고 core.travel.travel(prev,b) 호출
       // 여기선 오차 감소 위해 실제 호출:
       const prev = i === 0 ? "S" : route[i - 1];
-      const leg = core.travel.travel(prev as any, b);
+      const leg = core.travel.travel(prev, b);
       t += leg.travelMin;
 
       if (t < b.open) t = b.open;
@@ -120,7 +120,7 @@ export function CMO_monteCarlo(
       const leg = core.travel.travel(route[route.length - 1], "E");
       t += leg.travelMin;
     } else {
-      const leg = core.travel.travel("S" as any, "E" as any);
+      const leg = core.travel.travel("S", "E");
       t += leg.travelMin;
     }
 

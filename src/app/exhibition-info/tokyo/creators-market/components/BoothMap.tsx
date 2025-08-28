@@ -20,8 +20,10 @@ import { jacketSrc, displayBoothId, DAYS } from '@/data/exhibition/tokyo/creator
 import { scrollToPosition } from '@/lib/scroll';
 
 interface BoothMapProps {
-  selectedDay: (typeof DAYS)[number]['value'];
-  onBoothClick: (id: string) => void;
+  selectedDay: (typeof DAYS)[number]['value']
+  onBoothClick: (id: string) => void
+  selectedBooths?: Record<string, 'visit' | 'must'>
+  heatMap?: Record<string, string>
 }
 
 export interface BoothMapHandle {
@@ -38,7 +40,7 @@ const findBooth = (row: string, col: number, day: string) => {
 };
 
 const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
-  ({ selectedDay, onBoothClick }, ref) => {
+  ({ selectedDay, onBoothClick, selectedBooths, heatMap }, ref) => {
     const [prevDay, setPrevDay] = useState(selectedDay);
     const [flippedCells, setFlippedCells] = useState<Set<string>>(new Set());
     const flipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -369,73 +371,80 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
       day: (typeof DAYS)[number]['value'],
       interactive: boolean,
     ): { node: ReactNode; style?: CSSProperties } => {
-      const booth = findBooth(row, col, day);
-      const prevSpan = col > 1 && findBooth(row, col - 1, day)?.span;
-      if (!booth && prevSpan) return { node: null };
-      if (!booth) return { node: <div className="booth-empty">✕</div> };
+      const booth = findBooth(row, col, day)
+      const prevSpan = col > 1 && findBooth(row, col - 1, day)?.span
+      if (!booth && prevSpan) return { node: null }
+      if (!booth) return { node: <div className="booth-empty">✕</div> }
       if (booth.hidden) {
         return {
           node: <div className="booth-hidden" />,
           style: booth.span ? { gridColumn: `span ${booth.span}` } : undefined,
-        };
-      }
-      if (booth.span && col !== booth.col) return { node: null };
-        const style = booth.span ? { gridColumn: `span ${booth.span}` } : undefined;
-        const displayId = displayBoothId(booth.id);
-        const [labelRow, labelCol] = displayId.split('-');
-        const labelNode = (
-          <span className="booth-label">
-            <span>{labelRow}</span>
-            <span>-</span>
-            <span>{labelCol}</span>
-          </span>
-        );
-        if (interactive) {
-          return {
-            node: (
-              <button
-                ref={el => {
-                  boothRefs.current[booth.id] = el;
-                }}
-                className={`booth ${rowClasses[row]} ${booth.span && booth.span > 1 ? 'booth-wide' : ''}`}
-                data-booth-id={booth.id}
-                onPointerUp={e => handleBoothPointerUp(e, booth.id)}
-                onClick={e => handleBoothClick(e, booth.id)}
-                onMouseEnter={e => showTooltip(e.currentTarget)}
-                onMouseLeave={e => {
-                  const el = e.currentTarget;
-                  setTimeout(() => {
-                    if (!el.matches(':hover')) hideTooltip(el);
-                  }, 50);
-                }}
-              >
-                {labelNode}
-                <div className="booth-tooltip">
-                  <div className="tooltip-img-wrapper">
-                    <Image
-                      src={jacketSrc(booth.id)}
-                      alt={booth.name}
-                      width={120}
-                      height={120}
-                      className="tooltip-img"
-                    />
-                  </div>
-                  <p className="tooltip-title">{booth.koPNames || booth.name}</p>
-                </div>
-              </button>
-            ),
-            style,
-          };
         }
+      }
+      if (booth.span && col !== booth.col) return { node: null }
+      const spanStyle = booth.span ? { gridColumn: `span ${booth.span}` } : undefined
+      const displayId = displayBoothId(booth.id)
+      const [labelRow, labelCol] = displayId.split('-')
+      const labelNode = (
+        <span className="booth-label">
+          <span>{labelRow}</span>
+          <span>-</span>
+          <span>{labelCol}</span>
+        </span>
+      )
+      const state = selectedBooths?.[booth.id]
+      const heat = heatMap?.[booth.id]
+      const cls = `booth ${rowClasses[row]} ${booth.span && booth.span > 1 ? 'booth-wide' : ''} ${state === 'visit' ? 'selected' : ''} ${state === 'must' ? 'must' : ''}`
+      if (interactive) {
         return {
           node: (
-            <div className={`booth ${rowClasses[row]} ${booth.span && booth.span > 1 ? 'booth-wide' : ''}`}>
+            <button
+              ref={el => {
+                boothRefs.current[booth.id] = el
+              }}
+              className={cls}
+              style={heat ? { backgroundColor: heat } : undefined}
+              data-booth-id={booth.id}
+              onPointerUp={e => handleBoothPointerUp(e, booth.id)}
+              onClick={e => handleBoothClick(e, booth.id)}
+              onMouseEnter={e => showTooltip(e.currentTarget)}
+              onMouseLeave={e => {
+                const el = e.currentTarget
+                setTimeout(() => {
+                  if (!el.matches(':hover')) hideTooltip(el)
+                }, 50)
+              }}
+            >
               {labelNode}
-            </div>
+              <div className="booth-tooltip">
+                <div className="tooltip-img-wrapper">
+                  <Image
+                    src={jacketSrc(booth.id)}
+                    alt={booth.name}
+                    width={120}
+                    height={120}
+                    className="tooltip-img"
+                  />
+                </div>
+                <p className="tooltip-title">{booth.koPNames || booth.name}</p>
+              </div>
+            </button>
           ),
-          style,
-        };
-    };
+          style: spanStyle,
+        }
+      }
+      return {
+        node: (
+          <div
+            className={cls}
+            style={heat ? { backgroundColor: heat } : undefined}
+          >
+            {labelNode}
+          </div>
+        ),
+        style: spanStyle,
+      }
+    }
 
     return (
       <div className="cm-map-wrapper" ref={wrapperRef}>
