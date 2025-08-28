@@ -51,6 +51,7 @@ async function SetlistContent({ setlistId, date, block }: { setlistId: string, d
     part: item.song.part || '',
     higawari: item.higawari || false,
     locationgawari: item.locationgawari || false,
+    slug: item.song.slug || undefined,
   }));
 
   const playlist = songs.find(

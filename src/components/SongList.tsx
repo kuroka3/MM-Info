@@ -1,5 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { ALL_PLAYLIST_ID } from '@/utils/playlistOrder';
 
 interface Song {
   title: string;
@@ -11,6 +13,7 @@ interface Song {
   higawari?: boolean;
   locationgawari?: boolean;
   part?: string[];
+  slug?: string;
 }
 
 interface SongListProps {
@@ -46,6 +49,18 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
           ? song.part.map(name => partColors[name as keyof typeof partColors]).filter(Boolean)
           : [];
 
+        const hasRinLen =
+          colors.length === 2 &&
+          colors.includes(partColors.RIN) &&
+          colors.includes(partColors.LEN);
+
+        const background =
+          colors.length === 1
+            ? colors[0]
+            : hasRinLen
+            ? `linear-gradient(to bottom right, ${partColors.RIN}, ${partColors.RIN} 49%, rgba(255,255,255,0.9) 50%, ${partColors.LEN} 51%, ${partColors.LEN})`
+            : `linear-gradient(to bottom right, ${colors.join(', ')})`;
+
         const borderStyle: React.CSSProperties =
           colors.length > 0
             ? {
@@ -56,11 +71,9 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
                 bottom: 0,
                 borderRadius: '20px',
                 padding: '2px',
-                background:
-                  colors.length === 1
-                    ? colors[0]
-                    : `linear-gradient(to bottom right, ${colors.join(', ')})`,
-                WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+                background,
+                WebkitMask:
+                  'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
                 WebkitMaskComposite: 'xor',
                 maskComposite: 'exclude',
                 pointerEvents: 'none',
@@ -68,12 +81,18 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
             : {};
 
         return (
-          <div className={itemClass} key={index}>
+          <div
+            className={itemClass}
+            key={index}
+            style={{ borderColor: colors.length > 0 ? 'transparent' : undefined }}
+          >
             {colors.length > 0 && <div style={borderStyle} />}
-            <div className="song-info">
-              {!isFinalPlaylist && (
+            {!isFinalPlaylist && (
+              <div className="song-index-wrapper">
                 <span className="song-index">{index + 1}</span>
-              )}
+              </div>
+            )}
+            <div className="song-info">
               <div className="song-details">
                 <Image
                   src={song.jacketUrl}
@@ -97,6 +116,16 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
               </div>
             </div>
             <div className="song-links">
+              {song.slug && (
+                <Link href={`/call-guide/${song.slug}?list=${ALL_PLAYLIST_ID}`}>
+                  <Image
+                    src="/images/megaphone.svg"
+                    alt="Call Guide"
+                    width={24}
+                    height={24}
+                  />
+                </Link>
+              )}
               {song.spotifyUrl && (
                 <a
                   href={song.spotifyUrl}

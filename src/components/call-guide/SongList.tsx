@@ -445,6 +445,18 @@ function SongList(
                 .filter(Boolean)
             : [];
 
+          const hasRinLen =
+            colors.length === 2 &&
+            colors.includes(partColors.RIN) &&
+            colors.includes(partColors.LEN);
+
+          const background =
+            colors.length === 1
+              ? colors[0]
+              : hasRinLen
+              ? `linear-gradient(to bottom right, ${partColors.RIN}, ${partColors.RIN} 49%, rgba(255,255,255,0.9) 50%, ${partColors.LEN} 51%, ${partColors.LEN})`
+              : `linear-gradient(to bottom right, ${colors.join(', ')})`;
+
           const borderStyle: CSSProperties | undefined =
             colors.length > 0
               ? ({
@@ -455,10 +467,7 @@ function SongList(
                   bottom: 0,
                   borderRadius: '24px',
                   padding: '2px',
-                  background:
-                    colors.length === 1
-                      ? colors[0]
-                      : `linear-gradient(to bottom right, ${colors.join(', ')})`,
+                  background,
                   WebkitMask:
                     'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
                   WebkitMaskComposite: 'xor',
@@ -473,7 +482,11 @@ function SongList(
               key={song.slug!}
               href={`/call-guide/${song.slug}?list=${activePlaylist?.id ?? ALL_PLAYLIST_ID}${linkExtraQuery}`}
               className={`${itemClass} remove-mode`}
-              style={{ textDecoration: 'none', position: 'relative' }}
+              style={{
+                textDecoration: 'none',
+                position: 'relative',
+                borderColor: colors.length > 0 ? 'transparent' : undefined,
+              }}
             >
               {colors.length > 0 && <div style={borderStyle} />}
               <div className="song-index-wrapper">
@@ -517,7 +530,11 @@ function SongList(
                 key={song.slug!}
                 className={itemClass}
                 onClick={() => toggleSelect(song.slug!)}
-                style={{ textDecoration: 'none', cursor: 'pointer' }}
+                style={{
+                  textDecoration: 'none',
+                  cursor: 'pointer',
+                  borderColor: colors.length > 0 ? 'transparent' : undefined,
+                }}
               >
                 {colors.length > 0 && <div style={borderStyle} />}
                 <div className="song-index-wrapper">
@@ -555,7 +572,10 @@ function SongList(
               key={song.slug!}
               href={`/call-guide/${song.slug}?list=${activePlaylist?.id ?? ALL_PLAYLIST_ID}${linkExtraQuery}`}
               className={itemClass}
-              style={{ textDecoration: 'none' }}
+              style={{
+                textDecoration: 'none',
+                borderColor: colors.length > 0 ? 'transparent' : undefined,
+              }}
               onClick={handleSongClick}
               data-song-index={index}
               onDragOver={(e) => {

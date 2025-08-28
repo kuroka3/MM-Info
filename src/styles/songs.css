@@ -10,6 +10,7 @@
   display: flex;
   align-items: center;
   padding: 24px;
+  padding-left: calc(24px + 40px);
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: 20px;
@@ -95,17 +96,34 @@
   flex: 1;
 }
 
+.song-index-wrapper {
+  position: absolute;
+  top: 24px;
+  bottom: 24px;
+  left: 24px;
+  width: 40px;
+}
+
 .song-index {
   font-size: 1rem;
   font-weight: 700;
   color: var(--text-tertiary);
   width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   font-variant-numeric: tabular-nums;
   background: var(--surface-secondary);
   border-radius: 12px;
-  padding: 8px 0;
   border: 1px solid var(--border);
+}
+
+@media (min-width: 796px) {
+  .song-item {
+    padding-left: calc(24px + 40px + 16px);
+  }
 }
 
 .song-jacket {
@@ -207,6 +225,12 @@
   background: var(--spotify-green);
   border-color: var(--spotify-green);
   box-shadow: 0 8px 24px rgba(29, 185, 84, 0.4);
+}
+
+.song-links a[href^="/call-guide"]:hover {
+  background: var(--accent-orange);
+  border-color: var(--accent-orange);
+  box-shadow: 0 8px 24px rgba(255, 149, 0, 0.4);
 }
 
 .song-links a[href*="youtube"]:hover,
