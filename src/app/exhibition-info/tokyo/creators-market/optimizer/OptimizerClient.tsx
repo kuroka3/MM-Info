@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import DayTabs from '../components/DayTabs'
 import BoothMap from '../components/BoothMap'
-import { DAYS } from '@/data/exhibition/tokyo/creators-market/constants'
+import { DAYS, displayBoothId } from '@/data/exhibition/tokyo/creators-market/constants'
 import { runHeatSlice } from '@cm/cmo-run'
 import { CMO_normalizeWaitForSlice } from '@cm/cmo-heatmap'
 
@@ -19,7 +19,8 @@ export default function OptimizerClient() {
   const [time, setTime] = useState(0)
   const [heatMap, setHeatMap] = useState<Record<string, string>>({})
   const [selected, setSelected] = useState<Record<string, 'visit' | 'must'>>({})
-  const [result, setResult] = useState<unknown | null>(null)
+  interface OptimizeResult { route: { id: string }[] }
+  const [result, setResult] = useState<OptimizeResult | null>(null)
 
   useEffect(() => {
     const slice = runHeatSlice(selectedDay, time)
@@ -55,39 +56,82 @@ export default function OptimizerClient() {
     setResult(json)
   }
 
+  const clear = () => {
+    setSelected({})
+    setResult(null)
+  }
+
+  const orderMap = useMemo(() => {
+    const map: Record<string, number> = {}
+    if (result?.route) {
+      result.route.forEach((b, i) => {
+        map[b.id] = i + 1
+      })
+    }
+    return map
+  }, [result])
+
+  const progress = (time / 360) * 100
+
   return (
     <main className="cm-scope cm-tokyo">
-      <DayTabs selectedDay={selectedDay} onChange={setSelectedDay} />
-      <section className="cm-section map-section">
-        <BoothMap
-          selectedDay={selectedDay}
-          onBoothClick={handleBoothClick}
-          selectedBooths={selected}
-          heatMap={heatMap}
-        />
-      </section>
-      <div style={{ marginTop: '1rem' }}>
-        <label>
-          시간 {toTime(time)}
-          <input
-            type="range"
-            min={0}
-            max={360}
-            step={10}
-            value={time}
-            onChange={e => setTime(Number(e.target.value))}
-          />
-        </label>
-      </div>
-      <button onClick={compute} style={{ marginTop: '1rem' }}>
-        경로 계산
-      </button>
+      <header className="header">
+        <div className="container header-content">
+          <h1 className="header-title">Route Optimizer</h1>
+          <p className="header-subtitle">경로 최적화 도구</p>
+        </div>
+      </header>
 
-      {Boolean(result) && (
-        <pre style={{ whiteSpace: 'pre-wrap', marginTop: '1rem' }}>
-          {JSON.stringify(result, null, 2)}
-        </pre>
-      )}
+      <div className="container cm-main">
+        <DayTabs selectedDay={selectedDay} onChange={setSelectedDay} />
+        <section className="cm-section map-section">
+          <BoothMap
+            selectedDay={selectedDay}
+            onBoothClick={handleBoothClick}
+            selectedBooths={selected}
+            heatMap={heatMap}
+            showWalkways
+            routeOrder={orderMap}
+          />
+        </section>
+
+        <div className="time-slider">
+          <label>
+            시간 {toTime(time)}
+            <input
+              suppressHydrationWarning
+              className="opt-slider"
+              type="range"
+              min={0}
+              max={360}
+              step={10}
+              value={time}
+              onChange={e => setTime(Number(e.target.value))}
+              style={{
+                background: `linear-gradient(to right, #39c5bb 0%, #39c5bb ${progress}%, rgba(255,255,255,0.15) ${progress}%, rgba(255,255,255,0.15) 100%)`,
+                boxShadow: progress > 0 ? '0 0 8px #39c5bb' : undefined,
+              }}
+            />
+          </label>
+        </div>
+
+        <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
+          <button onClick={compute}>경로 계산</button>
+          <button onClick={clear}>선택 초기화</button>
+        </div>
+
+        {result?.route && (
+          <ol className="route-list">
+            {result.route.map(b => (
+              <li key={b.id}>{displayBoothId(b.id)}</li>
+            ))}
+          </ol>
+        )}
+
+        {result && (
+          <pre className="route-json">{JSON.stringify(result, null, 2)}</pre>
+        )}
+      </div>
     </main>
   )
 }

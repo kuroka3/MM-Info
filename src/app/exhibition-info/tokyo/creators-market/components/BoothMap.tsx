@@ -24,6 +24,8 @@ interface BoothMapProps {
   onBoothClick: (id: string) => void
   selectedBooths?: Record<string, 'visit' | 'must'>
   heatMap?: Record<string, string>
+  showWalkways?: boolean
+  routeOrder?: Record<string, number>
 }
 
 export interface BoothMapHandle {
@@ -40,7 +42,10 @@ const findBooth = (row: string, col: number, day: string) => {
 };
 
 const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
-  ({ selectedDay, onBoothClick, selectedBooths, heatMap }, ref) => {
+  (
+    { selectedDay, onBoothClick, selectedBooths, heatMap, showWalkways, routeOrder },
+    ref,
+  ) => {
     const [prevDay, setPrevDay] = useState(selectedDay);
     const [flippedCells, setFlippedCells] = useState<Set<string>>(new Set());
     const flipTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -395,6 +400,7 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
       const state = selectedBooths?.[booth.id]
       const heat = heatMap?.[booth.id]
       const cls = `booth ${rowClasses[row]} ${booth.span && booth.span > 1 ? 'booth-wide' : ''} ${state === 'visit' ? 'selected' : ''} ${state === 'must' ? 'must' : ''}`
+      const order = routeOrder?.[booth.id]
       if (interactive) {
         return {
           node: (
@@ -416,6 +422,7 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
               }}
             >
               {labelNode}
+              {order && <span className="visit-order">{order}</span>}
               <div className="booth-tooltip">
                 <div className="tooltip-img-wrapper">
                   <Image
@@ -434,22 +441,24 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
         }
       }
       return {
-        node: (
-          <div
-            className={cls}
-            style={heat ? { backgroundColor: heat } : undefined}
-          >
-            {labelNode}
-          </div>
-        ),
-        style: spanStyle,
+          node: (
+            <div
+              className={cls}
+              style={heat ? { backgroundColor: heat } : undefined}
+            >
+              {labelNode}
+              {order && <span className="visit-order">{order}</span>}
+            </div>
+          ),
+          style: spanStyle,
+        }
       }
-    }
 
     return (
       <div className="cm-map-wrapper" ref={wrapperRef}>
         <div className="map-inner">
           <div className="cm-grid">
+            {showWalkways && <div className="walk-gap" />}
             {ROWS.map(row => (
               <Fragment key={row}>
                 {COLS.map(col => {
@@ -477,9 +486,12 @@ const BoothMap = forwardRef<BoothMapHandle, BoothMapProps>(
                     </div>
                   );
                 })}
-                {(row === 'B' || row === 'D') && <div className="walk-gap" />}
+                {showWalkways && (row === 'B' || row === 'D') && (
+                  <div className="walk-gap" />
+                )}
               </Fragment>
             ))}
+            {showWalkways && <div className="walk-gap" />}
           </div>
         </div>
       </div>
