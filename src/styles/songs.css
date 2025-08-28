@@ -109,12 +109,21 @@
   font-weight: 700;
   color: var(--text-tertiary);
   width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   font-variant-numeric: tabular-nums;
   background: var(--surface-secondary);
   border-radius: 12px;
-  padding: 8px 0;
   border: 1px solid var(--border);
+}
+
+@media (min-width: 796px) {
+  .song-item {
+    padding-left: calc(24px + 40px + 16px);
+  }
 }
 
 .song-jacket {

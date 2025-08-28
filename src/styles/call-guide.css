@@ -255,8 +255,7 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
-
-.song-index-wrapper {
+.call-item .song-index-wrapper {
   position: absolute;
   top: 1rem;
   bottom: 1rem;
@@ -264,15 +263,20 @@
   width: 40px;
 }
 
-.song-index {
+.call-item .song-index {
   position: absolute;
   top: 0;
   left: 0;
   pointer-events: none;
   z-index: 1;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.song-drag-handle {
+.call-item .song-drag-handle {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -285,11 +289,11 @@
   touch-action: none;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 480px) {
   .call-item {
     padding-left: 1rem;
   }
-  .song-index-wrapper {
+  .call-item .song-index-wrapper {
     position: relative;
     top: auto;
     bottom: auto;
@@ -299,10 +303,10 @@
     justify-content: flex-start;
     align-items: center;
   }
-  .song-index {
+  .call-item .song-index {
     position: static;
   }
-  .song-drag-handle {
+  .call-item .song-drag-handle {
     top: 50%;
     left: 50%;
     right: auto;
@@ -1036,16 +1040,16 @@
     padding: 16px !important;
   }
 
-  .song-index-wrapper {
+  .call-item .song-index-wrapper {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     width: 100%;
   }
-  .song-index {
+  .call-item .song-index {
     grid-column: 1;
     justify-self: start;
   }
-  .song-drag-handle {
+  .call-item .song-drag-handle {
     grid-column: 1;
     justify-self: center;
   }
