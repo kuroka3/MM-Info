@@ -44,6 +44,7 @@ async function SetlistContent({ setlistId, date, block }: { setlistId: string, d
 
   const songs = setlist.songs.map(item => ({
     title: item.song.title,
+    krtitle: item.song.krtitle || undefined,
     artist: item.song.artist,
     spotifyUrl: item.song.spotify || '',
     youtubeUrl: item.song.youtube || '',
