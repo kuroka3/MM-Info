@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
-import { triggerSpoilerRedirect } from '@/utils/spoilerRedirect';
+import { SPOILER_REDIRECT_DELAY, triggerSpoilerRedirect } from '@/utils/spoilerRedirect';
 
 const EVENTS = [
   {
@@ -45,6 +45,7 @@ export default function NavBar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [spoilerEnabled, setSpoilerEnabled] = useState(false);
+  const redirectPendingRef = useRef(false); // Prevent duplicate toggles during redirect
   useEffect(() => {
     setIsOpen(false);
   }, [pathname]);
@@ -104,10 +105,20 @@ export default function NavBar() {
   }, [spoilerKey]);
 
   const toggleSpoiler = () => {
-    if (!spoilerKey) return;
+    if (!spoilerKey || redirectPendingRef.current) return;
     const disabledKey = `${spoilerKey}:disabled`;
     setSpoilerEnabled((prev) => {
       const next = !prev;
+      const redirectTarget =
+        typeof document !== 'undefined' ? document.body.dataset.spoilerRedirect : undefined;
+      const handleRedirect = (startDelay: number) => {
+        if (!redirectTarget) return;
+        redirectPendingRef.current = true;
+        triggerSpoilerRedirect(redirectTarget, { startDelay });
+        window.setTimeout(() => {
+          redirectPendingRef.current = false;
+        }, startDelay + SPOILER_REDIRECT_DELAY + 150);
+      };
       if (next) {
         localStorage.setItem(spoilerKey, 'true');
         localStorage.removeItem(disabledKey);
@@ -116,10 +127,7 @@ export default function NavBar() {
             detail: { key: spoilerKey, value: true },
           }),
         );
-        if (typeof document !== 'undefined') {
-          const redirectTarget = document.body.dataset.spoilerRedirect;
-          if (redirectTarget) triggerSpoilerRedirect(redirectTarget, { startDelay: 220 });
-        }
+        handleRedirect(220);
       } else {
         localStorage.removeItem(spoilerKey);
         localStorage.setItem(disabledKey, 'true');
@@ -128,10 +136,7 @@ export default function NavBar() {
             detail: { key: spoilerKey, value: false },
           }),
         );
-        if (typeof document !== 'undefined') {
-          const redirectTarget = document.body.dataset.spoilerRedirect;
-          if (redirectTarget) triggerSpoilerRedirect(redirectTarget, { startDelay: 300 });
-        }
+        handleRedirect(300);
       }
       return next;
     });

@@ -53,15 +53,13 @@ const SpoilerGate: React.FC<Props> = ({
   }, [showWarning]);
 
   const handleYes = () => {
-    const isDisabled = localStorage.getItem(disabledKey) === 'true';
-    if (!isDisabled) {
-      localStorage.setItem(storageKey, 'true');
-      window.dispatchEvent(
-        new CustomEvent('spoilerToggleChange', {
-          detail: { key: storageKey, value: true },
-        }),
-      );
-    }
+    localStorage.setItem(storageKey, 'true');
+    localStorage.removeItem(disabledKey);
+    window.dispatchEvent(
+      new CustomEvent('spoilerToggleChange', {
+        detail: { key: storageKey, value: true },
+      }),
+    );
     setShowWarning(false);
   };
 

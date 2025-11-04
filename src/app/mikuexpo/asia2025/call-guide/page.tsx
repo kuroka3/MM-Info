@@ -16,13 +16,13 @@ export default function CallGuideHome() {
         <Link href="/mikuexpo/asia2025/call-guide/safe" className="glass-block green">
           <h2>테마곡</h2>
           <p>
-            <strong>테마곡</strong>이 있고, 커스텀으로 곡을 추가할 수 있는 스포일러 없는 페이지
+            <strong>테마곡</strong>이 있고, 커스텀으로 곡을 추가할 수 있는 <strong>스포 X</strong> 페이지
           </p>
         </Link>
         <Link href="/mikuexpo/asia2025/call-guide/all" className="glass-block red">
           <h2>모든 곡</h2>
           <p>
-            공연에 나오는 곡을 포함한 콜이 있는 <strong>모든 곡</strong>이 있는 페이지
+            세트리 곡들을 포함한 콜이 있는 <strong>모든 곡</strong>이 있는 <strong>스포 O</strong> 페이지
           </p>
         </Link>
       </section>
