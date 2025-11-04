@@ -15,4 +15,5 @@ export interface Playlist {
   name: string;
   slugs: string[];
   color?: string;
+  eventSlug?: string;
 }

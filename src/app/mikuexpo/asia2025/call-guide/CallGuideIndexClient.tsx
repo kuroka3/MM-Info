@@ -17,9 +17,10 @@ import { SongWithSetlist, Playlist } from '@/types/callGuide';
 interface Props {
   songs: SongWithSetlist[];
   eventSlug: string;
+  eventBasePath?: string;
 }
 
-export default function CallGuideIndexClient({ songs, eventSlug }: Props) {
+export default function CallGuideIndexClient({ songs, eventSlug, eventBasePath = '' }: Props) {
   const playlistsKey = `callGuidePlaylists:${eventSlug}`;
   const activeKey = `callGuideActivePlaylist:${eventSlug}`;
 
@@ -95,11 +96,17 @@ export default function CallGuideIndexClient({ songs, eventSlug }: Props) {
         const arr = JSON.parse(stored) as Playlist[];
         const seen = new Set<string>(arr.filter(p => p.id).map(p => p.id));
         migrated = arr.map((pl) => {
-          if (pl.id) return pl;
-          const id = ensureUniquePlaylistId(seen);
-          seen.add(id);
-          return { ...pl, id };
-        });
+          let newPl = pl;
+          if (!pl.id) {
+            const id = ensureUniquePlaylistId(seen);
+            seen.add(id);
+            newPl = { ...pl, id };
+          }
+          if (!newPl.eventSlug) {
+            newPl = { ...newPl, eventSlug };
+          }
+          return newPl;
+        }).filter(pl => pl.eventSlug === eventSlug);
         setPlaylists(migrated);
         if (JSON.stringify(arr) !== JSON.stringify(migrated)) {
           localStorage.setItem(playlistsKey, JSON.stringify(migrated));
@@ -193,6 +200,7 @@ export default function CallGuideIndexClient({ songs, eventSlug }: Props) {
       name: playlistName.trim(),
       slugs: Array.from(selected),
       color,
+      eventSlug,
     };
     const updated = [...playlists, newPlaylist];
     setPlaylists(updated);
@@ -416,6 +424,7 @@ export default function CallGuideIndexClient({ songs, eventSlug }: Props) {
         removeMode={removeMode}
         onRemoveSong={handleRemoveSong}
         ref={songListRef}
+        eventBasePath={eventBasePath}
       />
 
       {selectMode && (

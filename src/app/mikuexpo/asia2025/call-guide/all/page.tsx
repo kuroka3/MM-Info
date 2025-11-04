@@ -8,6 +8,7 @@ export const metadata: Metadata = { title: '콜 가이드 - 스포 O' };
 export const revalidate = 60;
 
 const EVENT_SLUG = 'miku-expo-2025-asia';
+const EVENT_BASE_PATH = '/mikuexpo/asia2025';
 
 export default async function CallGuideAllPage() {
   const songs = await prisma.song.findMany({
@@ -46,7 +47,7 @@ export default async function CallGuideAllPage() {
           </div>
         </header>
         <section className="container call-section">
-          <CallGuideIndexClient songs={songs} eventSlug={EVENT_SLUG} />
+          <CallGuideIndexClient songs={songs} eventSlug={EVENT_SLUG} eventBasePath={EVENT_BASE_PATH} />
         </section>
       </main>
     </SpoilerGate>

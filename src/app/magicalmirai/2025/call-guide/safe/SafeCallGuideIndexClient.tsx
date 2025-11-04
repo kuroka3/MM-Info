@@ -31,9 +31,10 @@ interface Props {
   safeSongIndex: string[];
   albumSongs: string[];
   eventSlug: string;
+  eventBasePath?: string;
 }
 
-export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSongs, eventSlug }: Props) {
+export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSongs, eventSlug, eventBasePath = '' }: Props) {
   const playlistsKey = `callGuideSafePlaylists:${eventSlug}`;
   const activeKey = `callGuideSafeActivePlaylist:${eventSlug}`;
   const songsKey = `callGuideSafeSongs:${eventSlug}`;
@@ -151,11 +152,17 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
         const arr = JSON.parse(stored) as Playlist[];
         const seen = new Set<string>(arr.filter((p) => p.id).map((p) => p.id));
         migrated = arr.map((pl) => {
-          if (pl.id) return pl;
-          const id = ensureUniquePlaylistId(seen);
-          seen.add(id);
-          return { ...pl, id };
-        });
+          let newPl = pl;
+          if (!pl.id) {
+            const id = ensureUniquePlaylistId(seen);
+            seen.add(id);
+            newPl = { ...pl, id };
+          }
+          if (!newPl.eventSlug) {
+            newPl = { ...newPl, eventSlug };
+          }
+          return newPl;
+        }).filter(pl => pl.eventSlug === eventSlug);
         if (JSON.stringify(arr) !== JSON.stringify(migrated)) {
           localStorage.setItem(playlistsKey, JSON.stringify(migrated));
         }
@@ -252,6 +259,7 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
       name: playlistName.trim(),
       slugs: Array.from(selected),
       color,
+      eventSlug,
     };
     const updated = [...playlists, newPlaylist];
     setPlaylists(updated);
@@ -490,6 +498,7 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
         linkExtraQuery="&safe=1"
         playlistsKey={playlistsKey}
         activeKey={activeKey}
+        eventBasePath={eventBasePath}
       />
 
       {selectMode && (

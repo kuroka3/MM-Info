@@ -8,6 +8,7 @@ export const metadata: Metadata = { title: '콜 가이드 - 테마곡' };
 export const revalidate = 60;
 
 const EVENT_SLUG = 'miku-expo-2025-asia';
+const EVENT_BASE_PATH = '/mikuexpo/asia2025';
 const SAFE_SONG_INDEX = getSafeSongIndex(EVENT_SLUG);
 const ALBUM_SONGS = getAlbumSongs(EVENT_SLUG);
 
@@ -56,7 +57,7 @@ export default async function SafeCallGuidePage() {
         </div>
       </header>
       <section className="container call-section">
-        <SafeCallGuideIndexClient songs={songs} safeSongIndex={SAFE_SONG_INDEX} albumSongs={ALBUM_SONGS} eventSlug={EVENT_SLUG} />
+        <SafeCallGuideIndexClient songs={songs} safeSongIndex={SAFE_SONG_INDEX} albumSongs={ALBUM_SONGS} eventSlug={EVENT_SLUG} eventBasePath={EVENT_BASE_PATH} />
       </section>
     </main>
   );

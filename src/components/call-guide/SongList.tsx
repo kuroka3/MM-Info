@@ -30,6 +30,7 @@ interface Props {
   playlistsKey?: string;
   activeKey?: string;
   filterPersist?: (pls: Playlist[]) => Playlist[];
+  eventBasePath?: string;
 }
 
 export type SongListHandle = {
@@ -52,6 +53,7 @@ function SongList(
     playlistsKey = 'callGuidePlaylists',
     activeKey = 'callGuideActivePlaylist',
     filterPersist,
+    eventBasePath = '',
   }: Props,
   ref: React.ForwardedRef<SongListHandle>,
 ) {
@@ -482,7 +484,7 @@ function SongList(
           return (
             <Link
               key={song.slug!}
-              href={`/call-guide/${song.slug}?list=${activePlaylist?.id ?? ALL_PLAYLIST_ID}${linkExtraQuery}`}
+              href={`${eventBasePath}/call-guide/${song.slug}?list=${activePlaylist?.id ?? ALL_PLAYLIST_ID}${linkExtraQuery}`}
               className={`${itemClass} remove-mode`}
               style={{
                 textDecoration: 'none',
@@ -572,7 +574,7 @@ function SongList(
           return (
             <Link
               key={song.slug!}
-              href={`/call-guide/${song.slug}?list=${activePlaylist?.id ?? ALL_PLAYLIST_ID}${linkExtraQuery}`}
+              href={`${eventBasePath}/call-guide/${song.slug}?list=${activePlaylist?.id ?? ALL_PLAYLIST_ID}${linkExtraQuery}`}
               className={itemClass}
               style={{
                 textDecoration: 'none',

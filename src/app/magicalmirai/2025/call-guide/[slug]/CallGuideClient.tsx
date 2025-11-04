@@ -44,7 +44,8 @@ import {
   removeOrder,
 } from '@/utils/playlistOrder';
 
-const SPOILER_STORAGE_KEY = 'spoilerConfirmed:mikuexpo-asia2025';
+const SPOILER_STORAGE_KEY = 'spoilerConfirmed:magical-mirai-2025';
+const EVENT_BASE_PATH = '/magicalmirai/2025';
 
 export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs, eventSlug }: CallGuideClientProps) {
   const router = useRouter();
@@ -164,7 +165,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
     const stored = JSON.parse(localStorage.getItem(safeSongsKey) || '[]') as string[];
     const safeSet = new Set<string>([...safeSongIndex, ...stored]);
     if (!song.slug || !safeSet.has(song.slug)) {
-      router.replace('/mikuexpo/asia2025/call-guide/safe');
+      router.replace(`${EVENT_BASE_PATH}/call-guide/safe`);
       return;
     }
     let custom: Playlist[] = [];
@@ -336,7 +337,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
     if (!activePlaylist) return;
     const urlList = searchParams.get('list');
     if (urlList !== playlistId) {
-      router.replace(`/mikuexpo/asia2025/call-guide/${song.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
+      router.replace(`${EVENT_BASE_PATH}/call-guide/${song.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
     }
   }, [activePlaylist, playlistId, router, searchParams, song.slug, isSafeMode]);
 
@@ -650,11 +651,11 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
       setPlaylistOrder(pending.newOrder);
       playlistOrderRef.current = pending.newOrder;
       if (storageKey) persistOrder(storageKey, pending.newOrder);
-      router.push(`/mikuexpo/asia2025/call-guide/${pending.nextSlug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
+      router.push(`${EVENT_BASE_PATH}/call-guide/${pending.nextSlug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
       return;
     }
     if (predictedNext.slug) {
-      router.push(`/mikuexpo/asia2025/call-guide/${predictedNext.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
+      router.push(`${EVENT_BASE_PATH}/call-guide/${predictedNext.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
     }
   };
 
@@ -696,14 +697,14 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
       const firstSlug = selected.slugs[0];
       const firstSong = songs.find((s) => s.slug === firstSlug);
       if (firstSong)
-        router.push(`/mikuexpo/asia2025/call-guide/${firstSong.slug}?list=${selected.id}${isSafeMode ? '&safe=1' : ''}`);
+        router.push(`${EVENT_BASE_PATH}/call-guide/${firstSong.slug}?list=${selected.id}${isSafeMode ? '&safe=1' : ''}`);
       return;
     }
 
     setActivePlaylist(selected);
     localStorage.setItem(activeKey, JSON.stringify(selected));
     if (isSafeMode) {
-      router.replace(`/mikuexpo/asia2025/call-guide/${song.slug}?list=${selected.id}&safe=1`);
+      router.replace(`${EVENT_BASE_PATH}/call-guide/${song.slug}?list=${selected.id}&safe=1`);
     }
   };
 
@@ -1099,7 +1100,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
               }
 
               if (autoNextRef.current && nextSlug) {
-                router.push(`/mikuexpo/asia2025/call-guide/${nextSlug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
+                router.push(`${EVENT_BASE_PATH}/call-guide/${nextSlug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
               }
 
               return;
@@ -1505,13 +1506,13 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
     ms.setActionHandler(
       'previoustrack',
       prevSong?.slug
-        ? () => router.push(`/mikuexpo/asia2025/call-guide/${prevSong.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`)
+        ? () => router.push(`${EVENT_BASE_PATH}/call-guide/${prevSong.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`)
         : null,
     );
     ms.setActionHandler(
       'nexttrack',
       predictedNext?.slug
-        ? () => router.push(`/mikuexpo/asia2025/call-guide/${predictedNext.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`)
+        ? () => router.push(`${EVENT_BASE_PATH}/call-guide/${predictedNext.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`)
         : null,
     );
   }, [song, playerRef, prevSong?.slug, predictedNext?.slug, router, playlistId]);
@@ -1545,7 +1546,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
       <main>
         <div id="player" className="video-background" />
         <header className="header">
-          <Link href={isSafeMode ? '/mikuexpo/asia2025/call-guide/safe' : '/mikuexpo/asia2025/call-guide'} className="container header-content" style={{ textDecoration: 'none' }}>
+          <Link href={isSafeMode ? `${EVENT_BASE_PATH}/call-guide/safe` : `${EVENT_BASE_PATH}/call-guide`} className="container header-content" style={{ textDecoration: 'none' }}>
             <h1 className="header-title">콜 가이드</h1>
             <p className="header-subtitle">{song.krtitle || song.title}</p>
           </Link>
@@ -1794,7 +1795,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
                     onTouchEnd={draggable ? handleSongTouchEnd : undefined}
                     onClick={() => {
                       if (wasDraggingRef.current) return;
-                      router.push(`/mikuexpo/asia2025/call-guide/${slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
+                      router.push(`${EVENT_BASE_PATH}/call-guide/${slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
                       closePlaylistSongs();
                     }}
                   >
@@ -1812,9 +1813,9 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
 
   return isSafeMode ? body : (
     <SpoilerGate
-      storageKey="spoilerConfirmed:mikuexpo-asia2025"
+      storageKey={SPOILER_STORAGE_KEY}
       overlayClassName="call-guide-spoiler"
-      redirectPath="/mikuexpo/asia2025"
+      redirectPath={EVENT_BASE_PATH}
     >
       {body}
     </SpoilerGate>
