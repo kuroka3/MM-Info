@@ -3,12 +3,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import type { CSSProperties } from 'react';
 
 const EVENTS = [
   {
     slug: '/mikuexpo/asia2025',
     spoilerStorageKey: 'spoilerConfirmed:mikuexpo-asia2025',
-    spoilerLabel: 'MIKU EXPO 스포일러 허용',
+    spoilerLabel: '스포일러',
     links: [
       { path: 'setlist', label: '세트리스트' },
       { path: 'concert-guide', label: '공연 정보' },
@@ -18,7 +19,7 @@ const EVENTS = [
   {
     slug: '/magicalmirai/2025',
     spoilerStorageKey: 'spoilerConfirmed:magical-mirai-2025',
-    spoilerLabel: '마지미라 스포일러 허용',
+    spoilerLabel: '스포일러',
     links: [
       { path: 'setlist', label: '세트리스트' },
       { path: 'concert-guide', label: '공연 정보' },
@@ -28,6 +29,17 @@ const EVENTS = [
   },
 ];
 
+const DEFAULT_EVENT = {
+  slug: '',
+  spoilerStorageKey: undefined,
+  spoilerLabel: '스포일러',
+  links: [
+    { path: 'setlist', label: '세트리스트' },
+    { path: 'concert-guide', label: '공연 정보' },
+    { path: 'call-guide', label: '콜 가이드' },
+  ],
+} satisfies typeof EVENTS[number];
+
 export default function NavBar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -36,7 +48,7 @@ export default function NavBar() {
     setIsOpen(false);
   }, [pathname]);
 
-  const activeEvent = EVENTS.find(({ slug }) => pathname.startsWith(slug)) ?? EVENTS[0];
+  const activeEvent = EVENTS.find(({ slug }) => slug && pathname.startsWith(slug)) ?? DEFAULT_EVENT;
   const links = activeEvent.links.map(({ path, label }) => ({
     href: `${activeEvent.slug}/${path}`,
     label,
@@ -119,6 +131,11 @@ export default function NavBar() {
               onClick={toggleSpoiler}
               aria-pressed={spoilerEnabled}
               aria-label={spoilerLabel}
+              style={
+                spoilerEnabled
+                  ? ({ '--toggle-accent': '#39c5bb' } as CSSProperties)
+                  : undefined
+              }
             >
               <span className="ios-toggle__handle" />
             </button>

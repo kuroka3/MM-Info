@@ -25,5 +25,5 @@ export function getAlbumSongs(eventSlug: string): string[] {
 export function getSafeSongIndex(eventSlug: string): string[] {
   const safeSongs = EVENT_SAFE_SONG_INDEX[eventSlug];
   if (safeSongs) return [...safeSongs];
-  return getAlbumSongs(eventSlug);
+  return [];
 }

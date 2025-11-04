@@ -117,7 +117,10 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
             </div>
             <div className="song-links">
               {song.slug && (
-                <Link href={`/call-guide/${song.slug}?list=${ALL_PLAYLIST_ID}`}>
+                <Link
+                  href={`/call-guide/${song.slug}?list=${ALL_PLAYLIST_ID}`}
+                  className="glow-link glow-link--call-guide"
+                >
                   <Image
                     src="/images/megaphone.svg"
                     alt="Call Guide"
@@ -131,6 +134,7 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
                   href={song.spotifyUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="glow-link glow-link--spotify"
                 >
                   <Image
                     src="/images/spotify.svg"
@@ -145,6 +149,7 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
                   href={song.youtubeUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="glow-link glow-link--youtube"
                 >
                   <Image
                     src="/images/youtube.svg"

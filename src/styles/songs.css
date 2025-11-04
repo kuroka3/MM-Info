@@ -186,58 +186,64 @@
   align-items: center;
 }
 
-.song-links a {
+.glow-link {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 48px;
   height: 48px;
   border-radius: 16px;
-  background: var(--surface-tertiary);
-  border: 1px solid var(--border);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition:
+    transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.35s ease;
   position: relative;
   overflow: hidden;
+  --glow-color: rgba(255, 255, 255, 0.3);
+  --glow-shadow: rgba(255, 255, 255, 0.15);
 }
 
-.song-links a::before {
+.glow-link::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+  inset: -20%;
+  border-radius: inherit;
+  background: radial-gradient(circle, var(--glow-color) 0%, transparent 65%);
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transform: scale(0.75);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease;
 }
 
-.song-links a:hover {
+.glow-link:hover {
   transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  border-color: var(--glow-color);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.25),
+    0 12px 32px var(--glow-shadow);
 }
 
-.song-links a:hover::before {
+.glow-link:hover::before {
   opacity: 1;
+  transform: scale(1);
 }
 
-.song-links a[href*="spotify"]:hover {
-  background: var(--spotify-green);
-  border-color: var(--spotify-green);
-  box-shadow: 0 8px 24px rgba(29, 185, 84, 0.4);
+.glow-link--spotify {
+  --glow-color: #41d26b;
+  --glow-shadow: rgba(65, 210, 107, 0.35);
 }
 
-.song-links a[href^="/call-guide"]:hover {
-  background: var(--accent-orange);
-  border-color: var(--accent-orange);
-  box-shadow: 0 8px 24px rgba(255, 149, 0, 0.4);
+.glow-link--youtube {
+  --glow-color: #fa2828;
+  --glow-shadow: rgba(250, 40, 40, 0.35);
 }
 
-.song-links a[href*="youtube"]:hover,
-.song-links a[href*="youtu.be"]:hover {
-  background: var(--youtube-red);
-  border-color: var(--youtube-red);
-  box-shadow: 0 8px 24px rgba(255, 0, 0, 0.4);
+.glow-link--call-guide {
+  --glow-color: var(--accent-orange);
+  --glow-shadow: rgba(255, 149, 0, 0.35);
 }
 
 /* Setlist Page */
