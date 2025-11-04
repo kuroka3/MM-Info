@@ -33,6 +33,28 @@ model Venue {
   concerts Concert[]
 }
 
+model Series {
+  id     Int     @id @default(autoincrement())
+  name   String
+  slug   String? @unique
+  note   String?
+  events Event[]
+
+  @@map("series")
+}
+
+model Event {
+  id       Int      @id @default(autoincrement())
+  name     String
+  year     Int?
+  slug     String?  @unique
+  seriesId Int?     @map("seriesid")
+  series   Series?  @relation(fields: [seriesId], references: [id])
+  concerts Concert[]
+
+  @@map("event")
+}
+
 model Concert {
   id        Int      @id @default(autoincrement())
   title     String
@@ -44,6 +66,10 @@ model Concert {
   venueId   Int?
   setlistId Int?
   Venue     Venue?   @relation(fields: [venueId], references: [id])
+  eventId   Int?
+  event     Event?   @relation(fields: [eventId], references: [id])
+
+  @@map("Concert")
 }
 
 model Setlist {
