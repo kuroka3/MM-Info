@@ -8,16 +8,35 @@ import prisma from '@/lib/prisma';
 
 export const revalidate = 60;
 
-async function getSetlist(setlistId: string) {
-  return prisma.setlist.findUnique({
-    where: { id: parseInt(setlistId) },
+const EVENT_SLUG = 'miku-expo-2025-asia';
+
+async function getConcertWithSetlist(setlistId: string) {
+  const id = Number.parseInt(setlistId, 10);
+  if (Number.isNaN(id)) return null;
+
+  return prisma.concert.findFirst({
+    where: {
+      setlistId: id,
+      event: {
+        is: { slug: EVENT_SLUG },
+      },
+    },
     include: {
-      songs: {
+      event: {
         include: {
-          song: true,
+          series: true,
         },
-        orderBy: {
-          order: 'asc',
+      },
+      setlist: {
+        include: {
+          songs: {
+            include: {
+              song: true,
+            },
+            orderBy: {
+              order: 'asc',
+            },
+          },
         },
       },
     },
@@ -25,16 +44,30 @@ async function getSetlist(setlistId: string) {
 }
 
 // --- Metadata Generation ---
-export async function generateMetadata({ params }: { params: Promise<{ concertId: string }> }): Promise<Metadata> {
-  const setlist = await getSetlist((await params).concertId);
-  return { title: setlist ? setlist.name : '세트리스트를 찾을 수 없습니다.' };
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ concertId: string }>;
+}): Promise<Metadata> {
+  const concert = await getConcertWithSetlist((await params).concertId);
+  const title = concert?.setlist?.name ?? '세트리스트를 찾을 수 없습니다.';
+  return { title };
 }
 
 // --- Async Component for Loading UI ---
-async function SetlistContent({ setlistId, date, block }: { setlistId: string, date: string, block: string }) {
-  const setlist = await getSetlist(setlistId);
+async function SetlistContent({
+  setlistId,
+  fallbackDate,
+  fallbackBlock,
+}: {
+  setlistId: string;
+  fallbackDate?: string;
+  fallbackBlock?: string;
+}) {
+  const concert = await getConcertWithSetlist(setlistId);
+  const setlist = concert?.setlist;
 
-  if (!setlist) {
+  if (!concert || !setlist) {
     return (
       <div className="container">
         <p>세트리스트를 찾을 수 없습니다.</p>
@@ -42,7 +75,7 @@ async function SetlistContent({ setlistId, date, block }: { setlistId: string, d
     );
   }
 
-  const songs = setlist.songs.map(item => ({
+  const songs = setlist.songs.map((item) => ({
     title: item.song.title,
     krtitle: item.song.krtitle || undefined,
     artist: item.song.artist,
@@ -59,7 +92,19 @@ async function SetlistContent({ setlistId, date, block }: { setlistId: string, d
     (s) => s.title === '최종 플레이리스트' || s.artist === ''
   );
 
-  const dateString = `${date} ${block} 공연`
+  const dateParts: string[] = [];
+  if (concert.date) {
+    dateParts.push(concert.day ? `${concert.date} (${concert.day})` : concert.date);
+  } else if (fallbackDate) {
+    dateParts.push(fallbackDate);
+  }
+  if (concert.block) {
+    dateParts.push(concert.block);
+  } else if (fallbackBlock) {
+    dateParts.push(fallbackBlock);
+  }
+  const dateString =
+    dateParts.length > 0 ? `${dateParts.join(' ')} 공연` : '공연 정보 준비 중';
 
   return (
     <>
@@ -78,23 +123,37 @@ async function SetlistContent({ setlistId, date, block }: { setlistId: string, d
   );
 }
 
-const ConcertPage = async ({ params, searchParams }: { params: Promise<{ concertId: string }>, searchParams: Promise<{ date: string, block: string }> }) => {
-  const date = (await searchParams).date;
-  const block = (await searchParams).block;
+const ConcertPage = async ({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ concertId: string }>;
+  searchParams: Promise<{ date?: string; block?: string }>;
+}) => {
+  const { concertId } = await params;
+  const search = await searchParams;
+  const date = search?.date;
+  const block = search?.block;
 
   return (
     <SpoilerGate>
       <main>
-        <Suspense fallback={
-          <div className="loading-spinner-container">
-            <div className="loading-spinner"></div>
-          </div>
-        }>
-          <SetlistContent setlistId={(await params).concertId} date={date} block={block} />
+        <Suspense
+          fallback={
+            <div className="loading-spinner-container">
+              <div className="loading-spinner"></div>
+            </div>
+          }
+        >
+          <SetlistContent
+            setlistId={concertId}
+            fallbackDate={date}
+            fallbackBlock={block}
+          />
         </Suspense>
       </main>
     </SpoilerGate>
   );
 };
 
-export default ConcertPage;
+export default ConcertPage;
