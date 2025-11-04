@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import useThrottle from '@/hooks/useThrottle';
 
@@ -13,7 +13,7 @@ export default function HomeButton() {
   const EVENTS = [
     {
       slug: '/mikuexpo/asia2025',
-      lines: ['MIKU EXPO', 'ASIA 2025', '정보 모음'],
+      lines: ['2 0 2 5', 'EXPO ASIA', '정보 모음'],
     },
     {
       slug: '/magicalmirai/2025',
@@ -35,15 +35,35 @@ export default function HomeButton() {
     return () => window.removeEventListener('resize', handleResize);
   }, [handleResize]);
 
-  const handleScroll = useThrottle(() => {
-    setHidden(window.scrollY > (isMobile ? 0 : 200));
-  }, 100);
+  const updateHiddenState = useCallback(() => {
+    const shouldHide = window.scrollY > (isMobile ? 0 : 200);
+    setHidden((prev) => (prev === shouldHide ? prev : shouldHide));
+  }, [isMobile]);
 
   useEffect(() => {
-    handleScroll();
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [handleScroll]);
+    let rafId: number | null = null;
+
+    const onScroll = () => {
+      if (rafId !== null) {
+        return;
+      }
+
+      rafId = window.requestAnimationFrame(() => {
+        rafId = null;
+        updateHiddenState();
+      });
+    };
+
+    updateHiddenState();
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    return () => {
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId);
+      }
+      window.removeEventListener('scroll', onScroll);
+    };
+  }, [updateHiddenState]);
 
   return (
     <Link

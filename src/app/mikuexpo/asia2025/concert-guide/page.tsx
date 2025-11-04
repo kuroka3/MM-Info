@@ -16,9 +16,8 @@ export default function ConcertGuidePage() {
 
       <section className="container">
         <div className="feature-card">
-          <h3 className="feature-title">MIKU EXPO 2025 ASIA 공식 안내</h3>
+          <h3 className="feature-title">MIKU EXPO 2025 ASIA 공식 사이트</h3>
           <p className="feature-text">
-            최신 공연 공지와 도시별 정보를 공식 사이트에서 확인하세요.
           </p>
           <a
             href="https://mikuexpo.com/asia2025/"

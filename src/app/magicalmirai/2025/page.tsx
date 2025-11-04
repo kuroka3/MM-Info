@@ -29,6 +29,12 @@ export default function Home() {
           ))}
         </div>
       </div>
+
+      <div className="landing-utility-links" aria-label="메인 페이지로 돌아가기">
+        <Link href="/" className="landing-utility-link glass-effect">
+          메인 페이지로
+        </Link>
+      </div>
     </main>
   );
 }

@@ -2,7 +2,23 @@
   font-size: 1.5rem !important;
   color: #fff     !important;
   text-align: center;
+  line-height: 1.6;
   margin-top: 1rem;
+}
+
+.feature-card .block-link {
+  display: flex;
+  width: 100%;
+  margin-top: 1.5rem;
+  padding: 16px 24px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 1.25rem !important;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.4;
+  border-radius: 16px;
 }
 
 .feature-link {

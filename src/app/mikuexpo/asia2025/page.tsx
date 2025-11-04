@@ -28,6 +28,12 @@ export default function Home() {
           ))}
         </div>
       </div>
+
+      <div className="landing-utility-links" aria-label="이전 공연 바로가기">
+        <Link href="/legacy" className="landing-utility-link glass-effect">
+          이전 공연
+        </Link>
+      </div>
     </main>
   );
 }
