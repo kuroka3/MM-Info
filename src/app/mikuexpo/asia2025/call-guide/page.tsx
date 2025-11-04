@@ -14,7 +14,7 @@ export default function CallGuideHome() {
       </header>
       <section className="container call-guide-entry">
         <Link href="/mikuexpo/asia2025/call-guide/safe" className="glass-block green">
-          <h2>테마곡</h2>
+          <h2>안전 곡</h2>
           <p>
             <strong>테마곡</strong>이 있고, 커스텀으로 곡을 추가할 수 있는 <strong>스포 X</strong> 페이지
           </p>

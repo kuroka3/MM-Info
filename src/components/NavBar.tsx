@@ -32,7 +32,7 @@ const EVENTS = [
 
 const DEFAULT_EVENT = {
   slug: '',
-  spoilerStorageKey: undefined,
+  spoilerStorageKey: '',
   spoilerLabel: '스포일러',
   links: [
     { path: 'setlist', label: '세트리스트' },
