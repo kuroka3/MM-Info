@@ -44,7 +44,7 @@ import {
   removeOrder,
 } from '@/utils/playlistOrder';
 
-const SPOILER_STORAGE_KEY = 'spoilerConfirmed:magical-mirai-2025';
+const SPOILER_STORAGE_KEY = 'spoilerConfirmed:mikuexpo-asia2025';
 
 export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs, eventSlug }: CallGuideClientProps) {
   const router = useRouter();
@@ -53,11 +53,38 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
 
   const playlistsKey = isSafeMode ? `callGuideSafePlaylists:${eventSlug}` : `callGuidePlaylists:${eventSlug}`;
   const activeKey = isSafeMode ? `callGuideSafeActivePlaylist:${eventSlug}` : `callGuideActivePlaylist:${eventSlug}`;
+  const safeSongsKey = `callGuideSafeSongs:${eventSlug}`;
 
   useEffect(() => {
     const legacyPlaylistsKey = isSafeMode ? 'callGuideSafePlaylists' : 'callGuidePlaylists';
     const legacyActiveKey = isSafeMode ? 'callGuideSafeActivePlaylist' : 'callGuideActivePlaylist';
     const migratedKey = `${legacyPlaylistsKey}:migrated`;
+
+    if (isSafeMode) {
+      const safeMigrationFlag = 'callGuideSafeStorage:migrated';
+      if (!localStorage.getItem(safeMigrationFlag)) {
+        const legacySongs = localStorage.getItem('callGuideSafeSongs');
+        const legacySafePlaylists = localStorage.getItem('callGuideSafePlaylists');
+        const legacySafeActive = localStorage.getItem('callGuideSafeActivePlaylist');
+
+        if (legacySongs) {
+          localStorage.setItem('callGuideSafeSongs:magical-mirai-2025', legacySongs);
+          localStorage.removeItem('callGuideSafeSongs');
+        }
+
+        if (legacySafePlaylists) {
+          localStorage.setItem('callGuideSafePlaylists:magical-mirai-2025', legacySafePlaylists);
+          localStorage.removeItem('callGuideSafePlaylists');
+        }
+
+        if (legacySafeActive) {
+          localStorage.setItem('callGuideSafeActivePlaylist:magical-mirai-2025', legacySafeActive);
+          localStorage.removeItem('callGuideSafeActivePlaylist');
+        }
+
+        localStorage.setItem(safeMigrationFlag, 'true');
+      }
+    }
 
     if (!localStorage.getItem(migratedKey)) {
       const legacyPlaylists = localStorage.getItem(legacyPlaylistsKey);
@@ -134,10 +161,10 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
   const safeAllRef = useRef<Playlist | null>(null);
   useEffect(() => {
     if (!isSafeMode) return;
-    const stored = JSON.parse(localStorage.getItem('callGuideSafeSongs') || '[]') as string[];
+    const stored = JSON.parse(localStorage.getItem(safeSongsKey) || '[]') as string[];
     const safeSet = new Set<string>([...safeSongIndex, ...stored]);
     if (!song.slug || !safeSet.has(song.slug)) {
-      router.replace('/magicalmirai/2025/call-guide/safe');
+      router.replace('/mikuexpo/asia2025/call-guide/safe');
       return;
     }
     let custom: Playlist[] = [];
@@ -175,6 +202,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
         const parsed = JSON.parse(activeStored) as Playlist;
         if (parsed.id === 'safe-all') active = safeAll;
         else if (parsed.id === 'album-songs' && album) active = album;
+        else if (parsed.id === 'album-songs') active = safeAll;
         else active = custom.find((p) => p.id === parsed.id) || null;
       } catch {
         active = null;
@@ -183,7 +211,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
     if (!active || !Array.isArray(active.slugs)) active = safeAll;
     setActivePlaylist(active);
     localStorage.setItem(activeKey, JSON.stringify(active));
-  }, [isSafeMode, songs, song.slug, searchParams, router, playlistsKey, activeKey, safeSongIndex, albumSongs]);
+  }, [isSafeMode, songs, song.slug, searchParams, router, playlistsKey, activeKey, safeSongsKey, safeSongIndex, albumSongs]);
 
   const prevPlaylistIdRef = useRef<string | null>(null);
   const prevBaseRef = useRef<string[] | null>(null);
@@ -308,7 +336,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
     if (!activePlaylist) return;
     const urlList = searchParams.get('list');
     if (urlList !== playlistId) {
-      router.replace(`/magicalmirai/2025/call-guide/${song.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
+      router.replace(`/mikuexpo/asia2025/call-guide/${song.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
     }
   }, [activePlaylist, playlistId, router, searchParams, song.slug, isSafeMode]);
 
@@ -386,7 +414,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
   useEffect(() => {
     if (isSafeMode) return;
 
-    const safeSongsStored = JSON.parse(localStorage.getItem('callGuideSafeSongs') || '[]') as string[];
+    const safeSongsStored = JSON.parse(localStorage.getItem(safeSongsKey) || '[]') as string[];
     const safeSet = new Set<string>([...safeSongIndex, ...safeSongsStored]);
     const safeDefaults: Playlist[] = [];
     const safeAllSlugs = songs
@@ -622,11 +650,11 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
       setPlaylistOrder(pending.newOrder);
       playlistOrderRef.current = pending.newOrder;
       if (storageKey) persistOrder(storageKey, pending.newOrder);
-      router.push(`/magicalmirai/2025/call-guide/${pending.nextSlug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
+      router.push(`/mikuexpo/asia2025/call-guide/${pending.nextSlug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
       return;
     }
     if (predictedNext.slug) {
-      router.push(`/magicalmirai/2025/call-guide/${predictedNext.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
+      router.push(`/mikuexpo/asia2025/call-guide/${predictedNext.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
     }
   };
 
@@ -668,14 +696,14 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
       const firstSlug = selected.slugs[0];
       const firstSong = songs.find((s) => s.slug === firstSlug);
       if (firstSong)
-        router.push(`/magicalmirai/2025/call-guide/${firstSong.slug}?list=${selected.id}${isSafeMode ? '&safe=1' : ''}`);
+        router.push(`/mikuexpo/asia2025/call-guide/${firstSong.slug}?list=${selected.id}${isSafeMode ? '&safe=1' : ''}`);
       return;
     }
 
     setActivePlaylist(selected);
     localStorage.setItem(activeKey, JSON.stringify(selected));
     if (isSafeMode) {
-      router.replace(`/magicalmirai/2025/call-guide/${song.slug}?list=${selected.id}&safe=1`);
+      router.replace(`/mikuexpo/asia2025/call-guide/${song.slug}?list=${selected.id}&safe=1`);
     }
   };
 
@@ -774,7 +802,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
       setPlaylists((pls) => {
         const updatedPls = pls.map((pl) => (pl.id === activePlaylist.id ? newActive : pl));
         const toStore = isSafeMode
-          ? updatedPls.filter((p) => p.id !== 'safe-all' && p.id !== 'album-songs')
+          ? updatedPls.filter((p) => p.id !== 'safe-all')
           : updatedPls;
         localStorage.setItem(playlistsKey, JSON.stringify(toStore));
         return updatedPls;
@@ -836,7 +864,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
       setPlaylists((pls) => {
         const updated = pls.map((pl) => (pl.id === activePlaylist.id ? newActive : pl));
         const toStore = isSafeMode
-          ? updated.filter((p) => p.id !== 'safe-all' && p.id !== 'album-songs')
+          ? updated.filter((p) => p.id !== 'safe-all')
           : updated;
         localStorage.setItem(playlistsKey, JSON.stringify(toStore));
         return updated;
@@ -1071,7 +1099,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
               }
 
               if (autoNextRef.current && nextSlug) {
-                router.push(`/magicalmirai/2025/call-guide/${nextSlug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
+                router.push(`/mikuexpo/asia2025/call-guide/${nextSlug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
               }
 
               return;
@@ -1477,13 +1505,13 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
     ms.setActionHandler(
       'previoustrack',
       prevSong?.slug
-        ? () => router.push(`/magicalmirai/2025/call-guide/${prevSong.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`)
+        ? () => router.push(`/mikuexpo/asia2025/call-guide/${prevSong.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`)
         : null,
     );
     ms.setActionHandler(
       'nexttrack',
       predictedNext?.slug
-        ? () => router.push(`/magicalmirai/2025/call-guide/${predictedNext.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`)
+        ? () => router.push(`/mikuexpo/asia2025/call-guide/${predictedNext.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`)
         : null,
     );
   }, [song, playerRef, prevSong?.slug, predictedNext?.slug, router, playlistId]);
@@ -1517,7 +1545,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
       <main>
         <div id="player" className="video-background" />
         <header className="header">
-          <Link href={isSafeMode ? '/magicalmirai/2025/call-guide/safe' : '/magicalmirai/2025/call-guide'} className="container header-content" style={{ textDecoration: 'none' }}>
+          <Link href={isSafeMode ? '/mikuexpo/asia2025/call-guide/safe' : '/mikuexpo/asia2025/call-guide'} className="container header-content" style={{ textDecoration: 'none' }}>
             <h1 className="header-title">콜 가이드</h1>
             <p className="header-subtitle">{song.krtitle || song.title}</p>
           </Link>
@@ -1766,7 +1794,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
                     onTouchEnd={draggable ? handleSongTouchEnd : undefined}
                     onClick={() => {
                       if (wasDraggingRef.current) return;
-                      router.push(`/magicalmirai/2025/call-guide/${slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
+                      router.push(`/mikuexpo/asia2025/call-guide/${slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
                       closePlaylistSongs();
                     }}
                   >
@@ -1784,9 +1812,9 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
 
   return isSafeMode ? body : (
     <SpoilerGate
-      storageKey="spoilerConfirmed:magical-mirai-2025"
+      storageKey="spoilerConfirmed:mikuexpo-asia2025"
       overlayClassName="call-guide-spoiler"
-      redirectPath="/magicalmirai/2025"
+      redirectPath="/mikuexpo/asia2025"
     >
       {body}
     </SpoilerGate>

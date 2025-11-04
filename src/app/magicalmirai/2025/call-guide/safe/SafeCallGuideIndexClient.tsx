@@ -36,12 +36,19 @@ interface Props {
 export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSongs, eventSlug }: Props) {
   const playlistsKey = `callGuideSafePlaylists:${eventSlug}`;
   const activeKey = `callGuideSafeActivePlaylist:${eventSlug}`;
+  const songsKey = `callGuideSafeSongs:${eventSlug}`;
 
   useEffect(() => {
-    const migratedKey = 'callGuideSafePlaylists:migrated';
+    const migratedKey = 'callGuideSafeStorage:migrated';
     if (!localStorage.getItem(migratedKey)) {
-      const legacyPlaylists = localStorage.getItem(playlistsKey);
+      const legacySongs = localStorage.getItem('callGuideSafeSongs');
+      const legacyPlaylists = localStorage.getItem('callGuideSafePlaylists');
       const legacyActive = localStorage.getItem('callGuideSafeActivePlaylist');
+
+      if (legacySongs) {
+        localStorage.setItem('callGuideSafeSongs:magical-mirai-2025', legacySongs);
+        localStorage.removeItem('callGuideSafeSongs');
+      }
 
       if (legacyPlaylists) {
         localStorage.setItem('callGuideSafePlaylists:magical-mirai-2025', legacyPlaylists);
@@ -59,7 +66,7 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
   const [safeSongs, setSafeSongs] = useState<SongWithSetlist[]>([]);
   const computeSafeSongs = useCallback(() => {
     const stored = JSON.parse(
-      localStorage.getItem('callGuideSafeSongs') || '[]',
+      localStorage.getItem(songsKey) || '[]',
     ) as string[];
     const orderMap = new Map<string, number>();
     safeSongIndex.forEach((slug, i) => orderMap.set(slug, i + 1));
@@ -72,7 +79,7 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
       .filter((s) => s.slug && orderMap.has(s.slug))
       .sort((a, b) => orderMap.get(a.slug!)! - orderMap.get(b.slug!)!)
       .map((s) => ({ ...s, safeIndex: orderMap.get(s.slug!) }));
-  }, [songs, safeSongIndex]);
+  }, [songs, safeSongIndex, songsKey]);
 
   useEffect(() => {
     setSafeSongs(computeSafeSongs());
@@ -158,7 +165,7 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
     }
     setPlaylists(migrated);
 
-    const activeStored = localStorage.getItem('callGuideSafeActivePlaylist');
+    const activeStored = localStorage.getItem(activeKey);
     if (activeStored) {
       try {
         let parsed = JSON.parse(activeStored) as Playlist | null;
@@ -182,17 +189,17 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
           const match = migrated.find((pl) => pl.id === parsed!.id);
           if (!match) parsed = safeAll;
         }
-        localStorage.setItem('callGuideSafeActivePlaylist', JSON.stringify(parsed));
+        localStorage.setItem(activeKey, JSON.stringify(parsed));
         setActivePlaylist(parsed);
       } catch {
-        localStorage.setItem('callGuideSafeActivePlaylist', JSON.stringify(safeAll));
+        localStorage.setItem(activeKey, JSON.stringify(safeAll));
         setActivePlaylist(safeAll);
       }
     } else {
-      localStorage.setItem('callGuideSafeActivePlaylist', JSON.stringify(safeAll));
+      localStorage.setItem(activeKey, JSON.stringify(safeAll));
       setActivePlaylist(safeAll);
     }
-  }, [safeSongs, safeAll, albumPlaylist]);
+  }, [safeSongs, safeAll, albumPlaylist, activeKey]);
 
   const toggleSelect = useCallback((slug: string) => {
     setSelected((prev) => {
@@ -217,7 +224,7 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
         }
         return prev;
       });
-      localStorage.setItem('callGuideSafeActivePlaylist', JSON.stringify(updated));
+      localStorage.setItem(activeKey, JSON.stringify(updated));
       setSelected(new Set());
       setSelectMode(false);
       setEditingExisting(false);
@@ -230,10 +237,7 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
   const restorePrevious = () => {
     if (previousActive.current) {
       setActivePlaylist(previousActive.current);
-      localStorage.setItem(
-        'callGuideSafeActivePlaylist',
-        JSON.stringify(previousActive.current),
-      );
+      localStorage.setItem(activeKey, JSON.stringify(previousActive.current));
       previousActive.current = null;
     }
   };
@@ -253,7 +257,7 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
     setPlaylists(updated);
     localStorage.setItem(playlistsKey, JSON.stringify(updated));
     setActivePlaylist(newPlaylist);
-    localStorage.setItem('callGuideSafeActivePlaylist', JSON.stringify(newPlaylist));
+    localStorage.setItem(activeKey, JSON.stringify(newPlaylist));
     setSelected(new Set());
     setSelectMode(false);
     setPlaylistName('');
@@ -281,7 +285,7 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
     const def = { ...safeAll };
     ignoreActiveChange.current = true;
     setActivePlaylist(def);
-    localStorage.setItem('callGuideSafeActivePlaylist', JSON.stringify(def));
+    localStorage.setItem(activeKey, JSON.stringify(def));
     setSelected(new Set());
     setPlaylistColor('rgba(255,255,255,0.1)');
     setSelectMode(true);
@@ -294,7 +298,7 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
     const def = { ...safeAll };
     ignoreActiveChange.current = true;
     setActivePlaylist(def);
-    localStorage.setItem('callGuideSafeActivePlaylist', JSON.stringify(def));
+    localStorage.setItem(activeKey, JSON.stringify(def));
     setSelected(new Set(activePlaylist.slugs));
     setPlaylistColor(activePlaylist.color ?? 'rgba(255,255,255,0.1)');
     setSelectMode(true);
@@ -328,7 +332,7 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
       }
       return prev;
     });
-    localStorage.setItem('callGuideSafeActivePlaylist', JSON.stringify(updated));
+    localStorage.setItem(activeKey, JSON.stringify(updated));
   };
 
   useEffect(() => {
@@ -485,7 +489,7 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
         ref={songListRef}
         linkExtraQuery="&safe=1"
         playlistsKey={playlistsKey}
-        activeKey="callGuideSafeActivePlaylist"
+        activeKey={activeKey}
       />
 
       {selectMode && (
@@ -507,7 +511,7 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
           onDeleteRequest={openDeleteModal}
           defaultPlaylists={[safeAll, ...(albumPlaylist ? [albumPlaylist] : [])]}
           playlistsKey={playlistsKey}
-          activeKey="callGuideSafeActivePlaylist"
+          activeKey={activeKey}
         />
       )}
 
@@ -549,10 +553,7 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
             onClick={(e) => {
               e.stopPropagation();
               const def = { ...safeAll };
-              localStorage.setItem(
-                'callGuideSafeActivePlaylist',
-                JSON.stringify(def),
-              );
+              localStorage.setItem(activeKey, JSON.stringify(def));
               setActivePlaylist(def);
             }}
           >
@@ -565,6 +566,7 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
         <SongSearchOverlay
           songs={songs}
           safeSongs={safeSongs}
+          storageKey={songsKey}
           onClose={() => setShowSearch(false)}
           onUnlock={() => setSafeSongs(computeSafeSongs())}
         />

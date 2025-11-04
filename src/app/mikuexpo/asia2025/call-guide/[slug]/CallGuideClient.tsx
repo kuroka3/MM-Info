@@ -53,11 +53,38 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
 
   const playlistsKey = isSafeMode ? `callGuideSafePlaylists:${eventSlug}` : `callGuidePlaylists:${eventSlug}`;
   const activeKey = isSafeMode ? `callGuideSafeActivePlaylist:${eventSlug}` : `callGuideActivePlaylist:${eventSlug}`;
+  const safeSongsKey = `callGuideSafeSongs:${eventSlug}`;
 
   useEffect(() => {
     const legacyPlaylistsKey = isSafeMode ? 'callGuideSafePlaylists' : 'callGuidePlaylists';
     const legacyActiveKey = isSafeMode ? 'callGuideSafeActivePlaylist' : 'callGuideActivePlaylist';
     const migratedKey = `${legacyPlaylistsKey}:migrated`;
+
+    if (isSafeMode) {
+      const safeMigrationFlag = 'callGuideSafeStorage:migrated';
+      if (!localStorage.getItem(safeMigrationFlag)) {
+        const legacySongs = localStorage.getItem('callGuideSafeSongs');
+        const legacySafePlaylists = localStorage.getItem('callGuideSafePlaylists');
+        const legacySafeActive = localStorage.getItem('callGuideSafeActivePlaylist');
+
+        if (legacySongs) {
+          localStorage.setItem('callGuideSafeSongs:magical-mirai-2025', legacySongs);
+          localStorage.removeItem('callGuideSafeSongs');
+        }
+
+        if (legacySafePlaylists) {
+          localStorage.setItem('callGuideSafePlaylists:magical-mirai-2025', legacySafePlaylists);
+          localStorage.removeItem('callGuideSafePlaylists');
+        }
+
+        if (legacySafeActive) {
+          localStorage.setItem('callGuideSafeActivePlaylist:magical-mirai-2025', legacySafeActive);
+          localStorage.removeItem('callGuideSafeActivePlaylist');
+        }
+
+        localStorage.setItem(safeMigrationFlag, 'true');
+      }
+    }
 
     if (!localStorage.getItem(migratedKey)) {
       const legacyPlaylists = localStorage.getItem(legacyPlaylistsKey);
@@ -134,7 +161,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
   const safeAllRef = useRef<Playlist | null>(null);
   useEffect(() => {
     if (!isSafeMode) return;
-    const stored = JSON.parse(localStorage.getItem('callGuideSafeSongs') || '[]') as string[];
+    const stored = JSON.parse(localStorage.getItem(safeSongsKey) || '[]') as string[];
     const safeSet = new Set<string>([...safeSongIndex, ...stored]);
     if (!song.slug || !safeSet.has(song.slug)) {
       router.replace('/mikuexpo/asia2025/call-guide/safe');
@@ -184,7 +211,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
     if (!active || !Array.isArray(active.slugs)) active = safeAll;
     setActivePlaylist(active);
     localStorage.setItem(activeKey, JSON.stringify(active));
-  }, [isSafeMode, songs, song.slug, searchParams, router, playlistsKey, activeKey, safeSongIndex, albumSongs]);
+  }, [isSafeMode, songs, song.slug, searchParams, router, playlistsKey, activeKey, safeSongsKey, safeSongIndex, albumSongs]);
 
   const prevPlaylistIdRef = useRef<string | null>(null);
   const prevBaseRef = useRef<string[] | null>(null);
@@ -387,7 +414,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
   useEffect(() => {
     if (isSafeMode) return;
 
-    const safeSongsStored = JSON.parse(localStorage.getItem('callGuideSafeSongs') || '[]') as string[];
+    const safeSongsStored = JSON.parse(localStorage.getItem(safeSongsKey) || '[]') as string[];
     const safeSet = new Set<string>([...safeSongIndex, ...safeSongsStored]);
     const safeDefaults: Playlist[] = [];
     const safeAllSlugs = songs

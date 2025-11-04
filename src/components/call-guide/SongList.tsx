@@ -389,7 +389,9 @@ function SongList(
 
   const handleSongClick = () => {
     if (!activePlaylist) {
-      const defaultId = activeKey === 'callGuideSafeActivePlaylist' ? 'safe-all' : ALL_PLAYLIST_ID;
+      const defaultId = activeKey.startsWith('callGuideSafeActivePlaylist')
+        ? 'safe-all'
+        : ALL_PLAYLIST_ID;
       const def: Playlist = { id: defaultId, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
       localStorage.setItem(activeKey, JSON.stringify(def));
       setActivePlaylist(def);
