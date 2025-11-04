@@ -10,6 +10,21 @@ export default function HomeButton() {
   const [isMobile, setIsMobile] = useState(false);
   const [hidden, setHidden] = useState(false);
 
+  const EVENTS = [
+    {
+      slug: '/mikuexpo/asia2025',
+      lines: ['MIKU EXPO', 'ASIA 2025', '정보 모음'],
+    },
+    {
+      slug: '/magicalmirai/2025',
+      lines: ['2 0 2 5', '마지미라', '정보 모음'],
+    },
+  ];
+
+  const activeEvent =
+    EVENTS.find(({ slug }) => pathname.startsWith(slug)) ?? EVENTS[0];
+  const isHome = pathname === '/' || pathname === activeEvent.slug;
+
   const handleResize = useThrottle(() => {
     setIsMobile(window.innerWidth < 640);
   }, 200);
@@ -32,13 +47,13 @@ export default function HomeButton() {
 
   return (
     <Link
-      href='/'
+      href={activeEvent.slug}
       className={`home-button${hidden ? ' hidden' : ''}`}
-      style={{ display: pathname === '/' ? 'none' : undefined }}
+      style={{ display: isHome ? 'none' : undefined }}
     >
-      <span>2 0 2 5</span>
-      <span>마지미라</span>
-      <span>정보 모음</span>
+      {activeEvent.lines.map((line) => (
+        <span key={line}>{line}</span>
+      ))}
     </Link>
   );
 }

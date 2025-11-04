@@ -4,11 +4,24 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-const links = [
-  { href: '/setlist', label: '세트리스트' },
-  { href: '/concert-guide', label: '공연 가이드' },
-  { href: '/exhibition-info', label: '기획전 정보' },
-  { href: '/call-guide', label: '콜 가이드' },
+const EVENTS = [
+  {
+    slug: '/mikuexpo/asia2025',
+    links: [
+      { path: 'setlist', label: '세트리스트' },
+      { path: 'concert-guide', label: '공연 가이드' },
+      { path: 'call-guide', label: '콜 가이드' },
+    ],
+  },
+  {
+    slug: '/magicalmirai/2025',
+    links: [
+      { path: 'setlist', label: '세트리스트' },
+      { path: 'concert-guide', label: '공연 가이드' },
+      { path: 'exhibition-info', label: '기획전 정보' },
+      { path: 'call-guide', label: '콜 가이드' },
+    ],
+  },
 ];
 
 export default function NavBar() {
@@ -17,7 +30,12 @@ export default function NavBar() {
   useEffect(() => {
     setIsOpen(false);
   }, [pathname]);
-  if (pathname === '/') return null;
+
+  const activeEvent = EVENTS.find(({ slug }) => pathname.startsWith(slug)) ?? EVENTS[0];
+  const links = activeEvent.links.map(({ path, label }) => ({
+    href: `${activeEvent.slug}/${path}`,
+    label,
+  }));
 
   return (
     <nav className="nav-bar">
