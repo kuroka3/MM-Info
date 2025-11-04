@@ -43,14 +43,39 @@ import {
   ALL_PLAYLIST_ID,
   removeOrder,
 } from '@/utils/playlistOrder';
-import { SAFE_SONG_INDEX } from '@/data/safeSongIndex';
 
-export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
+const SPOILER_STORAGE_KEY = 'spoilerConfirmed:magical-mirai-2025';
+
+export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs, eventSlug }: CallGuideClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isSafeMode = searchParams.get('safe') === '1';
-  const playlistsKey = isSafeMode ? 'callGuideSafePlaylists' : 'callGuidePlaylists';
-  const activeKey = isSafeMode ? 'callGuideSafeActivePlaylist' : 'callGuideActivePlaylist';
+
+  const playlistsKey = isSafeMode ? `callGuideSafePlaylists:${eventSlug}` : `callGuidePlaylists:${eventSlug}`;
+  const activeKey = isSafeMode ? `callGuideSafeActivePlaylist:${eventSlug}` : `callGuideActivePlaylist:${eventSlug}`;
+
+  useEffect(() => {
+    const legacyPlaylistsKey = isSafeMode ? 'callGuideSafePlaylists' : 'callGuidePlaylists';
+    const legacyActiveKey = isSafeMode ? 'callGuideSafeActivePlaylist' : 'callGuideActivePlaylist';
+    const migratedKey = `${legacyPlaylistsKey}:migrated`;
+
+    if (!localStorage.getItem(migratedKey)) {
+      const legacyPlaylists = localStorage.getItem(legacyPlaylistsKey);
+      const legacyActive = localStorage.getItem(legacyActiveKey);
+
+      if (legacyPlaylists) {
+        localStorage.setItem(`${legacyPlaylistsKey}:magical-mirai-2025`, legacyPlaylists);
+        localStorage.removeItem(legacyPlaylistsKey);
+      }
+
+      if (legacyActive) {
+        localStorage.setItem(`${legacyActiveKey}:magical-mirai-2025`, legacyActive);
+        localStorage.removeItem(legacyActiveKey);
+      }
+
+      localStorage.setItem(migratedKey, 'true');
+    }
+  }, [isSafeMode]);
   const [prevSong, setPrevSong] = useState<Song | null>(null);
   const playerRef = useRef<YTPlayer | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -70,6 +95,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const pendingSeekRef = useRef<number | null>(null);
   const [skipGap, setSkipGap] = useState<{ target: number; showAt: number; end: number } | null>(null);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [sharedSafePlaylists, setSharedSafePlaylists] = useState<Playlist[]>([]);
   const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null);
   const [playlistOrder, setPlaylistOrder] = useState<string[]>([]);
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
@@ -81,14 +107,35 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   const toggleWatchdogRef = useRef<number | null>(null);
   const [spoilerAllowed, setSpoilerAllowed] = useState(false);
   useEffect(() => {
-    setSpoilerAllowed(localStorage.getItem('spoilerConfirmed') === 'true');
+    const updateSpoiler = () => {
+      setSpoilerAllowed(localStorage.getItem(SPOILER_STORAGE_KEY) === 'true');
+    };
+    updateSpoiler();
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === SPOILER_STORAGE_KEY) updateSpoiler();
+    };
+
+    const handleToggle = (event: Event) => {
+      const custom = event as CustomEvent<{ key: string; value: boolean }>;
+      if (!custom.detail || custom.detail.key !== SPOILER_STORAGE_KEY) return;
+      setSpoilerAllowed(Boolean(custom.detail.value));
+    };
+
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener('spoilerToggleChange', handleToggle);
+
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('spoilerToggleChange', handleToggle);
+    };
   }, []);
 
   const safeAllRef = useRef<Playlist | null>(null);
   useEffect(() => {
     if (!isSafeMode) return;
     const stored = JSON.parse(localStorage.getItem('callGuideSafeSongs') || '[]') as string[];
-    const safeSet = new Set<string>([...SAFE_SONG_INDEX, ...stored]);
+    const safeSet = new Set<string>([...safeSongIndex, ...stored]);
     if (!song.slug || !safeSet.has(song.slug)) {
       router.replace('/magicalmirai/2025/call-guide/safe');
       return;
@@ -107,20 +154,27 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       name: '전체 곡',
       slugs: songs.filter((s) => safeSet.has(s.slug!)).map((s) => s.slug!),
     };
-    const album: Playlist = { id: 'album-songs', name: '앨범 곡', slugs: SAFE_SONG_INDEX };
+    const album =
+      albumSongs.length > 0
+        ? ({
+            id: 'album-songs',
+            name: '앨범 곡',
+            slugs: albumSongs,
+          } satisfies Playlist)
+        : null;
     safeAllRef.current = safeAll;
-    setPlaylists([album, ...custom]);
+    setPlaylists(album ? [album, ...custom] : [...custom]);
     const list = searchParams.get('list');
     const activeStored = localStorage.getItem(activeKey);
     let active: Playlist | null = null;
     if (list === 'safe-all') active = safeAll;
-    else if (list === 'album-songs') active = album;
+    else if (list === 'album-songs' && album) active = album;
     else active = custom.find((p) => p.id === list) || null;
     if (!active && activeStored) {
       try {
         const parsed = JSON.parse(activeStored) as Playlist;
         if (parsed.id === 'safe-all') active = safeAll;
-        else if (parsed.id === 'album-songs') active = album;
+        else if (parsed.id === 'album-songs' && album) active = album;
         else active = custom.find((p) => p.id === parsed.id) || null;
       } catch {
         active = null;
@@ -129,7 +183,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     if (!active || !Array.isArray(active.slugs)) active = safeAll;
     setActivePlaylist(active);
     localStorage.setItem(activeKey, JSON.stringify(active));
-  }, [isSafeMode, songs, song.slug, searchParams, router, playlistsKey, activeKey]);
+  }, [isSafeMode, songs, song.slug, searchParams, router, playlistsKey, activeKey, safeSongIndex, albumSongs]);
 
   const prevPlaylistIdRef = useRef<string | null>(null);
   const prevBaseRef = useRef<string[] | null>(null);
@@ -324,16 +378,75 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
     return `${m}:${s}`;
   };
 
+  const selectablePlaylists = useMemo(
+    () => (isSafeMode ? playlists : [...sharedSafePlaylists, ...playlists]),
+    [isSafeMode, sharedSafePlaylists, playlists],
+  );
+
   useEffect(() => {
     if (isSafeMode) return;
+
+    const safeSongsStored = JSON.parse(localStorage.getItem('callGuideSafeSongs') || '[]') as string[];
+    const safeSet = new Set<string>([...safeSongIndex, ...safeSongsStored]);
+    const safeDefaults: Playlist[] = [];
+    const safeAllSlugs = songs
+      .filter((s) => s.slug && safeSet.has(s.slug))
+      .map((s) => s.slug!);
+    if (safeAllSlugs.length) {
+      safeDefaults.push({
+        id: 'safe:all',
+        name: '스포 X 전체 곡',
+        slugs: safeAllSlugs,
+      });
+    }
+    if (albumSongs.length) {
+      safeDefaults.push({
+        id: 'safe:album',
+        name: '스포 X 앨범 곡',
+        slugs: albumSongs,
+      });
+    }
+    const safePlaylistsKey = `callGuideSafePlaylists:${eventSlug}`;
+    let safeCustom: Playlist[] = [];
+    const safeStored = localStorage.getItem(safePlaylistsKey);
+    if (safeStored) {
+      try {
+        const arr = JSON.parse(safeStored) as Playlist[];
+        const seen = new Set<string>(arr.filter((p) => p.id).map((p) => p.id));
+        const migrated = arr.map((pl) => {
+          if (pl.id) return pl;
+          const id = ensureUniquePlaylistId(seen);
+          seen.add(id);
+          return { ...pl, id };
+        });
+        if (JSON.stringify(arr) !== JSON.stringify(migrated)) {
+          localStorage.setItem(safePlaylistsKey, JSON.stringify(migrated));
+        }
+        safeCustom = migrated
+          .filter((pl) => Array.isArray(pl.slugs) && pl.slugs.length > 0)
+          .map((pl) => ({
+            ...pl,
+            id: `safe:${pl.id}`,
+            name: pl.name && pl.name.includes('(SAFE)') ? pl.name : `${pl.name ?? 'SAFE 재생목록'} (SAFE)`,
+          }));
+      } catch {
+        safeCustom = [];
+      }
+    }
+    const sharedSafe = [...safeDefaults, ...safeCustom];
+    setSharedSafePlaylists(sharedSafe);
+
     const storedPlaylists = localStorage.getItem(playlistsKey);
+    let migrated: Playlist[] = [];
     if (storedPlaylists) {
       try {
         const arr = JSON.parse(storedPlaylists) as Playlist[];
         const seen = new Set<string>();
-        arr.forEach(pl => { if (pl.id) seen.add(pl.id); });
+        arr.forEach((pl) => {
+          if (pl.id) seen.add(pl.id);
+        });
 
-        const migrated = arr.map((pl) => {
+        migrated = arr.map((pl) => {
           if (pl.id) return pl;
           const id = ensureUniquePlaylistId(seen);
           seen.add(id);
@@ -344,33 +457,57 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
         if (JSON.stringify(arr) !== JSON.stringify(migrated)) {
           localStorage.setItem(playlistsKey, JSON.stringify(migrated));
         }
-      } catch { }
+      } catch {
+        migrated = [];
+        setPlaylists([]);
+      }
+    } else {
+      setPlaylists([]);
     }
 
     const activeStored = localStorage.getItem(activeKey);
     let active: Playlist | null = null;
     if (activeStored) {
       try {
-        active = JSON.parse(activeStored);
-        if (active?.name === 'default' || active?.name === '전체 곡') {
+        const parsed = JSON.parse(activeStored) as Playlist;
+        if (parsed?.id?.startsWith('safe:')) {
+          active = sharedSafe.find((pl) => pl.id === parsed.id) ?? null;
+        } else if (parsed?.id === 'safe-all') {
+          active = sharedSafe.find((pl) => pl.id === 'safe:all') ?? null;
+        } else if (parsed?.name === 'default' || parsed?.name === '전체 곡') {
           active = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
           localStorage.setItem(activeKey, JSON.stringify(active));
+        } else {
+          active = parsed;
         }
-      } catch { }
+      } catch {
+        active = null;
+      }
     }
     if (!active || !Array.isArray(active.slugs)) {
       active = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
       localStorage.setItem(activeKey, JSON.stringify(active));
-    } else if (!active.id) {
-      const currentList = JSON.parse(localStorage.getItem(playlistsKey) || '[]') as Playlist[];
-      const match = currentList.find(pl => pl.name === active!.name && sameSet(pl.slugs, active!.slugs));
+    } else if (!active.id || active.id === '') {
+      const match = migrated.find((pl) => pl.name === active!.name && sameSet(pl.slugs, active!.slugs));
       const id = match?.id ?? generateShortId11();
       active = { ...active, id };
       localStorage.setItem(activeKey, JSON.stringify(active));
+    } else if (!active.id.startsWith('safe:')) {
+      const exists = migrated.some((pl) => pl.id === active!.id);
+      if (!exists) {
+        const match = migrated.find((pl) => pl.name === active!.name && sameSet(pl.slugs, active!.slugs));
+        if (match) {
+          active = match;
+          localStorage.setItem(activeKey, JSON.stringify(active));
+        } else {
+          active = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+          localStorage.setItem(activeKey, JSON.stringify(active));
+        }
+      }
     }
 
     setActivePlaylist(active);
-  }, [songs, isSafeMode, playlistsKey, activeKey]);
+  }, [songs, isSafeMode, playlistsKey, activeKey, safeSongIndex, albumSongs, eventSlug]);
 
   const focusThenScroll = (idx: number) => {
     const el = lineRefs.current[idx];
@@ -1581,7 +1718,7 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
       )}
       {showPlaylistModal && (
         <PlaylistSelectModal
-          playlists={playlists}
+          playlists={selectablePlaylists}
           onSelect={selectPlaylist}
           onClose={closePlaylistModal}
         />
@@ -1646,6 +1783,6 @@ export default function CallGuideClient({ song, songs }: CallGuideClientProps) {
   );
 
   return isSafeMode ? body : (
-    <SpoilerGate overlayClassName="call-guide-spoiler">{body}</SpoilerGate>
+    <SpoilerGate storageKey="spoilerConfirmed:magical-mirai-2025" overlayClassName="call-guide-spoiler">{body}</SpoilerGate>
   );
 }

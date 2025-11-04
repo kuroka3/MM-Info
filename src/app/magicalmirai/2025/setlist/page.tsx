@@ -36,7 +36,7 @@ export default async function Page() {
   const hasConcerts = venueGroups.length > 0;
 
   return (
-    <SpoilerGate>
+    <SpoilerGate storageKey="spoilerConfirmed:magical-mirai-2025">
       <main className={inter.className}>
         <header className="header">
           <div className="container header-content">

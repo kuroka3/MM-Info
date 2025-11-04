@@ -130,7 +130,7 @@ const ConcertPage = async ({
   const { date, block } = await searchParams;
 
   return (
-    <SpoilerGate>
+    <SpoilerGate storageKey="spoilerConfirmed:magical-mirai-2025">
       <main>
         <Suspense fallback={
           <div className="loading-spinner-container">

@@ -2,15 +2,11 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { concertInclude, serializeConcert } from '@/app/api/concerts/concert-utils'
 
-type Params = {
-  params: {
-    slug: string
-  }
-}
+export async function GET(_req: Request, { params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
 
-export async function GET(_req: Request, { params }: Params) {
   const event = await prisma.event.findUnique({
-    where: { slug: params.slug },
+    where: { slug },
     include: {
       series: true,
       concerts: {

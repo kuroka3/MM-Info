@@ -5,7 +5,7 @@ const basePath = '/mikuexpo/asia2025';
 
 const menu = [
   { href: `${basePath}/setlist`, label: '세트리스트', icon: '/images/list.svg' },
-  { href: `${basePath}/concert-guide`, label: '공연 가이드', icon: '/images/ticket.svg' },
+  { href: `${basePath}/concert-guide`, label: '공연 정보', icon: '/images/ticket.svg' },
   { href: `${basePath}/call-guide`, label: '콜 가이드', icon: '/images/megaphone.svg' },
 ];
 

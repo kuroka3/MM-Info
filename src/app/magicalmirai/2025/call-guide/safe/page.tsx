@@ -2,10 +2,14 @@ import type { Metadata } from 'next';
 import prisma from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 import SafeCallGuideIndexClient from './SafeCallGuideIndexClient';
-import { SAFE_SONG_INDEX } from '@/data/safeSongIndex';
+import { getAlbumSongs, getSafeSongIndex } from '@/data/safeSongIndex';
 
 export const metadata: Metadata = { title: '콜 가이드 - 스포 X' };
 export const revalidate = 60;
+
+const EVENT_SLUG = 'magical-mirai-2025';
+const SAFE_SONG_INDEX = getSafeSongIndex(EVENT_SLUG);
+const ALBUM_SONGS = getAlbumSongs(EVENT_SLUG);
 
 export default async function SafeCallGuidePage() {
   const songs = await prisma.song.findMany({
@@ -52,8 +56,8 @@ export default async function SafeCallGuidePage() {
         </div>
       </header>
       <section className="container call-section">
-        <SafeCallGuideIndexClient songs={songs} />
+        <SafeCallGuideIndexClient songs={songs} safeSongIndex={SAFE_SONG_INDEX} albumSongs={ALBUM_SONGS} eventSlug={EVENT_SLUG} />
       </section>
     </main>
   );
-}
+}

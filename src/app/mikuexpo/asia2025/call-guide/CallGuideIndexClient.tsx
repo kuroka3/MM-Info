@@ -16,9 +16,32 @@ import { SongWithSetlist, Playlist } from '@/types/callGuide';
 
 interface Props {
   songs: SongWithSetlist[];
+  eventSlug: string;
 }
 
-export default function CallGuideIndexClient({ songs }: Props) {
+export default function CallGuideIndexClient({ songs, eventSlug }: Props) {
+  const playlistsKey = `callGuidePlaylists:${eventSlug}`;
+  const activeKey = `callGuideActivePlaylist:${eventSlug}`;
+
+  useEffect(() => {
+    const migratedKey = 'callGuidePlaylists:migrated';
+    if (!localStorage.getItem(migratedKey)) {
+      const legacyPlaylists = localStorage.getItem(playlistsKey);
+      const legacyActive = localStorage.getItem(activeKey);
+
+      if (legacyPlaylists) {
+        localStorage.setItem('callGuidePlaylists:magical-mirai-2025', legacyPlaylists);
+        localStorage.removeItem('callGuidePlaylists');
+      }
+
+      if (legacyActive) {
+        localStorage.setItem('callGuideActivePlaylist:magical-mirai-2025', legacyActive);
+        localStorage.removeItem('callGuideActivePlaylist');
+      }
+
+      localStorage.setItem(migratedKey, 'true');
+    }
+  }, []);
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -66,7 +89,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
 
   useEffect(() => {
     let migrated: Playlist[] = [];
-    const stored = localStorage.getItem('callGuidePlaylists');
+    const stored = localStorage.getItem(playlistsKey);
     if (stored) {
       try {
         const arr = JSON.parse(stored) as Playlist[];
@@ -79,7 +102,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
         });
         setPlaylists(migrated);
         if (JSON.stringify(arr) !== JSON.stringify(migrated)) {
-          localStorage.setItem('callGuidePlaylists', JSON.stringify(migrated));
+          localStorage.setItem(playlistsKey, JSON.stringify(migrated));
         }
       } catch {
         migrated = [];
@@ -90,7 +113,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
     }
 
     const defaultPlaylist = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
-    const activeStored = localStorage.getItem('callGuideActivePlaylist');
+    const activeStored = localStorage.getItem(activeKey);
     if (activeStored) {
       try {
         let parsed = JSON.parse(activeStored) as Playlist | null;
@@ -104,14 +127,14 @@ export default function CallGuideIndexClient({ songs }: Props) {
         if (parsed.id === ALL_PLAYLIST_ID || parsed.name === 'default') {
           parsed = defaultPlaylist;
         }
-        localStorage.setItem('callGuideActivePlaylist', JSON.stringify(parsed));
+        localStorage.setItem(activeKey, JSON.stringify(parsed));
         setActivePlaylist(parsed);
       } catch {
-        localStorage.setItem('callGuideActivePlaylist', JSON.stringify(defaultPlaylist));
+        localStorage.setItem(activeKey, JSON.stringify(defaultPlaylist));
         setActivePlaylist(defaultPlaylist);
       }
     } else {
-      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(defaultPlaylist));
+      localStorage.setItem(activeKey, JSON.stringify(defaultPlaylist));
       setActivePlaylist(defaultPlaylist);
     }
   }, [songs]);
@@ -134,12 +157,12 @@ export default function CallGuideIndexClient({ songs }: Props) {
         if (idx >= 0) {
           const arr = [...prev];
           arr[idx] = updated;
-          localStorage.setItem('callGuidePlaylists', JSON.stringify(arr));
+          localStorage.setItem(playlistsKey, JSON.stringify(arr));
           return arr;
         }
         return prev;
       });
-      localStorage.setItem('callGuideActivePlaylist', JSON.stringify(updated));
+      localStorage.setItem(activeKey, JSON.stringify(updated));
       setSelected(new Set());
       setSelectMode(false);
       setEditingExisting(false);
@@ -153,7 +176,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
     if (previousActive.current) {
       setActivePlaylist(previousActive.current);
       localStorage.setItem(
-        'callGuideActivePlaylist',
+        activeKey,
         JSON.stringify(previousActive.current),
       );
       previousActive.current = null;
@@ -173,9 +196,9 @@ export default function CallGuideIndexClient({ songs }: Props) {
     };
     const updated = [...playlists, newPlaylist];
     setPlaylists(updated);
-    localStorage.setItem('callGuidePlaylists', JSON.stringify(updated));
+    localStorage.setItem(playlistsKey, JSON.stringify(updated));
     setActivePlaylist(newPlaylist);
-    localStorage.setItem('callGuideActivePlaylist', JSON.stringify(newPlaylist));
+    localStorage.setItem(activeKey, JSON.stringify(newPlaylist));
     setSelected(new Set());
     setSelectMode(false);
     setPlaylistName('');
@@ -203,7 +226,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
     const def: Playlist = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
     ignoreActiveChange.current = true;
     setActivePlaylist(def);
-    localStorage.setItem('callGuideActivePlaylist', JSON.stringify(def));
+    localStorage.setItem(activeKey, JSON.stringify(def));
     setSelected(new Set());
     setPlaylistColor('rgba(255,255,255,0.1)');
     setSelectMode(true);
@@ -216,7 +239,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
     const def: Playlist = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
     ignoreActiveChange.current = true;
     setActivePlaylist(def);
-    localStorage.setItem('callGuideActivePlaylist', JSON.stringify(def));
+    localStorage.setItem(activeKey, JSON.stringify(def));
     setSelected(new Set(activePlaylist.slugs));
     setPlaylistColor(activePlaylist.color ?? 'rgba(255,255,255,0.1)');
     setSelectMode(true);
@@ -245,12 +268,12 @@ export default function CallGuideIndexClient({ songs }: Props) {
       if (idx >= 0) {
         const arr = [...prev];
         arr[idx] = updated;
-        localStorage.setItem('callGuidePlaylists', JSON.stringify(arr));
+        localStorage.setItem(playlistsKey, JSON.stringify(arr));
         return arr;
       }
       return prev;
     });
-    localStorage.setItem('callGuideActivePlaylist', JSON.stringify(updated));
+    localStorage.setItem(activeKey, JSON.stringify(updated));
   };
 
   useEffect(() => {
@@ -303,7 +326,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
         localStorage.removeItem(makeOrderStorageKey(toDelete.name as unknown as string));
       }
       const updated = prev.filter((_, i) => i !== deleteIndex);
-      localStorage.setItem('callGuidePlaylists', JSON.stringify(updated));
+      localStorage.setItem(playlistsKey, JSON.stringify(updated));
       return updated;
     });
     setDeleteIndex(null);
@@ -457,7 +480,7 @@ export default function CallGuideIndexClient({ songs }: Props) {
                 name: '전체 곡',
                 slugs: songs.map((s) => s.slug!),
               };
-              localStorage.setItem('callGuideActivePlaylist', JSON.stringify(def));
+              localStorage.setItem(activeKey, JSON.stringify(def));
               setActivePlaylist(def);
             }}
           >

@@ -7,6 +7,8 @@ import SpoilerGate from '@/components/SpoilerGate';
 export const metadata: Metadata = { title: '콜 가이드 - 스포 O' };
 export const revalidate = 60;
 
+const EVENT_SLUG = 'magical-mirai-2025';
+
 export default async function CallGuideAllPage() {
   const songs = await prisma.song.findMany({
     where: {
@@ -31,7 +33,7 @@ export default async function CallGuideAllPage() {
   });
 
   return (
-    <SpoilerGate overlayClassName="call-guide-spoiler">
+    <SpoilerGate storageKey="spoilerConfirmed:magical-mirai-2025" overlayClassName="call-guide-spoiler">
       <main>
         <header className="header">
           <div className="container header-content">
@@ -40,7 +42,7 @@ export default async function CallGuideAllPage() {
           </div>
         </header>
         <section className="container call-section">
-          <CallGuideIndexClient songs={songs} />
+          <CallGuideIndexClient songs={songs} eventSlug={EVENT_SLUG} />
         </section>
       </main>
     </SpoilerGate>

@@ -4,7 +4,7 @@ const legacyLandings = [
   {
     href: '/magicalmirai/2025',
     title: '매지컬 미라이 2025',
-    description: '세트리스트, 공연 가이드, 콜 가이드 등 2025년 매지컬 미라이 정보모음',
+    description: '세트리스트, 공연 정보, 콜 가이드 등 2025년 매지컬 미라이 정보모음',
     badge: '마지컬 미라이',
   },
 ];

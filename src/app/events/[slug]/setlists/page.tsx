@@ -50,7 +50,7 @@ const EventSetlistsPage = async ({ params }: { params: Promise<{ slug: string }>
   const basePath = EVENT_PATH_MAP[event.slug ?? '']
 
   return (
-    <SpoilerGate>
+    <SpoilerGate storageKey={`spoilerConfirmed:${event.slug}`}>
       <main className={inter.className}>
         <header className="header">
           <div className="container header-content">

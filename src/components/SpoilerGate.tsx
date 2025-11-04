@@ -16,6 +16,11 @@ const SpoilerGate: React.FC<Props> = ({
   const [showWarning, setShowWarning] = useState(true);
 
   useLayoutEffect(() => {
+    // Remove legacy spoilerConfirmed key on first mount
+    if (storageKey !== 'spoilerConfirmed' && localStorage.getItem('spoilerConfirmed')) {
+      localStorage.removeItem('spoilerConfirmed');
+    }
+
     if (localStorage.getItem(storageKey) === 'true') {
       setShowWarning(false);
     }
@@ -32,6 +37,11 @@ const SpoilerGate: React.FC<Props> = ({
 
   const handleYes = () => {
     localStorage.setItem(storageKey, 'true');
+    window.dispatchEvent(
+      new CustomEvent('spoilerToggleChange', {
+        detail: { key: storageKey, value: true },
+      }),
+    );
     setShowWarning(false);
   };
 

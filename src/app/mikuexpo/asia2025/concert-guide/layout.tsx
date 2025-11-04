@@ -1,7 +1,7 @@
 import './global.css'
 
 export const metadata = {
-  title: '공연 가이드',
+  title: '공연 정보',
 }
 
 export default function ConcertGuideLayout({

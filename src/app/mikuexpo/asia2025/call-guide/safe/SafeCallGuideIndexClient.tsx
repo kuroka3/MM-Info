@@ -23,22 +23,46 @@ import {
   ensureUniquePlaylistId,
 } from '@/utils/playlistOrder';
 import { SongWithSetlist, Playlist } from '@/types/callGuide';
-import { SAFE_SONG_INDEX } from '@/data/safeSongIndex';
 
 const SAFE_ALL_ID = 'safe-all';
 
 interface Props {
   songs: SongWithSetlist[];
+  safeSongIndex: string[];
+  albumSongs: string[];
+  eventSlug: string;
 }
 
-export default function SafeCallGuideIndexClient({ songs }: Props) {
+export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSongs, eventSlug }: Props) {
+  const playlistsKey = `callGuideSafePlaylists:${eventSlug}`;
+  const activeKey = `callGuideSafeActivePlaylist:${eventSlug}`;
+
+  useEffect(() => {
+    const migratedKey = 'callGuideSafePlaylists:migrated';
+    if (!localStorage.getItem(migratedKey)) {
+      const legacyPlaylists = localStorage.getItem(playlistsKey);
+      const legacyActive = localStorage.getItem('callGuideSafeActivePlaylist');
+
+      if (legacyPlaylists) {
+        localStorage.setItem('callGuideSafePlaylists:magical-mirai-2025', legacyPlaylists);
+        localStorage.removeItem('callGuideSafePlaylists');
+      }
+
+      if (legacyActive) {
+        localStorage.setItem('callGuideSafeActivePlaylist:magical-mirai-2025', legacyActive);
+        localStorage.removeItem('callGuideSafeActivePlaylist');
+      }
+
+      localStorage.setItem(migratedKey, 'true');
+    }
+  }, []);
   const [safeSongs, setSafeSongs] = useState<SongWithSetlist[]>([]);
   const computeSafeSongs = useCallback(() => {
     const stored = JSON.parse(
       localStorage.getItem('callGuideSafeSongs') || '[]',
     ) as string[];
     const orderMap = new Map<string, number>();
-    SAFE_SONG_INDEX.forEach((slug, i) => orderMap.set(slug, i + 1));
+    safeSongIndex.forEach((slug, i) => orderMap.set(slug, i + 1));
     stored.forEach((slug) => {
       if (!orderMap.has(slug)) {
         orderMap.set(slug, orderMap.size + 1);
@@ -48,7 +72,7 @@ export default function SafeCallGuideIndexClient({ songs }: Props) {
       .filter((s) => s.slug && orderMap.has(s.slug))
       .sort((a, b) => orderMap.get(a.slug!)! - orderMap.get(b.slug!)!)
       .map((s) => ({ ...s, safeIndex: orderMap.get(s.slug!) }));
-  }, [songs]);
+  }, [songs, safeSongIndex]);
 
   useEffect(() => {
     setSafeSongs(computeSafeSongs());
@@ -80,8 +104,11 @@ export default function SafeCallGuideIndexClient({ songs }: Props) {
     [safeSongs],
   );
   const albumPlaylist = React.useMemo(
-    () => ({ id: 'album-songs', name: '앨범 곡', slugs: SAFE_SONG_INDEX }),
-    [],
+    () =>
+      albumSongs.length
+        ? ({ id: 'album-songs', name: '앨범 곡', slugs: albumSongs } satisfies Playlist)
+        : null,
+    [albumSongs],
   );
 
   useEffect(() => {
@@ -111,7 +138,7 @@ export default function SafeCallGuideIndexClient({ songs }: Props) {
   useEffect(() => {
     if (!safeSongs.length) return;
     let migrated: Playlist[] = [];
-    const stored = localStorage.getItem('callGuideSafePlaylists');
+    const stored = localStorage.getItem(playlistsKey);
     if (stored) {
       try {
         const arr = JSON.parse(stored) as Playlist[];
@@ -123,7 +150,7 @@ export default function SafeCallGuideIndexClient({ songs }: Props) {
           return { ...pl, id };
         });
         if (JSON.stringify(arr) !== JSON.stringify(migrated)) {
-          localStorage.setItem('callGuideSafePlaylists', JSON.stringify(migrated));
+          localStorage.setItem(playlistsKey, JSON.stringify(migrated));
         }
       } catch {
         migrated = [];
@@ -140,7 +167,7 @@ export default function SafeCallGuideIndexClient({ songs }: Props) {
         } else if (parsed.id === SAFE_ALL_ID) {
           parsed = safeAll;
         } else if (parsed.id === 'album-songs') {
-          parsed = albumPlaylist;
+          parsed = albumPlaylist ?? safeAll;
         } else if (!parsed.id) {
           const match = migrated.find(
             (pl) =>
@@ -185,7 +212,7 @@ export default function SafeCallGuideIndexClient({ songs }: Props) {
         if (idx >= 0) {
           const arr = [...prev];
           arr[idx] = updated;
-          localStorage.setItem('callGuideSafePlaylists', JSON.stringify(arr));
+          localStorage.setItem(playlistsKey, JSON.stringify(arr));
           return arr;
         }
         return prev;
@@ -224,7 +251,7 @@ export default function SafeCallGuideIndexClient({ songs }: Props) {
     };
     const updated = [...playlists, newPlaylist];
     setPlaylists(updated);
-    localStorage.setItem('callGuideSafePlaylists', JSON.stringify(updated));
+    localStorage.setItem(playlistsKey, JSON.stringify(updated));
     setActivePlaylist(newPlaylist);
     localStorage.setItem('callGuideSafeActivePlaylist', JSON.stringify(newPlaylist));
     setSelected(new Set());
@@ -296,7 +323,7 @@ export default function SafeCallGuideIndexClient({ songs }: Props) {
       if (idx >= 0) {
         const arr = [...prev];
         arr[idx] = updated;
-        localStorage.setItem('callGuideSafePlaylists', JSON.stringify(arr));
+        localStorage.setItem(playlistsKey, JSON.stringify(arr));
         return arr;
       }
       return prev;
@@ -356,7 +383,7 @@ export default function SafeCallGuideIndexClient({ songs }: Props) {
         );
       }
       const updated = prev.filter((_, i) => i !== deleteIndex);
-      localStorage.setItem('callGuideSafePlaylists', JSON.stringify(updated));
+      localStorage.setItem(playlistsKey, JSON.stringify(updated));
       return updated;
     });
     setDeleteIndex(null);
@@ -457,7 +484,7 @@ export default function SafeCallGuideIndexClient({ songs }: Props) {
         onRemoveSong={handleRemoveSong}
         ref={songListRef}
         linkExtraQuery="&safe=1"
-        playlistsKey="callGuideSafePlaylists"
+        playlistsKey={playlistsKey}
         activeKey="callGuideSafeActivePlaylist"
       />
 
@@ -478,8 +505,8 @@ export default function SafeCallGuideIndexClient({ songs }: Props) {
           setActivePlaylist={setActivePlaylist}
           onClose={closePlaylistModal}
           onDeleteRequest={openDeleteModal}
-          defaultPlaylists={[safeAll, albumPlaylist]}
-          playlistsKey="callGuideSafePlaylists"
+          defaultPlaylists={[safeAll, ...(albumPlaylist ? [albumPlaylist] : [])]}
+          playlistsKey={playlistsKey}
           activeKey="callGuideSafeActivePlaylist"
         />
       )}
@@ -545,4 +572,3 @@ export default function SafeCallGuideIndexClient({ songs }: Props) {
     </>
   );
 }
-

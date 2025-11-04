@@ -65,6 +65,10 @@ next-env.d.ts
 # Test files
 /.dev/*
 
+#Claude files
+/.claude/*
+/CLAUDE.md
+
 # Image files
 /.github/*
 /src/generated/prisma

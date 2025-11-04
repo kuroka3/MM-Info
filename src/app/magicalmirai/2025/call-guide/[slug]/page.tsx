@@ -4,7 +4,7 @@ import { Prisma, type Song } from '@prisma/client';
 import CallGuideClient from './CallGuideClient';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { SAFE_SONG_INDEX } from '@/data/safeSongIndex';
+import { getAlbumSongs, getSafeSongIndex } from '@/data/safeSongIndex';
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -12,6 +12,10 @@ type PageProps = {
 };
 
 export const revalidate = 60;
+
+const EVENT_SLUG = 'magical-mirai-2025';
+const SAFE_SONG_INDEX = getSafeSongIndex(EVENT_SLUG);
+const ALBUM_SONGS = getAlbumSongs(EVENT_SLUG);
 
 const getSongData = async (
   slug: string,
@@ -79,7 +83,14 @@ export default async function CallGuideSongPage({ params, searchParams }: PagePr
   const { song, songs } = await getSongData(slug, isSafeMode);
   return (
     <Suspense fallback={null}>
-      <CallGuideClient key={song.slug} song={song} songs={songs} />
+      <CallGuideClient
+        key={song.slug}
+        song={song}
+        songs={songs}
+        safeSongIndex={SAFE_SONG_INDEX}
+        albumSongs={ALBUM_SONGS}
+        eventSlug={EVENT_SLUG}
+      />
     </Suspense>
   );
 }

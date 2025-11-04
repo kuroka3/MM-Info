@@ -34,6 +34,9 @@ export interface YTPlayer {
 export interface CallGuideClientProps {
   song: Song;
   songs: Song[];
+  safeSongIndex: string[];
+  albumSongs: string[];
+  eventSlug: string;
 }
 
 declare global {

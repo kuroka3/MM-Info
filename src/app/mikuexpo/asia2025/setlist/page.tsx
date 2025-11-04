@@ -110,7 +110,7 @@ export default async function Page() {
   };
 
   return (
-    <SpoilerGate>
+    <SpoilerGate storageKey="spoilerConfirmed:mikuexpo-asia2025">
       <main className={inter.className}>
         <header className="header">
           <div className="container header-content">

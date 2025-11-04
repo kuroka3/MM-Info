@@ -2,10 +2,14 @@ import type { Metadata } from 'next';
 import prisma from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 import SafeCallGuideIndexClient from './SafeCallGuideIndexClient';
-import { SAFE_SONG_INDEX } from '@/data/safeSongIndex';
+import { getAlbumSongs, getSafeSongIndex } from '@/data/safeSongIndex';
 
-export const metadata: Metadata = { title: '콜 가이드 - 스포 X' };
+export const metadata: Metadata = { title: '콜 가이드 - 테마곡' };
 export const revalidate = 60;
+
+const EVENT_SLUG = 'miku-expo-2025-asia';
+const SAFE_SONG_INDEX = getSafeSongIndex(EVENT_SLUG);
+const ALBUM_SONGS = getAlbumSongs(EVENT_SLUG);
 
 export default async function SafeCallGuidePage() {
   const songs = await prisma.song.findMany({
@@ -48,12 +52,12 @@ export default async function SafeCallGuidePage() {
       <header className="header">
         <div className="container header-content">
           <h1 className="header-title">콜 가이드</h1>
-          <p className="header-subtitle">앨범에 포함된 스포 X 곡</p>
+          <p className="header-subtitle">테마곡 및 커스텀 곡</p>
         </div>
       </header>
       <section className="container call-section">
-        <SafeCallGuideIndexClient songs={songs} />
+        <SafeCallGuideIndexClient songs={songs} safeSongIndex={SAFE_SONG_INDEX} albumSongs={ALBUM_SONGS} eventSlug={EVENT_SLUG} />
       </section>
     </main>
   );
-}
+}
