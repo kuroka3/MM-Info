@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
+import { triggerSpoilerRedirect } from '@/utils/spoilerRedirect';
 
 const EVENTS = [
   {
@@ -48,11 +49,22 @@ export default function NavBar() {
     setIsOpen(false);
   }, [pathname]);
 
-  const activeEvent = EVENTS.find(({ slug }) => slug && pathname.startsWith(slug)) ?? DEFAULT_EVENT;
-  const links = activeEvent.links.map(({ path, label }) => ({
-    href: `${activeEvent.slug}/${path}`,
-    label,
-  }));
+  const matchedEvent = EVENTS.find(({ slug }) =>
+    slug && (pathname === slug || pathname.startsWith(`${slug}/`)),
+  );
+  const isRootPath = pathname === '/' || pathname === '';
+  const fallbackEvent = isRootPath && EVENTS.length > 0 ? EVENTS[0] : DEFAULT_EVENT;
+  const activeEvent = matchedEvent ?? fallbackEvent;
+  const baseSegments = activeEvent.slug.split('/').filter(Boolean);
+  const links = activeEvent.links.map(({ path, label }) => {
+    const normalizedPath = path.replace(/^\/+/u, '');
+    const segments = normalizedPath ? [...baseSegments, normalizedPath] : [...baseSegments];
+    const href = `/${segments.join('/')}` || '/';
+    return {
+      href,
+      label,
+    };
+  });
   const spoilerKey = activeEvent.spoilerStorageKey;
   const spoilerLabel = activeEvent.spoilerLabel;
 
@@ -62,18 +74,23 @@ export default function NavBar() {
       return;
     }
 
+    const disabledKey = `${spoilerKey}:disabled`;
+
     const updateSpoiler = () => {
-      setSpoilerEnabled(localStorage.getItem(spoilerKey) === 'true');
+      const enabled =
+        localStorage.getItem(spoilerKey) === 'true' &&
+        localStorage.getItem(disabledKey) !== 'true';
+      setSpoilerEnabled(enabled);
     };
 
     const handleStorage = (event: StorageEvent) => {
-      if (event.key === spoilerKey) updateSpoiler();
+      if (event.key === spoilerKey || event.key === disabledKey) updateSpoiler();
     };
 
     const handleToggle = (event: Event) => {
       const custom = event as CustomEvent<{ key: string; value: boolean }>;
       if (!custom.detail || custom.detail.key !== spoilerKey) return;
-      setSpoilerEnabled(Boolean(custom.detail.value));
+      updateSpoiler();
     };
 
     updateSpoiler();
@@ -88,15 +105,34 @@ export default function NavBar() {
 
   const toggleSpoiler = () => {
     if (!spoilerKey) return;
+    const disabledKey = `${spoilerKey}:disabled`;
     setSpoilerEnabled((prev) => {
       const next = !prev;
-      if (next) localStorage.setItem(spoilerKey, 'true');
-      else localStorage.removeItem(spoilerKey);
-      window.dispatchEvent(
-        new CustomEvent('spoilerToggleChange', {
-          detail: { key: spoilerKey, value: next },
-        }),
-      );
+      if (next) {
+        localStorage.setItem(spoilerKey, 'true');
+        localStorage.removeItem(disabledKey);
+        window.dispatchEvent(
+          new CustomEvent('spoilerToggleChange', {
+            detail: { key: spoilerKey, value: true },
+          }),
+        );
+        if (typeof document !== 'undefined') {
+          const redirectTarget = document.body.dataset.spoilerRedirect;
+          if (redirectTarget) triggerSpoilerRedirect(redirectTarget, { startDelay: 220 });
+        }
+      } else {
+        localStorage.removeItem(spoilerKey);
+        localStorage.setItem(disabledKey, 'true');
+        window.dispatchEvent(
+          new CustomEvent('spoilerToggleChange', {
+            detail: { key: spoilerKey, value: false },
+          }),
+        );
+        if (typeof document !== 'undefined') {
+          const redirectTarget = document.body.dataset.spoilerRedirect;
+          if (redirectTarget) triggerSpoilerRedirect(redirectTarget, { startDelay: 300 });
+        }
+      }
       return next;
     });
   };

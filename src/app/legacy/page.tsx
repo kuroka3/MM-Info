@@ -19,7 +19,7 @@ export default function LegacyIndexPage() {
             이전 공연 아카이브
           </h1>
           <p className="legacy-description">
-            지나간 콘서트들의 정보를 모아두었어요. 아래 카드에서 보고 싶은 공연을 선택해 주세요.
+            지나간 공연들의 정보모음 리스트
           </p>
         </header>
 

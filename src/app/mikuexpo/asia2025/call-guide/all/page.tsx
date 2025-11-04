@@ -33,7 +33,11 @@ export default async function CallGuideAllPage() {
   });
 
   return (
-    <SpoilerGate storageKey="spoilerConfirmed:mikuexpo-asia2025" overlayClassName="call-guide-spoiler">
+    <SpoilerGate
+      storageKey="spoilerConfirmed:mikuexpo-asia2025"
+      overlayClassName="call-guide-spoiler"
+      redirectPath="/mikuexpo/asia2025"
+    >
       <main>
         <header className="header">
           <div className="container header-content">

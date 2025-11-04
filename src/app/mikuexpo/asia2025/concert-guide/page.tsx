@@ -51,7 +51,7 @@ export default function ConcertGuidePage() {
             rel="noopener noreferrer"
             className="feature-link-block external-link"
           >
-            <span className="external-link-text">MIKU EXPO 2025 ASIA 공식 사이트</span>
+            <span className="external-link-text">미쿠 엑스포 2025 ASIA 공식 사이트</span>
             <span className="external-link-arrow" aria-hidden="true">
               ↗
             </span>

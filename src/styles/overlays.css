@@ -13,6 +13,20 @@
   z-index: 100;
 }
 
+.spoiler-redirect-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 120;
+}
+
+.spoiler-redirect-overlay.visible {
+  opacity: 1;
+}
+
 .spoiler-warning {
   color: var(--accent-red);
   font-size: 1.5rem;

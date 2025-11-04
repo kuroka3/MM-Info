@@ -138,7 +138,7 @@ const ConcertPage = async ({
   const block = search?.block;
 
   return (
-    <SpoilerGate storageKey="spoilerConfirmed:mikuexpo-asia2025">
+    <SpoilerGate storageKey="spoilerConfirmed:mikuexpo-asia2025" redirectPath="/mikuexpo/asia2025">
       <main>
         <Suspense
           fallback={

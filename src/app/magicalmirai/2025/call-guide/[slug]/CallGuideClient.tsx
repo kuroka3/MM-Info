@@ -1783,6 +1783,12 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
   );
 
   return isSafeMode ? body : (
-    <SpoilerGate storageKey="spoilerConfirmed:magical-mirai-2025" overlayClassName="call-guide-spoiler">{body}</SpoilerGate>
+    <SpoilerGate
+      storageKey="spoilerConfirmed:magical-mirai-2025"
+      overlayClassName="call-guide-spoiler"
+      redirectPath="/magicalmirai/2025"
+    >
+      {body}
+    </SpoilerGate>
   );
 }

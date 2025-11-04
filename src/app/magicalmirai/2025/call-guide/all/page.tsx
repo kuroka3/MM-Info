@@ -33,7 +33,11 @@ export default async function CallGuideAllPage() {
   });
 
   return (
-    <SpoilerGate storageKey="spoilerConfirmed:magical-mirai-2025" overlayClassName="call-guide-spoiler">
+    <SpoilerGate
+      storageKey="spoilerConfirmed:magical-mirai-2025"
+      overlayClassName="call-guide-spoiler"
+      redirectPath="/magicalmirai/2025"
+    >
       <main>
         <header className="header">
           <div className="container header-content">

@@ -514,6 +514,10 @@
   position: relative;
   z-index: 1;
   flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 .external-link-arrow {

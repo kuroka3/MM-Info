@@ -48,3 +48,17 @@ body {
   padding: 0 24px;
   position: relative;
 }
+
+body.spoiler-redirecting {
+  cursor: progress;
+}
+
+.app-shell {
+  transition: transform 0.4s ease, filter 0.4s ease, opacity 0.4s ease;
+}
+
+body.spoiler-redirecting .app-shell {
+  transform: translateY(16px);
+  filter: blur(6px);
+  opacity: 0;
+}
