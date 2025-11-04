@@ -6,20 +6,42 @@ interface Props {
   children: React.ReactNode;
   storageKey?: string;
   overlayClassName?: string;
+  redirectPath?: string;
 }
 
 const SpoilerGate: React.FC<Props> = ({
   children,
   storageKey = 'spoilerConfirmed',
   overlayClassName,
+  redirectPath,
 }) => {
   const [showWarning, setShowWarning] = useState(true);
+  const disabledKey = `${storageKey}:disabled`;
 
   useLayoutEffect(() => {
-    if (localStorage.getItem(storageKey) === 'true') {
+    // Remove legacy spoilerConfirmed key on first mount
+    if (storageKey !== 'spoilerConfirmed' && localStorage.getItem('spoilerConfirmed')) {
+      localStorage.removeItem('spoilerConfirmed');
+    }
+    if (storageKey !== 'spoilerConfirmed' && localStorage.getItem('spoilerConfirmed:disabled')) {
+      localStorage.removeItem('spoilerConfirmed:disabled');
+    }
+
+    const isDisabled = localStorage.getItem(disabledKey) === 'true';
+    if (!isDisabled && localStorage.getItem(storageKey) === 'true') {
       setShowWarning(false);
     }
-  }, [storageKey]);
+  }, [storageKey, disabledKey]);
+
+  useEffect(() => {
+    if (typeof document === 'undefined' || !redirectPath) return;
+    const previous = document.body.dataset.spoilerRedirect;
+    document.body.dataset.spoilerRedirect = redirectPath;
+    return () => {
+      if (previous) document.body.dataset.spoilerRedirect = previous;
+      else delete document.body.dataset.spoilerRedirect;
+    };
+  }, [redirectPath]);
 
   useEffect(() => {
     if (!showWarning) return;
@@ -32,6 +54,12 @@ const SpoilerGate: React.FC<Props> = ({
 
   const handleYes = () => {
     localStorage.setItem(storageKey, 'true');
+    localStorage.removeItem(disabledKey);
+    window.dispatchEvent(
+      new CustomEvent('spoilerToggleChange', {
+        detail: { key: storageKey, value: true },
+      }),
+    );
     setShowWarning(false);
   };
 

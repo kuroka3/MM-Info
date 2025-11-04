@@ -1,4 +1,4 @@
-// import Link from 'next/link';
+import Link from 'next/link';
 import React from 'react';
 
 // type Concert = {
@@ -26,18 +26,25 @@ import React from 'react';
 //     return res.json();
 // }
 
-const Footer = async () => {
+const footerLinks = [
+  { href: '/legacy', label: '이전 공연' },
+  { href: '/', label: '메인 페이지로' },
+];
+
+const Footer = () => {
   // const concerts = await getConcerts();
 
   return (
     <footer className="footer">
-      <nav>
+      <nav aria-label="푸터 보조 링크">
         <ul className="footer-nav-list">
-          {/* {Object.keys(concerts).map((concertId) => (
-            <li key={concertId}>
-              <Link href={`/concerts/${concertId}`}>{concerts[concertId].title}</Link>
+          {footerLinks.map(({ href, label }) => (
+            <li key={href}>
+              <Link href={href}>
+                <span>{label}</span>
+              </Link>
             </li>
-          ))} */}
+          ))}
         </ul>
       </nav>
     </footer>

@@ -67,12 +67,22 @@ const PlaylistPopup: React.FC<PlaylistPopupProps> = ({
             </span>
             <div className="song-links playlist-links">
               {spotifyUrl && (
-                <a href={spotifyUrl} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={spotifyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="glow-link glow-link--spotify"
+                >
                   <Image src="/images/spotify.svg" alt="Spotify" width={24} height={24} />
                 </a>
               )}
               {youtubeUrl && (
-                <a href={youtubeUrl} target="_blank" rel="noopener noreferrer">
+                <a
+                  href={youtubeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="glow-link glow-link--youtube"
+                >
                   <Image src="/images/youtube.svg" alt="YouTube" width={24} height={24} />
                 </a>
               )}

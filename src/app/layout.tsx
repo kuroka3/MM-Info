@@ -32,7 +32,7 @@ export default function RootLayout({
     <html lang="ko">
       <body>
         <ViewportHeightSetter />
-        <div className="container">
+        <div className="container app-shell">
           <div className="top-bar">
             <HomeButton />
             <NavBar />

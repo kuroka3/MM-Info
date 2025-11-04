@@ -9,9 +9,10 @@ interface Props {
   safeSongs: SongWithSetlist[];
   onClose: () => void;
   onUnlock: (song: SongWithSetlist) => void;
+  storageKey: string;
 }
 
-export default function SongSearchOverlay({ songs, safeSongs, onClose, onUnlock }: Props) {
+export default function SongSearchOverlay({ songs, safeSongs, onClose, onUnlock, storageKey }: Props) {
   const [query, setQuery] = useState('');
   const [result, setResult] = useState<SongWithSetlist | null>(null);
   const [confirmSong, setConfirmSong] = useState<SongWithSetlist | null>(null);
@@ -79,11 +80,11 @@ export default function SongSearchOverlay({ songs, safeSongs, onClose, onUnlock 
   const addSong = () => {
     if (!result) return;
     const stored = JSON.parse(
-      localStorage.getItem('callGuideSafeSongs') || '[]',
+      localStorage.getItem(storageKey) || '[]',
     ) as string[];
     if (!stored.includes(result.slug!)) {
       stored.push(result.slug!);
-      localStorage.setItem('callGuideSafeSongs', JSON.stringify(stored));
+      localStorage.setItem(storageKey, JSON.stringify(stored));
       onUnlock(result);
       setUnlockedMsg(`${result.krtitle || result.title}이 해금되었습니다.`);
       resultRef.current?.classList.add('slide-out');

@@ -23,6 +23,63 @@
   display: flex;
   justify-content: center;
   gap: 24px;
+  align-items: center;
+}
+
+.nav-spoiler-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-secondary, rgba(255, 255, 255, 0.75));
+}
+
+.nav-spoiler-text {
+  white-space: nowrap;
+}
+
+.ios-toggle {
+  position: relative;
+  width: 48px;
+  height: 28px;
+  border-radius: 999px;
+  border: none;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: background 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.ios-toggle__handle {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.25);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.2s ease;
+}
+
+.ios-toggle:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 3px;
+}
+
+.ios-toggle:active .ios-toggle__handle {
+  width: 26px;
+}
+
+.ios-toggle--on {
+  background: var(--toggle-accent, var(--accent-blue));
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+.ios-toggle--on .ios-toggle__handle {
+  transform: translateX(20px);
 }
 
 @media (min-width: 640px) {
@@ -46,7 +103,7 @@
     height: 60px;
     align-items: center;
     justify-content: flex-end;
-    padding: 0 16px;
+    padding: 0 30px 0 12px;
   }
 
   .nav-links {
@@ -82,6 +139,16 @@
     width: 100%;
     padding: 8px 0;
     text-align: center;
+  }
+
+  .nav-spoiler-toggle {
+    width: 100%;
+    justify-content: flex-end;
+    gap: 12px;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    margin-top: 8px;
+    font-size: 0.9rem;
   }
 }
 
@@ -144,6 +211,16 @@
   z-index: 50;
 }
 
+.home-button__line {
+  display: block;
+  width: 100%;
+}
+
+.home-button__line--expo {
+  letter-spacing: -0.08em;
+  white-space: nowrap;
+}
+
 .home-button:hover {
   box-shadow: 0 0 10px var(--accent-blue);
   transform: scale(1.02);
@@ -159,5 +236,9 @@
     width: 60px;
     height: 60px;
     font-size: 0.75rem;
+  }
+
+  .home-button__line--expo {
+    letter-spacing: -0.1em;
   }
 }

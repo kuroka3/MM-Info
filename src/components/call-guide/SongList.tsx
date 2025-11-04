@@ -30,6 +30,7 @@ interface Props {
   playlistsKey?: string;
   activeKey?: string;
   filterPersist?: (pls: Playlist[]) => Playlist[];
+  eventBasePath?: string;
 }
 
 export type SongListHandle = {
@@ -52,6 +53,7 @@ function SongList(
     playlistsKey = 'callGuidePlaylists',
     activeKey = 'callGuideActivePlaylist',
     filterPersist,
+    eventBasePath = '',
   }: Props,
   ref: React.ForwardedRef<SongListHandle>,
 ) {
@@ -389,7 +391,9 @@ function SongList(
 
   const handleSongClick = () => {
     if (!activePlaylist) {
-      const defaultId = activeKey === 'callGuideSafeActivePlaylist' ? 'safe-all' : ALL_PLAYLIST_ID;
+      const defaultId = activeKey.startsWith('callGuideSafeActivePlaylist')
+        ? 'safe-all'
+        : ALL_PLAYLIST_ID;
       const def: Playlist = { id: defaultId, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
       localStorage.setItem(activeKey, JSON.stringify(def));
       setActivePlaylist(def);
@@ -480,7 +484,7 @@ function SongList(
           return (
             <Link
               key={song.slug!}
-              href={`/call-guide/${song.slug}?list=${activePlaylist?.id ?? ALL_PLAYLIST_ID}${linkExtraQuery}`}
+              href={`${eventBasePath}/call-guide/${song.slug}?list=${activePlaylist?.id ?? ALL_PLAYLIST_ID}${linkExtraQuery}`}
               className={`${itemClass} remove-mode`}
               style={{
                 textDecoration: 'none',
@@ -570,7 +574,7 @@ function SongList(
           return (
             <Link
               key={song.slug!}
-              href={`/call-guide/${song.slug}?list=${activePlaylist?.id ?? ALL_PLAYLIST_ID}${linkExtraQuery}`}
+              href={`${eventBasePath}/call-guide/${song.slug}?list=${activePlaylist?.id ?? ALL_PLAYLIST_ID}${linkExtraQuery}`}
               className={itemClass}
               style={{
                 textDecoration: 'none',
