@@ -71,9 +71,17 @@ export default function HomeButton() {
       className={`home-button${hidden ? ' hidden' : ''}`}
       style={{ display: isHome ? 'none' : undefined }}
     >
-      {activeEvent.lines.map((line) => (
-        <span key={line}>{line}</span>
-      ))}
+      {activeEvent.lines.map((line) => {
+        const isExpoLine = line === 'EXPO ASIA';
+        return (
+          <span
+            key={line}
+            className={`home-button__line${isExpoLine ? ' home-button__line--expo' : ''}`}
+          >
+            {line}
+          </span>
+        );
+      })}
     </Link>
   );
 }

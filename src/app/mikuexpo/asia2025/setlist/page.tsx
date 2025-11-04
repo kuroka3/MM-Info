@@ -4,7 +4,12 @@ import { Inter } from 'next/font/google';
 import SpoilerGate from '@/components/SpoilerGate';
 import { notFound } from 'next/navigation';
 import prisma from '@/lib/prisma';
-import { groupConcertsByVenue, type ConcertWithVenue } from '@/utils/groupConcerts';
+import {
+  groupConcertsByVenue,
+  type ConcertWithVenue,
+  type VenueGroup,
+} from '@/utils/groupConcerts';
+import './global.css';
 
 const inter = Inter({ subsets: ['latin'], weight: ['600', '700', '800'] });
 
@@ -24,7 +29,7 @@ export default async function Page() {
           { block: 'asc' },
         ],
         include: {
-          Venue: true,
+          venue: true,
         },
       },
     },
@@ -35,7 +40,74 @@ export default async function Page() {
   }
 
   const venueGroups = groupConcertsByVenue(event.concerts as ConcertWithVenue[]);
-  const hasConcerts = venueGroups.length > 0;
+  const seoulGroups = venueGroups.filter(({ venueName }) => venueName.includes('서울'));
+  const hasConcerts = seoulGroups.length > 0 || venueGroups.length > 0;
+
+  const renderVenueCard = (
+    venueName: string,
+    concerts: VenueGroup['concerts'],
+    variant: 'default' | 'primary' | 'ghost',
+    keySuffix: string
+  ) => {
+    const isSeoul = venueName.includes('서울');
+    const cardClassNames = ['feature-card'];
+
+    if (isSeoul) {
+      cardClassNames.push('seoul-card');
+      if (variant === 'primary') {
+        cardClassNames.push('seoul-card--primary');
+      }
+      if (variant === 'ghost') {
+        cardClassNames.push('seoul-card--ghost');
+      }
+    }
+
+    return (
+      <div key={`${venueName}-${keySuffix}`} className={cardClassNames.join(' ')}>
+        <h3 className="feature-title">{venueName}</h3>
+        <div className="feature-list">
+          {concerts.map(({ date, day, blocks }) => (
+            <div key={date} className="date-row">
+              <span className="header-date">{`${date} (${day})`}</span>
+              <div className="block-buttons">
+                {blocks.map(({ block, label, id, hidden, concertId }, blockIndex) => {
+                  const key = id ? `set-${id}` : `concert-${concertId}-${blockIndex}`;
+
+                  if (hidden) {
+                    return (
+                      <span key={key} className="block-placeholder">
+                        {label}
+                      </span>
+                    );
+                  }
+
+                  if (!id) {
+                    return (
+                      <span key={key} className="glass-effect block-disabled">
+                        {label}
+                      </span>
+                    );
+                  }
+
+                  return (
+                    <Link
+                      key={key}
+                      href={`${basePath}/concerts/${id}?date=${encodeURIComponent(
+                        date
+                      )}&block=${encodeURIComponent(block)}`}
+                      className="glass-effect block-link"
+                    >
+                      {label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <SpoilerGate>
@@ -50,41 +122,19 @@ export default async function Page() {
         <section className="container">
           <div className="features-grid">
             {hasConcerts ? (
-              venueGroups.map(({ venueName, concerts }) => (
-                <div key={venueName} className="feature-card">
-                  <h3 className="feature-title">{venueName}</h3>
-                  <div className="feature-list">
-                    {concerts.map(({ date, day, blocks }) => (
-                      <div key={date} className="date-row">
-                        <span className="header-date">{`${date} (${day})`}</span>
-                        <div className="block-buttons">
-                          {blocks.map(({ block: t, id, hidden }) =>
-                            hidden ? (
-                              <span key={t} className="block-placeholder">
-                                {t}
-                              </span>
-                            ) : id ? (
-                              <Link
-                                key={t}
-                                href={`${basePath}/concerts/${id}?date=${encodeURIComponent(
-                                  date
-                                )}&block=${encodeURIComponent(t)}`}
-                                className="glass-effect block-link"
-                              >
-                                {t}
-                              </Link>
-                            ) : (
-                              <span key={t} className="glass-effect block-disabled">
-                                {t}
-                              </span>
-                            )
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))
+              <>
+                {seoulGroups.map(({ venueName, concerts }, index) =>
+                  renderVenueCard(venueName, concerts, 'primary', `highlight-${index}`)
+                )}
+                {venueGroups.map(({ venueName, concerts }, index) =>
+                  renderVenueCard(
+                    venueName,
+                    concerts,
+                    venueName.includes('서울') ? 'ghost' : 'default',
+                    `list-${index}`
+                  )
+                )}
+              </>
             ) : (
               <div className="feature-card">
                 <h3 className="feature-title">세트리스트 준비 중</h3>

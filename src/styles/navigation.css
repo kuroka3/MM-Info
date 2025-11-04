@@ -144,6 +144,16 @@
   z-index: 50;
 }
 
+.home-button__line {
+  display: block;
+  width: 100%;
+}
+
+.home-button__line--expo {
+  letter-spacing: -0.08em;
+  white-space: nowrap;
+}
+
 .home-button:hover {
   box-shadow: 0 0 10px var(--accent-blue);
   transform: scale(1.02);
@@ -159,5 +169,9 @@
     width: 60px;
     height: 60px;
     font-size: 0.75rem;
+  }
+
+  .home-button__line--expo {
+    letter-spacing: -0.1em;
   }
 }

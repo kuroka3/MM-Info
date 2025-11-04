@@ -23,7 +23,7 @@ export default async function Page() {
           { date: 'asc' },
           { block: 'asc' },
         ],
-        include: { Venue: true },
+        include: { venue: true },
       },
     },
   });
@@ -56,27 +56,36 @@ export default async function Page() {
                       <div key={date} className="date-row">
                         <span className="header-date">{`${date} (${day})`}</span>
                         <div className="block-buttons">
-                          {blocks.map(({ block: t, id, hidden }) =>
-                            hidden ? (
-                              <span key={t} className="block-placeholder">
-                                {t}
-                              </span>
-                            ) : id ? (
+                          {blocks.map(({ block, label, id, hidden, concertId }, blockIndex) => {
+                            const key = id ? `set-${id}` : `concert-${concertId}-${blockIndex}`
+                            if (hidden) {
+                              return (
+                                <span key={key} className="block-placeholder">
+                                  {label}
+                                </span>
+                              )
+                            }
+
+                            if (!id) {
+                              return (
+                                <span key={key} className="glass-effect block-disabled">
+                                  {label}
+                                </span>
+                              )
+                            }
+
+                            return (
                               <Link
-                                key={t}
+                                key={key}
                                 href={`${basePath}/concerts/${id}?date=${encodeURIComponent(
                                   date
-                                )}&block=${encodeURIComponent(t)}`}
+                                )}&block=${encodeURIComponent(block)}`}
                                 className="glass-effect block-link"
                               >
-                                {t}
+                                {label}
                               </Link>
-                            ) : (
-                              <span key={t} className="glass-effect block-disabled">
-                                {t}
-                              </span>
                             )
-                          )}
+                          })}
                         </div>
                       </div>
                     ))}

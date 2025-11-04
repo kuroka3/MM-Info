@@ -5,6 +5,7 @@ import SongList from '@/components/SongList';
 import PlaylistPopup from '@/components/PlaylistPopup';
 import SpoilerGate from '@/components/SpoilerGate';
 import prisma from '@/lib/prisma';
+import { formatConcertDate } from '@/utils/groupConcerts';
 
 export const revalidate = 60;
 
@@ -94,7 +95,8 @@ async function SetlistContent({
 
   const dateParts: string[] = [];
   if (concert.date) {
-    dateParts.push(concert.day ? `${concert.date} (${concert.day})` : concert.date);
+    const formattedDate = formatConcertDate(concert.date, concert.timeZone);
+    dateParts.push(concert.day ? `${formattedDate} (${concert.day})` : formattedDate);
   } else if (fallbackDate) {
     dateParts.push(fallbackDate);
   }

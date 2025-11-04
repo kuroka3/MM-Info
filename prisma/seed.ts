@@ -36,11 +36,6 @@ async function main() {
     },
     update: {},
   })
-
-  await prisma.concert.updateMany({
-    data: { eventId: magicalMirai2025.id },
-    where: { eventId: { equals: null } },
-  })
 }
 
 main()

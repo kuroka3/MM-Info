@@ -29,14 +29,15 @@ model Song {
 
 model Venue {
   id       Int       @id @default(autoincrement())
-  name     String    @unique
+  name     String
+  name_en  String?
   concerts Concert[]
 }
 
 model Series {
   id     Int     @id @default(autoincrement())
   name   String
-  slug   String? @unique
+  slug   String   @unique
   note   String?
   events Event[]
 
@@ -47,7 +48,7 @@ model Event {
   id       Int      @id @default(autoincrement())
   name     String
   year     Int?
-  slug     String?  @unique
+  slug     String   @unique
   seriesId Int?     @map("seriesid")
   series   Series?  @relation(fields: [seriesId], references: [id])
   concerts Concert[]
@@ -56,27 +57,34 @@ model Event {
 }
 
 model Concert {
-  id        Int      @id @default(autoincrement())
-  title     String
-  date      String
-  day       String
-  block     String
-  hidden    Boolean?
-  setlist   Setlist? @relation(fields: [setlistId], references: [id])
-  venueId   Int?
-  setlistId Int?
-  Venue     Venue?   @relation(fields: [venueId], references: [id])
-  eventId   Int?
-  event     Event?   @relation(fields: [eventId], references: [id])
+  id           Int       @id @default(autoincrement())
+  title        String
+  date         DateTime  @db.Date
+  day          String
+  block        String
+  hidden       Boolean?  @default(false)
+  venueId      Int?
+  setlistId    Int?
+  eventId      Int?
+  showTime     DateTime? @db.Time(6)
+  doorTime     DateTime? @db.Time(6)
+  vipTime      DateTime? @db.Time(6)
+  timeZone     String?
+  timeOffset   String?
+  showTimeUTC  DateTime? @db.Timestamptz(6)
+  doorTimeUTC  DateTime? @db.Timestamptz(6)
+  vipTimeUTC   DateTime? @db.Timestamptz(6)
 
-  @@map("Concert")
+  venue   Venue?   @relation(fields: [venueId], references: [id])
+  setlist Setlist? @relation(fields: [setlistId], references: [id])
+  event   Event?   @relation(fields: [eventId], references: [id])
 }
 
 model Setlist {
   id      Int       @id @default(autoincrement())
   name    String
   songs   SetlistSong[]
-  Concert Concert[]
+  concerts Concert[]
 }
 
 model SetlistSong {

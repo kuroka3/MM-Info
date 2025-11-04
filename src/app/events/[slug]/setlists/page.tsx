@@ -23,7 +23,7 @@ const fetchEvent = (slug: string) =>
           { date: 'asc' },
           { block: 'asc' },
         ],
-        include: { Venue: true },
+        include: { venue: true },
       },
     },
   })
@@ -72,40 +72,41 @@ const EventSetlistsPage = async ({ params }: { params: Promise<{ slug: string }>
                       <div key={date} className="date-row">
                         <span className="header-date">{`${date} (${day})`}</span>
                         <div className="block-buttons">
-                          {blocks.map(({ block, id, hidden }) => {
+                          {blocks.map(({ block, label, id, hidden, concertId }, blockIndex) => {
+                            const key = id ? `set-${id}` : `concert-${concertId}-${blockIndex}`
                             if (hidden) {
                               return (
-                                <span key={block} className="block-placeholder">
-                                  {block}
+                                <span key={key} className="block-placeholder">
+                                  {label}
                                 </span>
                               )
                             }
 
                             if (!id) {
                               return (
-                                <span key={block} className="glass-effect block-disabled">
-                                  {block}
+                                <span key={key} className="glass-effect block-disabled">
+                                  {label}
                                 </span>
                               )
                             }
 
                             if (!basePath) {
                               return (
-                                <span key={block} className="glass-effect block-disabled">
-                                  {block}
+                                <span key={key} className="glass-effect block-disabled">
+                                  {label}
                                 </span>
                               )
                             }
 
                             return (
                               <Link
-                                key={block}
+                                key={key}
                                 href={`${basePath}/concerts/${id}?date=${encodeURIComponent(
                                   date
                                 )}&block=${encodeURIComponent(block)}`}
                                 className="glass-effect block-link"
                               >
-                                {block}
+                                {label}
                               </Link>
                             )
                           })}

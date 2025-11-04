@@ -1,0 +1,107 @@
+.seoul-card {
+  border-color: rgba(57, 197, 187, 0.8);
+  box-shadow:
+    0 18px 45px rgba(57, 197, 187, 0.28),
+    0 0 0 1px rgba(57, 197, 187, 0.32);
+  background: linear-gradient(140deg, rgba(57, 197, 187, 0.18), rgba(57, 197, 187, 0.03) 65%);
+  position: relative;
+}
+
+.seoul-card--primary {
+  transform: translateY(-4px);
+}
+
+.seoul-card::after {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(57, 197, 187, 0.55);
+  pointer-events: none;
+  box-shadow: inset 0 0 24px rgba(57, 197, 187, 0.18);
+}
+
+.seoul-card .feature-title {
+  color: #39c5bb;
+  text-shadow: 0 0 6px rgba(57, 197, 187, 0.4);
+}
+
+.seoul-card .header-date {
+  color: rgba(57, 197, 187, 0.92);
+}
+
+.seoul-card .block-buttons {
+  gap: 10px;
+}
+
+.seoul-card .block-link {
+  border: 1px solid rgba(57, 197, 187, 0.65);
+  color: #39c5bb;
+  background: rgba(57, 197, 187, 0.08);
+  box-shadow: 0 0 18px rgba(57, 197, 187, 0.25);
+}
+
+.seoul-card .block-link:hover {
+  background: #39c5bb;
+  color: #031d1b;
+  box-shadow: 0 0 24px rgba(57, 197, 187, 0.35);
+}
+
+.seoul-card .block-disabled {
+  background: rgba(57, 197, 187, 0.15);
+  color: rgba(57, 197, 187, 0.75);
+  border: 1px solid rgba(57, 197, 187, 0.25);
+}
+
+.seoul-card .block-placeholder {
+  border: 1px solid rgba(57, 197, 187, 0.2);
+  background: rgba(57, 197, 187, 0.05);
+}
+
+.seoul-card--ghost {
+  border: 1px dashed rgba(57, 197, 187, 0.45);
+  box-shadow: none;
+  background: linear-gradient(150deg, rgba(57, 197, 187, 0.1), rgba(57, 197, 187, 0.015) 75%);
+  opacity: 0.7;
+  transform: none;
+}
+
+.seoul-card--ghost::after {
+  content: none;
+}
+
+.seoul-card--ghost .feature-title {
+  color: rgba(57, 197, 187, 0.62);
+  text-shadow: none;
+}
+
+.seoul-card--ghost .header-date {
+  color: rgba(57, 197, 187, 0.5);
+}
+
+.seoul-card--ghost .block-link {
+  border: 1px solid rgba(57, 197, 187, 0.45);
+  color: rgba(57, 197, 187, 0.58);
+  background: rgba(57, 197, 187, 0.05);
+  box-shadow: none;
+}
+
+.seoul-card--ghost .block-link:hover {
+  background: rgba(57, 197, 187, 0.14);
+  color: rgba(3, 29, 27, 0.7);
+}
+
+.seoul-card--ghost .block-disabled {
+  background: rgba(57, 197, 187, 0.08);
+  color: rgba(57, 197, 187, 0.38);
+  border: 1px solid rgba(57, 197, 187, 0.18);
+}
+
+.seoul-card--ghost .block-placeholder {
+  border: 1px solid rgba(57, 197, 187, 0.15);
+  background: rgba(57, 197, 187, 0.03);
+  color: rgba(57, 197, 187, 0.35);
+}
