@@ -52,7 +52,7 @@ export default async function SafeCallGuidePage() {
       <header className="header">
         <div className="container header-content">
           <h1 className="header-title">콜 가이드</h1>
-          <p className="header-subtitle">테마곡 및 커스텀 곡</p>
+          <p className="header-subtitle">테마곡 및 커스텀 추가 곡</p>
         </div>
       </header>
       <section className="container call-section">
