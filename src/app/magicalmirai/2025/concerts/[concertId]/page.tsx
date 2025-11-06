@@ -131,10 +131,6 @@ async function SetlistContent({
     };
   });
 
-  const playlist = songs.find(
-    (s) => s.type === 'song' && (s.title === '최종 플레이리스트' || s.artist === '')
-  );
-
   const dateParts: string[] = [];
   if (concert.date) {
     const formattedDate = formatConcertDate(concert.date, concert.timeZone);
@@ -155,11 +151,9 @@ async function SetlistContent({
       <section className="container">
         <SongList songs={songs} />
       </section>
-      {playlist && (
+      {setlist.playlist && (
         <PlaylistPopup
-          spotifyUrl={playlist.spotifyUrl}
-          youtubeUrl={playlist.youtubeUrl}
-          jacketUrl={playlist.jacketUrl}
+          youtubeUrl={setlist.playlist}
         />
       )}
     </>

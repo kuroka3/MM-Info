@@ -77,14 +77,14 @@ function SongList(
   );
 
   const defaultSortedSlugs = useMemo(() => {
-    if (!activePlaylist || isDefaultPlaylist) return [] as string[];
+    if (!activePlaylist || isDefaultPlaylist || !Array.isArray(activePlaylist.slugs)) return [] as string[];
     return [...activePlaylist.slugs].sort(
       (a, b) => getSongOrder(a) - getSongOrder(b),
     );
   }, [activePlaylist, getSongOrder, isDefaultPlaylist]);
 
   const isSorted = useMemo(() => {
-    if (!activePlaylist || isDefaultPlaylist) return true;
+    if (!activePlaylist || isDefaultPlaylist || !Array.isArray(activePlaylist.slugs)) return true;
     return activePlaylist.slugs.every(
       (slug, i) => slug === defaultSortedSlugs[i],
     );
@@ -148,7 +148,7 @@ function SongList(
   };
 
   const swapSong = (from: number, to: number) => {
-    if (!activePlaylist || isDefaultPlaylist) return;
+    if (!activePlaylist || isDefaultPlaylist || !Array.isArray(activePlaylist.slugs)) return;
     if (swapTimeoutRef.current) clearTimeout(swapTimeoutRef.current);
     swappingRef.current = true;
     const container = document.querySelector('.call-list');
@@ -263,7 +263,8 @@ function SongList(
       currentIndex === null ||
       currentIndex === index ||
       !activePlaylist ||
-      isDefaultPlaylist
+      isDefaultPlaylist ||
+      !Array.isArray(activePlaylist.slugs)
     )
       return;
     stopAutoScroll();
@@ -386,7 +387,7 @@ function SongList(
   };
 
   const restoreSongOrder = () => {
-    if (!activePlaylist || isDefaultPlaylist) return;
+    if (!activePlaylist || isDefaultPlaylist || !Array.isArray(activePlaylist.slugs)) return;
     const container = document.querySelector('.call-list');
     if (!container) return;
     const rectMap = new Map<string, DOMRect>();

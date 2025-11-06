@@ -19,6 +19,9 @@ export default async function Page() {
     where: { slug: EVENT_SLUG },
     include: {
       concerts: {
+        where: {
+          hidden: false,
+        },
         orderBy: [
           { date: 'asc' },
           { block: 'asc' },
