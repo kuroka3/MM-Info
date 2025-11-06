@@ -52,6 +52,7 @@ export default function CallGuideClient({
   eventSlug,
   eventBasePath,
   spoilerStorageKey,
+  eventName
 }: CallGuideClientProps) {
   const SPOILER_STORAGE_KEY = spoilerStorageKey;
   const EVENT_BASE_PATH = eventBasePath;

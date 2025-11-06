@@ -222,7 +222,7 @@ const createNumberImage = (num: number, gradient: string | null, parts?: string[
   return canvas.toDataURL();
 };
 
-const createBorderImage = (gradient: string, width: number, height: number, borderWidth: number): string => {
+const createBorderImage = (gradient: string, width: number, height: number, borderWidth: number, parts?: string[]): string => {
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
@@ -311,7 +311,22 @@ const SetlistImageGenerator: React.FC<SetlistImageGeneratorProps> = ({
 
     setNumberImages(newNumberImages);
     setBorderImages(newBorderImages);
-  }, [displaySongs]);
+  }, []);
+
+  const waitForImages = async () => {
+    const images = Array.from(document.querySelectorAll<HTMLImageElement>('img'));
+    const imagePromises = images.map(img => {
+      if (img.complete) {
+        return Promise.resolve();
+      }
+      return new Promise((resolve, reject) => {
+        img.onload = () => resolve(undefined);
+        img.onerror = () => resolve(undefined);
+        setTimeout(() => resolve(undefined), 5000);
+      });
+    });
+    await Promise.all(imagePromises);
+  };
 
   const generateImage = async () => {
     if (!imageRef.current) return;
@@ -362,6 +377,8 @@ const SetlistImageGenerator: React.FC<SetlistImageGeneratorProps> = ({
   };
 
   let songIndex = 1;
+  const totalSongs = displaySongs.filter(s => s.type === 'song' || !s.type).length;
+
   const playlistImage = getProxiedImageUrl(finalPlaylistSong?.jacketUrl || playlistImageUrl || '');
 
   return (
