@@ -4,7 +4,7 @@ export const revalidate = 60;
 
 const config = {
   eventSlug: 'miku-expo-2025-asia',
-  artistName: 'MIKU EXPO ASIA TOUR 2025',
+  artistName: 'MIKU EXPO 2025 ASIA',
   spoilerStorageKey: 'spoilerConfirmed:mikuexpo-asia2025',
   redirectPath: '/mikuexpo/asia2025',
   preparingMessage: '공연 정보 준비 중',
