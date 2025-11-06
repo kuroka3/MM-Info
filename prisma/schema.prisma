@@ -91,6 +91,7 @@ model Setlist {
   id       Int       @id @default(autoincrement())
   name     String
   playlist String?
+  spotifyPlaylist String?
   songs    SetlistSong[]
   concerts Concert[]
 }

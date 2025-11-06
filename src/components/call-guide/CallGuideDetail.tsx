@@ -1578,7 +1578,9 @@ export default function CallGuideClient({
         <header className="header">
           <Link href={isSafeMode ? `${EVENT_BASE_PATH}/call-guide/safe` : `${EVENT_BASE_PATH}/call-guide`} className="container header-content" style={{ textDecoration: 'none' }}>
             <h1 className="header-title">콜 가이드</h1>
-            <p className="header-subtitle">{song.krtitle || song.title}</p>
+            <div className="header-subtitle">
+              <span>{song.krtitle || song.title} - {song.krartist || song.artist}</span>
+            </div>
           </Link>
         </header>
 

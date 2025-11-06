@@ -7,7 +7,7 @@
     "build": "prisma generate && prisma migrate deploy && next build",
     "start": "next start",
     "lint": "next lint",
-    "backup:db": "npx tsx scripts/backup-db.ts"
+    "backup:db": "npx tsx .dev/scripts/backup-db.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.13.0",

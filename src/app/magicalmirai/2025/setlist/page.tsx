@@ -56,9 +56,9 @@ export default async function Page() {
                   <h3 className="feature-title">{venueName}</h3>
                   <div className="feature-list">
                     {concerts.map(({ date, day, blocks }) => (
-                      <div key={date} className="date-row">
-                        <span className="header-date">{`${date} (${day})`}</span>
-                        <div className="block-buttons">
+                      <div key={date} className="date-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+                        <span className="header-date">{date} ({day})</span>
+                        <div className="block-buttons" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                           {blocks.map(({ block, label, id, hidden, concertId }, blockIndex) => {
                             const key = id ? `set-${id}` : `concert-${concertId}-${blockIndex}`
                             if (hidden) {
