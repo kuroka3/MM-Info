@@ -163,6 +163,24 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
           }
           return newPl;
         }).filter(pl => pl.eventSlug === eventSlug);
+
+        const orderKey = playlistsKey.replace('Playlists', 'PlaylistsOrder');
+        const orderStored = localStorage.getItem(orderKey);
+        if (orderStored) {
+          try {
+            const orderedIds = JSON.parse(orderStored) as string[];
+            migrated.sort((a, b) => {
+              const indexA = orderedIds.indexOf(a.id);
+              const indexB = orderedIds.indexOf(b.id);
+              if (indexA === -1 && indexB === -1) return 0;
+              if (indexA === -1) return 1;
+              if (indexB === -1) return -1;
+              return indexA - indexB;
+            });
+          } catch {
+          }
+        }
+
         if (JSON.stringify(arr) !== JSON.stringify(migrated)) {
           localStorage.setItem(playlistsKey, JSON.stringify(migrated));
         }
@@ -577,7 +595,12 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
           safeSongs={safeSongs}
           storageKey={songsKey}
           onClose={() => setShowSearch(false)}
-          onUnlock={() => setSafeSongs(computeSafeSongs())}
+          onUnlock={() => {
+            setSafeSongs(computeSafeSongs());
+            const allPlaylist = { ...safeAll };
+            localStorage.setItem(activeKey, JSON.stringify(allPlaylist));
+            setActivePlaylist(allPlaylist);
+          }}
         />
       )}
     </>

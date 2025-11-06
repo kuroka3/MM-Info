@@ -36,7 +36,6 @@ import {
   applyToggleShuffle,
   persistOrder,
   restoreOrderValidated,
-  isValidPermutation,
   makeOrderStorageKey,
   generateShortId11,
   ensureUniquePlaylistId,
@@ -173,6 +172,23 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
     if (storedPls) {
       try {
         custom = JSON.parse(storedPls) as Playlist[];
+
+        const orderKey = playlistsKey.replace('Playlists', 'PlaylistsOrder');
+        const orderStored = localStorage.getItem(orderKey);
+        if (orderStored) {
+          try {
+            const orderedIds = JSON.parse(orderStored) as string[];
+            custom.sort((a, b) => {
+              const indexA = orderedIds.indexOf(a.id);
+              const indexB = orderedIds.indexOf(b.id);
+              if (indexA === -1 && indexB === -1) return 0;
+              if (indexA === -1) return 1;
+              if (indexB === -1) return -1;
+              return indexA - indexB;
+            });
+          } catch {
+          }
+        }
       } catch {
         custom = [];
       }
@@ -448,10 +464,29 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
           seen.add(id);
           return { ...pl, id };
         });
-        if (JSON.stringify(arr) !== JSON.stringify(migrated)) {
-          localStorage.setItem(safePlaylistsKey, JSON.stringify(migrated));
+
+        const safeOrderKey = safePlaylistsKey.replace('Playlists', 'PlaylistsOrder');
+        const safeOrderStored = localStorage.getItem(safeOrderKey);
+        let sorted = migrated;
+        if (safeOrderStored) {
+          try {
+            const orderedIds = JSON.parse(safeOrderStored) as string[];
+            sorted = [...migrated].sort((a, b) => {
+              const indexA = orderedIds.indexOf(a.id);
+              const indexB = orderedIds.indexOf(b.id);
+              if (indexA === -1 && indexB === -1) return 0;
+              if (indexA === -1) return 1;
+              if (indexB === -1) return -1;
+              return indexA - indexB;
+            });
+          } catch {
+          }
         }
-        safeCustom = migrated
+
+        if (JSON.stringify(arr) !== JSON.stringify(sorted)) {
+          localStorage.setItem(safePlaylistsKey, JSON.stringify(sorted));
+        }
+        safeCustom = sorted
           .filter((pl) => Array.isArray(pl.slugs) && pl.slugs.length > 0)
           .map((pl) => ({
             ...pl,
@@ -481,6 +516,23 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
           seen.add(id);
           return { ...pl, id };
         });
+
+        const orderKey = `${playlistsKey}:order`;
+        const orderStored = localStorage.getItem(orderKey);
+        if (orderStored) {
+          try {
+            const orderedIds = JSON.parse(orderStored) as string[];
+            migrated.sort((a, b) => {
+              const indexA = orderedIds.indexOf(a.id);
+              const indexB = orderedIds.indexOf(b.id);
+              if (indexA === -1 && indexB === -1) return 0;
+              if (indexA === -1) return 1;
+              if (indexB === -1) return -1;
+              return indexA - indexB;
+            });
+          } catch {
+          }
+        }
 
         setPlaylists(migrated);
         if (JSON.stringify(arr) !== JSON.stringify(migrated)) {
@@ -587,44 +639,29 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
     prevBaseRef.current = base;
   }, [activePlaylist?.id, activePlaylist?.slugs, storageKey]);
 
-  useEffect(() => {
-    const base = buildBaseSlugs(activePlaylistRef.current?.slugs, songsRef.current);
-    const prevBase = prevBaseRef.current;
-
-    const changed =
-      !prevBase ||
-      prevBase.length !== base.length ||
-      !prevBase.every((s, i) => s === base[i]);
-
-    if (changed && storageKey) {
-      localStorage.removeItem(storageKey);
-    }
-    prevBaseRef.current = base;
-  }, [activePlaylist, songs, storageKey]);
 
   useEffect(() => {
     if (!activePlaylist?.id || !activePlaylist.slugs?.length || !storageKey) return;
 
     const base = activePlaylist.slugs;
 
-    const prev = playlistOrderRef.current;
-    if (prev && isValidPermutation(base, prev)) {
-      if (prev !== playlistOrder) setPlaylistOrder(prev);
-      persistOrder(storageKey, prev);
-      return;
+    if (shuffle) {
+      const stored = restoreOrderValidated(storageKey, base);
+      const order = computeInitialOrder({
+        base,
+        currentSlug: song.slug ?? null,
+        shuffle: true,
+        storedOrder: stored,
+      });
+      playlistOrderRef.current = order;
+      setPlaylistOrder(order);
+      persistOrder(storageKey, order);
+    } else {
+      const order = base.slice();
+      playlistOrderRef.current = order;
+      setPlaylistOrder(order);
+      persistOrder(storageKey, order);
     }
-
-    const stored = restoreOrderValidated(storageKey, base);
-    const order = computeInitialOrder({
-      base,
-      currentSlug: song.slug ?? null,
-      shuffle,
-      storedOrder: stored,
-    });
-
-    playlistOrderRef.current = order;
-    setPlaylistOrder(order);
-    persistOrder(storageKey, order);
   }, [activePlaylist?.id, activePlaylist?.slugs, storageKey, song.slug, shuffle]);
 
   useEffect(() => {
@@ -745,6 +782,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
   const originalOrderRef = useRef<string[]>([]);
   const playerButtonsRef = useRef<HTMLDivElement | null>(null);
   const volumeControlsRef = useRef<HTMLDivElement | null>(null);
+  const autoScrollIntervalRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (activePlaylist && activePlaylist.id !== prevPlaylistIdRef.current) {
@@ -785,7 +823,38 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
     wasDraggingRef.current = true;
   };
 
+  const stopAutoScroll = () => {
+    if (autoScrollIntervalRef.current !== null) {
+      clearInterval(autoScrollIntervalRef.current);
+      autoScrollIntervalRef.current = null;
+    }
+  };
+
+  const startAutoScroll = (direction: 'up' | 'down') => {
+    stopAutoScroll();
+    autoScrollIntervalRef.current = window.setInterval(() => {
+      const scrollAmount = direction === 'up' ? -10 : 10;
+      window.scrollBy(0, scrollAmount);
+    }, 20);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    const SCROLL_THRESHOLD = 100;
+    const clientY = e.clientY;
+    const windowHeight = window.innerHeight;
+
+    if (clientY < SCROLL_THRESHOLD) {
+      startAutoScroll('up');
+    } else if (clientY > windowHeight - SCROLL_THRESHOLD) {
+      startAutoScroll('down');
+    } else {
+      stopAutoScroll();
+    }
+  };
+
   const handleSongDrop = (index: number) => {
+    stopAutoScroll();
     if (
       songDragIndex === null ||
       songDragIndex === index ||
@@ -793,24 +862,48 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
       activePlaylistRef.current?.name === '전체 곡'
     )
       return;
-    setPlaylistOrder((prev) => {
-      const updated = [...prev];
-      const [moved] = updated.splice(songDragIndex, 1);
-      updated.splice(index, 0, moved);
-      const newActive = { ...activePlaylist, slugs: updated };
-      setActivePlaylist(newActive);
-      localStorage.setItem(activeKey, JSON.stringify(newActive));
-      setPlaylists((pls) => {
-        const updatedPls = pls.map((pl) => (pl.id === activePlaylist.id ? newActive : pl));
-        const toStore = isSafeMode
-          ? updatedPls.filter((p) => p.id !== 'safe-all')
-          : updatedPls;
-        localStorage.setItem(playlistsKey, JSON.stringify(toStore));
-        return updatedPls;
-      });
-      persistOrder(storageKey, updated);
-      return updated;
+
+    const updated = [...playlistOrder];
+    const [moved] = updated.splice(songDragIndex, 1);
+    updated.splice(index, 0, moved);
+
+    setPlaylistOrder(updated);
+    playlistOrderRef.current = updated;
+
+    setActivePlaylist((prev) => {
+      if (!prev) return prev;
+      const updatedPlaylist = { ...prev, slugs: updated };
+      localStorage.setItem(activeKey, JSON.stringify(updatedPlaylist));
+
+      if (isSafeMode) {
+        const plKey = `callGuideSafePlaylists:${eventSlug}`;
+        const stored = localStorage.getItem(plKey);
+        if (stored) {
+          try {
+            const pls = JSON.parse(stored) as Playlist[];
+            const idx = pls.findIndex((p) => p.id === prev.id);
+            if (idx >= 0) {
+              pls[idx] = { ...pls[idx], slugs: updated };
+              localStorage.setItem(plKey, JSON.stringify(pls));
+            }
+          } catch {}
+        }
+      } else {
+        setPlaylists((pls) => {
+          const idx = pls.findIndex((p) => p.id === prev.id);
+          if (idx >= 0) {
+            const newPls = [...pls];
+            newPls[idx] = { ...newPls[idx], slugs: updated };
+            localStorage.setItem(playlistsKey, JSON.stringify(newPls));
+            return newPls;
+          }
+          return pls;
+        });
+      }
+
+      return updatedPlaylist;
     });
+
     setSongDragIndex(null);
     setTimeout(() => {
       wasDraggingRef.current = false;
@@ -1782,7 +1875,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
                     draggable={draggable}
                     onDragStart={() => draggable && handleSongDragStart(i)}
                     onDragOver={(e) => {
-                      if (draggable) e.preventDefault();
+                      if (draggable) handleDragOver(e);
                     }}
                     onDrop={(e) => {
                       if (draggable) {
@@ -1790,6 +1883,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
                         handleSongDrop(i);
                       }
                     }}
+                    onDragEnd={stopAutoScroll}
                     onTouchStart={draggable ? () => handleSongTouchStart(i) : undefined}
                     onTouchMove={draggable ? handleSongTouchMove : undefined}
                     onTouchEnd={draggable ? handleSongTouchEnd : undefined}
