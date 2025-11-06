@@ -11,6 +11,11 @@ const EVENT_SLUG = 'magical-mirai-2025';
 const EVENT_BASE_PATH = '/magicalmirai/2025';
 
 export default async function CallGuideAllPage() {
+  const event = await prisma.event.findUnique({
+    where: { slug: EVENT_SLUG },
+    select: { id: true },
+  });
+
   const songs = await prisma.song.findMany({
     where: {
       slug: { not: null },
@@ -20,9 +25,13 @@ export default async function CallGuideAllPage() {
     },
     include: {
       setlists: {
-        select: { order: true, higawari: true, locationgawari: true },
+        select: { order: true },
         orderBy: { order: 'asc' },
         take: 1,
+      },
+      eventVariations: {
+        where: event ? { eventId: event.id } : undefined,
+        select: { isHigawari: true, isLocationgawari: true, eventId: true },
       },
     },
   });

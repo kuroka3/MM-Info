@@ -437,9 +437,10 @@ function SongList(
         {playlistSongs.map((song, index) => {
           const first = song.setlists[0];
           const order = song.safeIndex ?? (first?.order ?? 0);
-          const itemClass = first?.higawari
+          const variation = song.eventVariations?.[0];
+          const itemClass = variation?.isHigawari
             ? 'call-item higawari'
-            : first?.locationgawari
+            : variation?.isLocationgawari
               ? 'call-item locationgawari'
               : 'call-item';
 

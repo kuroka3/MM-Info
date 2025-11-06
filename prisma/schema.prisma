@@ -25,6 +25,7 @@ model Song {
   part      String[]
   setlists  SetlistSong[]
   anotherName String[] @default([])
+  eventVariations EventSongVariation[]
 }
 
 model Venue {
@@ -52,6 +53,7 @@ model Event {
   seriesId Int?     @map("seriesid")
   series   Series?  @relation(fields: [seriesId], references: [id])
   concerts Concert[]
+  songVariations EventSongVariation[]
 
   @@map("event")
 }
@@ -88,13 +90,27 @@ model Setlist {
 }
 
 model SetlistSong {
-  setlist   Setlist @relation(fields: [setlistId], references: [id])
-  setlistId Int
-  song      Song    @relation(fields: [songId], references: [id])
-  songId    Int
-  order     Int
-  higawari Boolean?
-  locationgawari Boolean?
+  setlist     Setlist @relation(fields: [setlistId], references: [id])
+  setlistId   Int
+  song        Song?   @relation(fields: [songId], references: [id])
+  songId      Int?
+  order       Int
+  type        String  @default("song")
+  text        String?
 
   @@id([setlistId, order])
+}
+
+model EventSongVariation {
+  eventId           Int
+  songSlug          String
+  isHigawari        Boolean @default(false)
+  isLocationgawari  Boolean @default(false)
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  song  Song  @relation(fields: [songSlug], references: [slug], onDelete: Cascade)
+
+  @@id([eventId, songSlug])
+  @@index([eventId], name: "idx_event_song_variation_eventid")
+  @@index([songSlug], name: "idx_event_song_variation_songslug")
 }
