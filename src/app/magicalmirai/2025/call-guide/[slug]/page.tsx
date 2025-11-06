@@ -21,6 +21,11 @@ const getSongData = async (
   slug: string,
   isSafeMode: boolean,
 ): Promise<{ song: Song; songs: Song[] }> => {
+  const event = await prisma.event.findUnique({
+    where: { slug: EVENT_SLUG },
+    select: { id: true },
+  });
+
   const songs = await prisma.song.findMany({
     where: {
       slug: { not: null },
@@ -30,9 +35,13 @@ const getSongData = async (
     },
     include: {
       setlists: {
-        select: { order: true, higawari: true, locationgawari: true },
+        select: { order: true },
         orderBy: { order: 'asc' },
         take: 1,
+      },
+      eventVariations: {
+        where: event ? { eventId: event.id } : undefined,
+        select: { isHigawari: true, isLocationgawari: true, eventId: true },
       },
     },
   });

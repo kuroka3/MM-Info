@@ -13,6 +13,11 @@ const SAFE_SONG_INDEX = getSafeSongIndex(EVENT_SLUG);
 const ALBUM_SONGS = getAlbumSongs(EVENT_SLUG);
 
 export default async function SafeCallGuidePage() {
+  const event = await prisma.event.findUnique({
+    where: { slug: EVENT_SLUG },
+    select: { id: true },
+  });
+
   const songs = await prisma.song.findMany({
     where: {
       slug: { not: null },
@@ -35,13 +40,26 @@ export default async function SafeCallGuidePage() {
       part: true,
       anotherName: true,
       setlists: {
-        select: { order: true, higawari: true, locationgawari: true },
+        select: { order: true },
         orderBy: { order: 'asc' },
         take: 1,
       },
+      eventVariations: {
+        where: event ? { eventId: event.id } : undefined,
+        select: { isHigawari: true, isLocationgawari: true, eventId: true },
+      },
     },
   });
-  songs.sort((a, b) => {
+
+  const songsWithoutVariations = songs.map(song => {
+    const hasVariation = song.eventVariations.some(v => v.isHigawari || v.isLocationgawari);
+    if (hasVariation) {
+      return { ...song, setlists: [{ order: 0 }], eventVariations: [] };
+    }
+    return song;
+  }).filter(song => !song.eventVariations.some(v => v.isHigawari || v.isLocationgawari));
+
+  songsWithoutVariations.sort((a, b) => {
     const idxA = SAFE_SONG_INDEX.indexOf(a.slug!);
     const idxB = SAFE_SONG_INDEX.indexOf(b.slug!);
     const orderA = idxA === -1 ? Number.MAX_SAFE_INTEGER : idxA;
@@ -57,7 +75,7 @@ export default async function SafeCallGuidePage() {
         </div>
       </header>
       <section className="container call-section">
-        <SafeCallGuideIndexClient songs={songs} safeSongIndex={SAFE_SONG_INDEX} albumSongs={ALBUM_SONGS} eventSlug={EVENT_SLUG} eventBasePath={EVENT_BASE_PATH} />
+        <SafeCallGuideIndexClient songs={songsWithoutVariations} safeSongIndex={SAFE_SONG_INDEX} albumSongs={ALBUM_SONGS} eventSlug={EVENT_SLUG} eventBasePath={EVENT_BASE_PATH} />
       </section>
     </main>
   );

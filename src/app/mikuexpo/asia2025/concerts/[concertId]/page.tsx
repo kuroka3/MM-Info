@@ -26,6 +26,7 @@ async function getConcertWithSetlist(setlistId: string) {
       event: {
         include: {
           series: true,
+          songVariations: true,
         },
       },
       setlist: {
@@ -76,21 +77,44 @@ async function SetlistContent({
     );
   }
 
-  const songs = setlist.songs.map((item) => ({
-    title: item.song.title,
-    krtitle: item.song.krtitle || undefined,
-    artist: item.song.artist,
-    spotifyUrl: item.song.spotify || '',
-    youtubeUrl: item.song.youtube || '',
-    jacketUrl: item.song.thumbnail || '',
-    part: item.song.part || '',
-    higawari: item.higawari || false,
-    locationgawari: item.locationgawari || false,
-    slug: item.song.slug || undefined,
-  }));
+  const eventVariations = concert.event?.songVariations || [];
+  const eventVariationMap = new Map(
+    eventVariations.map(v => [v.songSlug, v])
+  );
+
+  const songs = setlist.songs.map((item) => {
+    if (item.type !== 'song' || !item.song) {
+      return {
+        type: item.type,
+        title: item.text || '',
+        artist: '',
+        spotifyUrl: '',
+        youtubeUrl: '',
+        jacketUrl: '',
+        part: [],
+        higawari: false,
+        locationgawari: false,
+      };
+    }
+
+    const variation = item.song.slug ? eventVariationMap.get(item.song.slug) : null;
+    return {
+      type: 'song',
+      title: item.song.title,
+      krtitle: item.song.krtitle || undefined,
+      artist: item.song.artist,
+      spotifyUrl: item.song.spotify || '',
+      youtubeUrl: item.song.youtube || '',
+      jacketUrl: item.song.thumbnail || '',
+      part: item.song.part || '',
+      higawari: variation?.isHigawari || false,
+      locationgawari: variation?.isLocationgawari || false,
+      slug: item.song.slug || undefined,
+    };
+  });
 
   const playlist = songs.find(
-    (s) => s.title === '최종 플레이리스트' || s.artist === ''
+    (s) => s.type === 'song' && (s.title === '최종 플레이리스트' || s.artist === '')
   );
 
   const dateParts: string[] = [];

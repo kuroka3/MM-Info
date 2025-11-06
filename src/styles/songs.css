@@ -89,6 +89,49 @@
   word-break: keep-all;
 }
 
+.song-item.segment-item {
+  padding: 12px 24px;
+  min-height: auto;
+  background: rgba(128, 128, 128, 0.3);
+  border-color: rgba(128, 128, 128, 0.5);
+  justify-content: center;
+}
+
+.song-item.segment-item:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: rgba(128, 128, 128, 0.6);
+}
+
+.song-item.segment-item::before {
+  display: none;
+}
+
+.segment-content {
+  text-align: center;
+  width: 100%;
+}
+
+.segment-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.5px;
+}
+
+.setlist-separator {
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.3) 20%,
+    rgba(255, 255, 255, 0.3) 80%,
+    transparent
+  );
+  margin: 8px 0;
+}
+
 .song-info {
   display: flex;
   align-items: center;

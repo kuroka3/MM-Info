@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ALL_PLAYLIST_ID } from '@/utils/playlistOrder';
 
 interface Song {
+  type?: string;
   title: string;
   krtitle?: string;
   artist: string;
@@ -30,12 +31,26 @@ const partColors = {
 };
 
 const SongList: React.FC<SongListProps> = ({ songs }) => {
+  let songIndex = 0;
+
   return (
     <div className="song-list">
       {songs.map((song, index) => {
+        const isSegment = song.type && song.type !== 'song';
         const isFinalPlaylist =
           song.title === '최종 플레이리스트' || song.artist === '';
-        const itemClass = isFinalPlaylist
+
+        const prevSong = index > 0 ? songs[index - 1] : null;
+        const showSeparator = isFinalPlaylist && prevSong?.type === 'mc' && prevSong?.title === 'MC③';
+
+        if (!isSegment && !isFinalPlaylist) {
+          songIndex++;
+        }
+        const displayIndex = songIndex;
+
+        const itemClass = isSegment
+          ? 'song-item segment-item'
+          : isFinalPlaylist
           ? 'song-item final-playlist'
           : song.higawari
           ? 'song-item higawari'
@@ -80,6 +95,103 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
               }
             : {};
 
+        if (isSegment) {
+          return (
+            <div className={itemClass} key={index}>
+              <div className="segment-content">
+                <p className="segment-title">{song.title}</p>
+              </div>
+            </div>
+          );
+        }
+
+        if (showSeparator) {
+          return (
+            <React.Fragment key={index}>
+              <div className="setlist-separator" />
+              <div
+                className={itemClass}
+                style={{ borderColor: colors.length > 0 ? 'transparent' : undefined }}
+              >
+                {colors.length > 0 && <div style={borderStyle} />}
+                {!isFinalPlaylist && (
+                  <div className="song-index-wrapper">
+                    <span className="song-index">{displayIndex}</span>
+                  </div>
+                )}
+                <div className="song-info">
+                  <div className="song-details">
+                    <Image
+                      src={song.jacketUrl}
+                      alt={song.title}
+                      width={125}
+                      height={125}
+                      className="song-jacket"
+                    />
+                    <div className="song-text-info">
+                      <p className="song-title">
+                        {isFinalPlaylist ? (
+                          <>
+                            최종 플레이<wbr />리스트
+                          </>
+                        ) : (
+                          finalTitle
+                        )}
+                      </p>
+                      {song.artist && <p className="song-artist">{song.artist}</p>}
+                    </div>
+                  </div>
+                </div>
+                <div className="song-links">
+                  {song.slug && (
+                    <Link
+                      href={`/call-guide/${song.slug}?list=${ALL_PLAYLIST_ID}`}
+                      className="glow-link glow-link--call-guide"
+                    >
+                      <Image
+                        src="/images/megaphone.svg"
+                        alt="Call Guide"
+                        width={24}
+                        height={24}
+                      />
+                    </Link>
+                  )}
+                  {song.spotifyUrl && (
+                    <a
+                      href={song.spotifyUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="glow-link glow-link--spotify"
+                    >
+                      <Image
+                        src="/images/spotify.svg"
+                        alt="Spotify"
+                        width={24}
+                        height={24}
+                      />
+                    </a>
+                  )}
+                  {song.youtubeUrl && (
+                    <a
+                      href={song.youtubeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="glow-link glow-link--youtube"
+                    >
+                      <Image
+                        src="/images/youtube.svg"
+                        alt="YouTube"
+                        width={24}
+                        height={24}
+                      />
+                    </a>
+                  )}
+                </div>
+              </div>
+            </React.Fragment>
+          );
+        }
+
         return (
           <div
             className={itemClass}
@@ -89,7 +201,7 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
             {colors.length > 0 && <div style={borderStyle} />}
             {!isFinalPlaylist && (
               <div className="song-index-wrapper">
-                <span className="song-index">{index + 1}</span>
+                <span className="song-index">{displayIndex}</span>
               </div>
             )}
             <div className="song-info">
