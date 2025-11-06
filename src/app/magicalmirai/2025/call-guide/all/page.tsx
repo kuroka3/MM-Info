@@ -1,14 +1,15 @@
 import type { Metadata } from 'next';
 import prisma from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
-import CallGuideIndexClient from '../CallGuideIndexClient';
+import CallGuideIndex from '@/components/call-guide/CallGuideIndex';
 import SpoilerGate from '@/components/SpoilerGate';
+import { MAGICAL_MIRAI_2025 } from '@/types/eventConfig';
 
 export const metadata: Metadata = { title: '콜 가이드 - 스포 O' };
 export const revalidate = 60;
 
-const EVENT_SLUG = 'magical-mirai-2025';
-const EVENT_BASE_PATH = '/magicalmirai/2025';
+const EVENT_SLUG = MAGICAL_MIRAI_2025.eventSlug;
+const EVENT_BASE_PATH = MAGICAL_MIRAI_2025.eventBasePath;
 
 export default async function CallGuideAllPage() {
   const event = await prisma.event.findUnique({
@@ -56,7 +57,7 @@ export default async function CallGuideAllPage() {
           </div>
         </header>
         <section className="container call-section">
-          <CallGuideIndexClient songs={songs} eventSlug={EVENT_SLUG} eventBasePath={EVENT_BASE_PATH} />
+          <CallGuideIndex songs={songs} eventSlug={EVENT_SLUG} eventBasePath={EVENT_BASE_PATH} />
         </section>
       </main>
     </SpoilerGate>

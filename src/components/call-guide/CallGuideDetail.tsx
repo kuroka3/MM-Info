@@ -44,10 +44,18 @@ import {
   removeOrder,
 } from '@/utils/playlistOrder';
 
-const SPOILER_STORAGE_KEY = 'spoilerConfirmed:magical-mirai-2025';
-const EVENT_BASE_PATH = '/magicalmirai/2025';
-
-export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs, eventSlug }: CallGuideClientProps) {
+export default function CallGuideClient({
+  song,
+  songs,
+  safeSongIndex,
+  albumSongs,
+  eventSlug,
+  eventBasePath,
+  spoilerStorageKey,
+  eventName
+}: CallGuideClientProps) {
+  const SPOILER_STORAGE_KEY = spoilerStorageKey;
+  const EVENT_BASE_PATH = eventBasePath;
   const router = useRouter();
   const searchParams = useSearchParams();
   const isSafeMode = searchParams.get('safe') === '1';
@@ -173,23 +181,6 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
     if (storedPls) {
       try {
         custom = JSON.parse(storedPls) as Playlist[];
-
-        const orderKey = playlistsKey.replace('Playlists', 'PlaylistsOrder');
-        const orderStored = localStorage.getItem(orderKey);
-        if (orderStored) {
-          try {
-            const orderedIds = JSON.parse(orderStored) as string[];
-            custom.sort((a, b) => {
-              const indexA = orderedIds.indexOf(a.id);
-              const indexB = orderedIds.indexOf(b.id);
-              if (indexA === -1 && indexB === -1) return 0;
-              if (indexA === -1) return 1;
-              if (indexB === -1) return -1;
-              return indexA - indexB;
-            });
-          } catch {
-          }
-        }
       } catch {
         custom = [];
       }
@@ -459,30 +450,12 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
       try {
         const arr = JSON.parse(safeStored) as Playlist[];
         const seen = new Set<string>(arr.filter((p) => p.id).map((p) => p.id));
-        let migrated = arr.map((pl) => {
+        const migrated = arr.map((pl) => {
           if (pl.id) return pl;
           const id = ensureUniquePlaylistId(seen);
           seen.add(id);
           return { ...pl, id };
         });
-
-        const safeOrderKey = safePlaylistsKey.replace('Playlists', 'PlaylistsOrder');
-        const safeOrderStored = localStorage.getItem(safeOrderKey);
-        if (safeOrderStored) {
-          try {
-            const orderedIds = JSON.parse(safeOrderStored) as string[];
-            migrated.sort((a, b) => {
-              const indexA = orderedIds.indexOf(a.id);
-              const indexB = orderedIds.indexOf(b.id);
-              if (indexA === -1 && indexB === -1) return 0;
-              if (indexA === -1) return 1;
-              if (indexB === -1) return -1;
-              return indexA - indexB;
-            });
-          } catch {
-          }
-        }
-
         if (JSON.stringify(arr) !== JSON.stringify(migrated)) {
           localStorage.setItem(safePlaylistsKey, JSON.stringify(migrated));
         }
@@ -516,23 +489,6 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
           seen.add(id);
           return { ...pl, id };
         });
-
-        const orderKey = `${playlistsKey}:order`;
-        const orderStored = localStorage.getItem(orderKey);
-        if (orderStored) {
-          try {
-            const orderedIds = JSON.parse(orderStored) as string[];
-            migrated.sort((a, b) => {
-              const indexA = orderedIds.indexOf(a.id);
-              const indexB = orderedIds.indexOf(b.id);
-              if (indexA === -1 && indexB === -1) return 0;
-              if (indexA === -1) return 1;
-              if (indexB === -1) return -1;
-              return indexA - indexB;
-            });
-          } catch {
-          }
-        }
 
         setPlaylists(migrated);
         if (JSON.stringify(arr) !== JSON.stringify(migrated)) {
@@ -639,29 +595,44 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
     prevBaseRef.current = base;
   }, [activePlaylist?.id, activePlaylist?.slugs, storageKey]);
 
+  useEffect(() => {
+    const base = buildBaseSlugs(activePlaylistRef.current?.slugs, songsRef.current);
+    const prevBase = prevBaseRef.current;
+
+    const changed =
+      !prevBase ||
+      prevBase.length !== base.length ||
+      !prevBase.every((s, i) => s === base[i]);
+
+    if (changed && storageKey) {
+      localStorage.removeItem(storageKey);
+    }
+    prevBaseRef.current = base;
+  }, [activePlaylist, songs, storageKey]);
 
   useEffect(() => {
     if (!activePlaylist?.id || !activePlaylist.slugs?.length || !storageKey) return;
 
     const base = activePlaylist.slugs;
 
-    if (shuffle) {
-      const stored = restoreOrderValidated(storageKey, base);
-      const order = computeInitialOrder({
-        base,
-        currentSlug: song.slug ?? null,
-        shuffle: true,
-        storedOrder: stored,
-      });
-      playlistOrderRef.current = order;
-      setPlaylistOrder(order);
-      persistOrder(storageKey, order);
-    } else {
-      const order = base.slice();
-      playlistOrderRef.current = order;
-      setPlaylistOrder(order);
-      persistOrder(storageKey, order);
+    const prev = playlistOrderRef.current;
+    if (prev && isValidPermutation(base, prev)) {
+      if (prev !== playlistOrder) setPlaylistOrder(prev);
+      persistOrder(storageKey, prev);
+      return;
     }
+
+    const stored = restoreOrderValidated(storageKey, base);
+    const order = computeInitialOrder({
+      base,
+      currentSlug: song.slug ?? null,
+      shuffle,
+      storedOrder: stored,
+    });
+
+    playlistOrderRef.current = order;
+    setPlaylistOrder(order);
+    persistOrder(storageKey, order);
   }, [activePlaylist?.id, activePlaylist?.slugs, storageKey, song.slug, shuffle]);
 
   useEffect(() => {
@@ -869,40 +840,6 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
 
     setPlaylistOrder(updated);
     playlistOrderRef.current = updated;
-
-    setActivePlaylist((prev) => {
-      if (!prev) return prev;
-      const updatedPlaylist = { ...prev, slugs: updated };
-      localStorage.setItem(activeKey, JSON.stringify(updatedPlaylist));
-
-      if (isSafeMode) {
-        const plKey = `callGuideSafePlaylists:${eventSlug}`;
-        const stored = localStorage.getItem(plKey);
-        if (stored) {
-          try {
-            const pls = JSON.parse(stored) as Playlist[];
-            const idx = pls.findIndex((p) => p.id === prev.id);
-            if (idx >= 0) {
-              pls[idx] = { ...pls[idx], slugs: updated };
-              localStorage.setItem(plKey, JSON.stringify(pls));
-            }
-          } catch {}
-        }
-      } else {
-        setPlaylists((pls) => {
-          const idx = pls.findIndex((p) => p.id === prev.id);
-          if (idx >= 0) {
-            const newPls = [...pls];
-            newPls[idx] = { ...newPls[idx], slugs: updated };
-            localStorage.setItem(playlistsKey, JSON.stringify(newPls));
-            return newPls;
-          }
-          return pls;
-        });
-      }
-
-      return updatedPlaylist;
-    });
 
     setSongDragIndex(null);
     setTimeout(() => {

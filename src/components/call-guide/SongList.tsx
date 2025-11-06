@@ -58,11 +58,13 @@ function SongList(
   ref: React.ForwardedRef<SongListHandle>,
 ) {
   const [songDragIndex, setSongDragIndex] = useState<number | null>(null);
+  const songDragIndexRef = useRef<number | null>(null);
   const touchTimerRef = useRef<NodeJS.Timeout | null>(null);
   const dragItemRef = useRef<HTMLElement | null>(null);
   const touchStartY = useRef(0);
   const swappingRef = useRef(false);
   const swapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const autoScrollIntervalRef = useRef<number | null>(null);
 
   const isDefaultPlaylist =
     activePlaylist?.id === ALL_PLAYLIST_ID ||
@@ -94,12 +96,31 @@ function SongList(
     onSortNeededChange?.(shouldShowSort);
   }, [onSortNeededChange, shouldShowSort]);
 
+  useEffect(() => {
+    songDragIndexRef.current = songDragIndex;
+  }, [songDragIndex]);
+
   const playlistSongs = useMemo(() => {
     if (!activePlaylist) return songs;
     return activePlaylist.slugs
       .map((slug) => songs.find((s) => s.slug === slug))
       .filter(Boolean) as SongWithSetlist[];
   }, [activePlaylist, songs]);
+
+  const stopAutoScroll = () => {
+    if (autoScrollIntervalRef.current !== null) {
+      clearInterval(autoScrollIntervalRef.current);
+      autoScrollIntervalRef.current = null;
+    }
+  };
+
+  const startAutoScroll = (direction: 'up' | 'down') => {
+    stopAutoScroll();
+    autoScrollIntervalRef.current = window.setInterval(() => {
+      const scrollAmount = direction === 'up' ? -10 : 10;
+      window.scrollBy(0, scrollAmount);
+    }, 20);
+  };
 
   const handleSongDragStart = (index: number) => {
     if (isDefaultPlaylist) return;
@@ -161,6 +182,8 @@ function SongList(
       return updated;
     });
 
+    songDragIndexRef.current = to;
+
     requestAnimationFrame(() => {
       const newChildren = Array.from(container.children) as HTMLElement[];
       updatedSlugs.forEach((slug, i) => {
@@ -202,7 +225,8 @@ function SongList(
   const handleSongTouchMove = (e: React.TouchEvent) => {
     if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
     if (swappingRef.current) return;
-    if (songDragIndex !== null) {
+    const currentIndex = songDragIndexRef.current;
+    if (currentIndex !== null) {
       const touch = e.touches[0];
       const y = touch.clientY;
       const deltaY = y - touchStartY.current;
@@ -213,8 +237,8 @@ function SongList(
       const item = target?.closest('[data-song-index]') as HTMLElement | null;
       if (item) {
         const overIndex = parseInt(item.dataset.songIndex || '', 10);
-        if (!isNaN(overIndex) && overIndex !== songDragIndex) {
-          swapSong(songDragIndex, overIndex);
+        if (!isNaN(overIndex) && overIndex !== currentIndex) {
+          swapSong(currentIndex, overIndex);
           setSongDragIndex(overIndex);
           touchStartY.current = y;
           if (dragItemRef.current) {
@@ -234,13 +258,15 @@ function SongList(
   };
 
   const handleSongDrop = (index: number) => {
+    const currentIndex = songDragIndexRef.current;
     if (
-      songDragIndex === null ||
-      songDragIndex === index ||
+      currentIndex === null ||
+      currentIndex === index ||
       !activePlaylist ||
       isDefaultPlaylist
     )
       return;
+    stopAutoScroll();
     if (swapTimeoutRef.current) clearTimeout(swapTimeoutRef.current);
     swappingRef.current = true;
     const container = document.querySelector('.call-list');
@@ -253,7 +279,7 @@ function SongList(
     });
 
     const updatedSlugs = [...activePlaylist.slugs];
-    const [moved] = updatedSlugs.splice(songDragIndex, 1);
+    const [moved] = updatedSlugs.splice(currentIndex, 1);
     updatedSlugs.splice(index, 0, moved);
 
     setActivePlaylist((prev) => {
@@ -303,6 +329,7 @@ function SongList(
     document.body.style.overflow = '';
     document.body.style.touchAction = '';
     setSongDragIndex(null);
+    songDragIndexRef.current = null;
     swapTimeoutRef.current = setTimeout(() => {
       swappingRef.current = false;
     }, 550);
@@ -327,14 +354,35 @@ function SongList(
   };
 
   const handleSongDragEnd = (e: React.DragEvent) => {
-    if (songDragIndex === null) return;
+    const currentIndex = songDragIndexRef.current;
+    if (currentIndex === null) return;
+    stopAutoScroll();
     const dropIndex = getDropIndex(e.clientY);
-    if (dropIndex !== null && dropIndex !== songDragIndex) {
+    if (dropIndex !== null && dropIndex !== currentIndex) {
       handleSongDrop(dropIndex);
+    } else {
+      setSongDragIndex(null);
+      songDragIndexRef.current = null;
     }
     document.body.style.overflow = '';
     document.body.style.touchAction = '';
-    setSongDragIndex(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    if (!isDefaultPlaylist && songDragIndexRef.current !== null) {
+      e.preventDefault();
+      const SCROLL_THRESHOLD = 100;
+      const clientY = e.clientY;
+      const windowHeight = window.innerHeight;
+
+      if (clientY < SCROLL_THRESHOLD) {
+        startAutoScroll('up');
+      } else if (clientY > windowHeight - SCROLL_THRESHOLD) {
+        startAutoScroll('down');
+      } else {
+        stopAutoScroll();
+      }
+    }
   };
 
   const restoreSongOrder = () => {
@@ -581,10 +629,46 @@ function SongList(
                 textDecoration: 'none',
                 borderColor: colors.length > 0 ? 'transparent' : undefined,
               }}
-              onClick={handleSongClick}
+              onClick={(e) => {
+                if (songDragIndexRef.current !== null) {
+                  e.preventDefault();
+                  return;
+                }
+                handleSongClick();
+              }}
               data-song-index={index}
-              onDragOver={(e) => {
-                if (!isDefaultPlaylist) e.preventDefault();
+              draggable={!isDefaultPlaylist}
+              onDragStart={(e) => {
+                if (isDefaultPlaylist) return;
+                handleSongDragStart(index);
+                const ghost = document.createElement('div');
+                ghost.style.opacity = '0';
+                document.body.appendChild(ghost);
+                e.dataTransfer?.setDragImage(ghost, 0, 0);
+                setTimeout(() => document.body.removeChild(ghost), 0);
+              }}
+              onDragEnd={handleSongDragEnd}
+              onDragOver={handleDragOver}
+              onDrop={(e) => {
+                if (!isDefaultPlaylist) {
+                  e.preventDefault();
+                  handleSongDrop(index);
+                }
+              }}
+              onTouchStart={(e) => {
+                if (!isDefaultPlaylist) {
+                  handleSongTouchStart(index, e);
+                }
+              }}
+              onTouchMove={(e) => {
+                if (!isDefaultPlaylist) {
+                  handleSongTouchMove(e);
+                }
+              }}
+              onTouchEnd={(e) => {
+                if (!isDefaultPlaylist) {
+                  handleSongTouchEnd(e);
+                }
               }}
             >
               {colors.length > 0 && <div style={borderStyle} />}
@@ -597,21 +681,6 @@ function SongList(
                     width={24}
                     height={24}
                     className="song-drag-handle"
-                    draggable
-                    onDragStart={(e) => {
-                      handleSongDragStart(index);
-                      e.dataTransfer?.setDragImage(
-                        e.currentTarget,
-                        e.currentTarget.clientWidth / 2,
-                        e.currentTarget.clientHeight / 2,
-                      );
-                    }}
-                    onDragEnd={handleSongDragEnd}
-                    onTouchStart={(e) => {
-                      handleSongTouchStart(index, e);
-                    }}
-                    onTouchMove={handleSongTouchMove}
-                    onTouchEnd={handleSongTouchEnd}
                   />
                 )}
               </div>

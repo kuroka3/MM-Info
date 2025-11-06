@@ -1,11 +1,6 @@
 'use client';
 
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-} from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import SelectionOverlay from '@/components/call-guide/SelectionOverlay';
@@ -16,79 +11,43 @@ import PlaylistEditModal from '@/components/call-guide/PlaylistEditModal';
 import SongList, {
   type SongListHandle,
 } from '@/components/call-guide/SongList';
-import SongSearchOverlay from '@/components/call-guide/SongSearchOverlay';
-import {
-  makeOrderStorageKey,
-  generateShortId11,
-  ensureUniquePlaylistId,
-} from '@/utils/playlistOrder';
+import { makeOrderStorageKey, generateShortId11, ensureUniquePlaylistId, ALL_PLAYLIST_ID } from '@/utils/playlistOrder';
 import { SongWithSetlist, Playlist } from '@/types/callGuide';
-
-const SAFE_ALL_ID = 'safe-all';
 
 interface Props {
   songs: SongWithSetlist[];
-  safeSongIndex: string[];
-  albumSongs: string[];
   eventSlug: string;
   eventBasePath?: string;
 }
 
-export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSongs, eventSlug, eventBasePath = '' }: Props) {
-  const playlistsKey = `callGuideSafePlaylists:${eventSlug}`;
-  const activeKey = `callGuideSafeActivePlaylist:${eventSlug}`;
-  const songsKey = `callGuideSafeSongs:${eventSlug}`;
+export default function CallGuideIndexClient({ songs, eventSlug, eventBasePath = '' }: Props) {
+  const playlistsKey = `callGuidePlaylists:${eventSlug}`;
+  const activeKey = `callGuideActivePlaylist:${eventSlug}`;
+  const safePlaylistsKey = `callGuideSafePlaylists:${eventSlug}`;
 
   useEffect(() => {
-    const migratedKey = 'callGuideSafeStorage:migrated';
+    const migratedKey = 'callGuidePlaylists:migrated';
     if (!localStorage.getItem(migratedKey)) {
-      const legacySongs = localStorage.getItem('callGuideSafeSongs');
-      const legacyPlaylists = localStorage.getItem('callGuideSafePlaylists');
-      const legacyActive = localStorage.getItem('callGuideSafeActivePlaylist');
-
-      if (legacySongs) {
-        localStorage.setItem('callGuideSafeSongs:magical-mirai-2025', legacySongs);
-        localStorage.removeItem('callGuideSafeSongs');
-      }
+      const legacyPlaylists = localStorage.getItem(playlistsKey);
+      const legacyActive = localStorage.getItem(activeKey);
 
       if (legacyPlaylists) {
-        localStorage.setItem('callGuideSafePlaylists:magical-mirai-2025', legacyPlaylists);
-        localStorage.removeItem('callGuideSafePlaylists');
+        localStorage.setItem('callGuidePlaylists:magical-mirai-2025', legacyPlaylists);
+        localStorage.removeItem('callGuidePlaylists');
       }
 
       if (legacyActive) {
-        localStorage.setItem('callGuideSafeActivePlaylist:magical-mirai-2025', legacyActive);
-        localStorage.removeItem('callGuideSafeActivePlaylist');
+        localStorage.setItem('callGuideActivePlaylist:magical-mirai-2025', legacyActive);
+        localStorage.removeItem('callGuideActivePlaylist');
       }
 
       localStorage.setItem(migratedKey, 'true');
     }
   }, []);
-  const [safeSongs, setSafeSongs] = useState<SongWithSetlist[]>([]);
-  const computeSafeSongs = useCallback(() => {
-    const stored = JSON.parse(
-      localStorage.getItem(songsKey) || '[]',
-    ) as string[];
-    const orderMap = new Map<string, number>();
-    safeSongIndex.forEach((slug, i) => orderMap.set(slug, i + 1));
-    stored.forEach((slug) => {
-      if (!orderMap.has(slug)) {
-        orderMap.set(slug, orderMap.size + 1);
-      }
-    });
-    return songs
-      .filter((s) => s.slug && orderMap.has(s.slug))
-      .sort((a, b) => orderMap.get(a.slug!)! - orderMap.get(b.slug!)!)
-      .map((s) => ({ ...s, safeIndex: orderMap.get(s.slug!) }));
-  }, [songs, safeSongIndex, songsKey]);
-
-  useEffect(() => {
-    setSafeSongs(computeSafeSongs());
-  }, [computeSafeSongs]);
-
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [sharedSafePlaylists, setSharedSafePlaylists] = useState<Playlist[]>([]);
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
   const [showNameModal, setShowNameModal] = useState(false);
   const [playlistName, setPlaylistName] = useState('');
@@ -103,21 +62,9 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
   const [showEditModal, setShowEditModal] = useState(false);
   const [removeMode, setRemoveMode] = useState(false);
   const [editingExisting, setEditingExisting] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
   const editMenuRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const ignoreActiveChange = useRef(false);
-  const safeAll = React.useMemo(
-    () => ({ id: SAFE_ALL_ID, name: '전체 곡', slugs: safeSongs.map((s) => s.slug!) }),
-    [safeSongs],
-  );
-  const albumPlaylist = React.useMemo(
-    () =>
-      albumSongs.length
-        ? ({ id: 'album-songs', name: '앨범 곡', slugs: albumSongs } satisfies Playlist)
-        : null,
-    [albumSongs],
-  );
 
   useEffect(() => {
     if (sortNeeded) {
@@ -144,13 +91,58 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
   }, [showSortButton]);
 
   useEffect(() => {
-    if (!safeSongs.length) return;
+    let safePlaylists: Playlist[] = [];
+    const safeStored = localStorage.getItem(safePlaylistsKey);
+    if (safeStored) {
+      try {
+        const arr = JSON.parse(safeStored) as Playlist[];
+        const seen = new Set<string>(arr.filter((p) => p.id).map((p) => p.id));
+        safePlaylists = arr
+          .map((pl) => {
+            let newPl = pl;
+            if (!pl.id) {
+              const id = ensureUniquePlaylistId(seen);
+              seen.add(id);
+              newPl = { ...pl, id };
+            }
+            return newPl;
+          })
+          .filter((pl) => Array.isArray(pl.slugs) && pl.slugs.length > 0)
+          .map((pl) => ({
+            ...pl,
+            id: `safe:${pl.id}`,
+            name: pl.name && pl.name.includes('(SAFE)') ? pl.name : `${pl.name ?? 'SAFE 재생목록'} (SAFE)`,
+          }));
+
+        const safeOrderKey = safePlaylistsKey.replace('Playlists', 'PlaylistsOrder');
+        const safeOrderStored = localStorage.getItem(safeOrderKey);
+        if (safeOrderStored) {
+          try {
+            const orderedIds = JSON.parse(safeOrderStored) as string[];
+            const prefixedOrderedIds = orderedIds.map((id) => `safe:${id}`);
+            safePlaylists.sort((a, b) => {
+              const indexA = prefixedOrderedIds.indexOf(a.id);
+              const indexB = prefixedOrderedIds.indexOf(b.id);
+              if (indexA === -1 && indexB === -1) return 0;
+              if (indexA === -1) return 1;
+              if (indexB === -1) return -1;
+              return indexA - indexB;
+            });
+          } catch {
+          }
+        }
+      } catch {
+        safePlaylists = [];
+      }
+    }
+    setSharedSafePlaylists(safePlaylists);
+
     let migrated: Playlist[] = [];
     const stored = localStorage.getItem(playlistsKey);
     if (stored) {
       try {
         const arr = JSON.parse(stored) as Playlist[];
-        const seen = new Set<string>(arr.filter((p) => p.id).map((p) => p.id));
+        const seen = new Set<string>(arr.filter(p => p.id).map(p => p.id));
         migrated = arr.map((pl) => {
           let newPl = pl;
           if (!pl.id) {
@@ -163,50 +155,66 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
           }
           return newPl;
         }).filter(pl => pl.eventSlug === eventSlug);
+
+        const orderKey = `${playlistsKey}:order`;
+        const orderStored = localStorage.getItem(orderKey);
+        if (orderStored) {
+          try {
+            const orderedIds = JSON.parse(orderStored) as string[];
+            migrated.sort((a, b) => {
+              const indexA = orderedIds.indexOf(a.id);
+              const indexB = orderedIds.indexOf(b.id);
+              if (indexA === -1 && indexB === -1) return 0;
+              if (indexA === -1) return 1;
+              if (indexB === -1) return -1;
+              return indexA - indexB;
+            });
+          } catch {
+          }
+        }
+
+        setPlaylists(migrated);
         if (JSON.stringify(arr) !== JSON.stringify(migrated)) {
           localStorage.setItem(playlistsKey, JSON.stringify(migrated));
         }
       } catch {
         migrated = [];
+        setPlaylists([]);
       }
+    } else {
+      setPlaylists([]);
     }
-    setPlaylists(migrated);
+
+    const defaultPlaylist = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
 
     const activeStored = localStorage.getItem(activeKey);
     if (activeStored) {
       try {
         let parsed = JSON.parse(activeStored) as Playlist | null;
         if (!parsed || !Array.isArray(parsed.slugs)) {
-          parsed = safeAll;
-        } else if (parsed.id === SAFE_ALL_ID) {
-          parsed = safeAll;
-        } else if (parsed.id === 'album-songs') {
-          parsed = albumPlaylist ?? safeAll;
+          parsed = defaultPlaylist;
+        } else if (parsed?.id?.startsWith('safe:')) {
+          const match = safePlaylists.find((pl) => pl.id === parsed!.id);
+          parsed = match ?? defaultPlaylist;
         } else if (!parsed.id) {
-          const match = migrated.find(
-            (pl) =>
-              pl.name === parsed!.name &&
-              Array.isArray(pl.slugs) &&
-              pl.slugs.length === parsed!.slugs.length &&
-              pl.slugs.every((s) => parsed!.slugs.includes(s)),
-          );
+          const match = migrated.find(pl => pl.name === parsed!.name && Array.isArray(pl.slugs) && pl.slugs.length === parsed!.slugs.length && pl.slugs.every(s => parsed!.slugs.includes(s)));
           const id = match?.id ?? generateShortId11();
           parsed = { ...parsed, id };
-        } else {
-          const match = migrated.find((pl) => pl.id === parsed!.id);
-          if (!match) parsed = safeAll;
+        }
+        if (parsed.id === ALL_PLAYLIST_ID || parsed.name === 'default') {
+          parsed = defaultPlaylist;
         }
         localStorage.setItem(activeKey, JSON.stringify(parsed));
         setActivePlaylist(parsed);
       } catch {
-        localStorage.setItem(activeKey, JSON.stringify(safeAll));
-        setActivePlaylist(safeAll);
+        localStorage.setItem(activeKey, JSON.stringify(defaultPlaylist));
+        setActivePlaylist(defaultPlaylist);
       }
     } else {
-      localStorage.setItem(activeKey, JSON.stringify(safeAll));
-      setActivePlaylist(safeAll);
+      localStorage.setItem(activeKey, JSON.stringify(defaultPlaylist));
+      setActivePlaylist(defaultPlaylist);
     }
-  }, [safeSongs, safeAll, albumPlaylist, activeKey]);
+  }, [songs, activeKey, playlistsKey, safePlaylistsKey, eventSlug]);
 
   const toggleSelect = useCallback((slug: string) => {
     setSelected((prev) => {
@@ -244,7 +252,10 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
   const restorePrevious = () => {
     if (previousActive.current) {
       setActivePlaylist(previousActive.current);
-      localStorage.setItem(activeKey, JSON.stringify(previousActive.current));
+      localStorage.setItem(
+        activeKey,
+        JSON.stringify(previousActive.current),
+      );
       previousActive.current = null;
     }
   };
@@ -252,7 +263,7 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
   const createPlaylist = () => {
     if (!playlistName.trim()) return;
     const color = playlistColor === 'rgba(255,255,255,0.1)' ? undefined : playlistColor;
-    const existingIds = playlists.map((p) => p.id);
+    const existingIds = playlists.map(p => p.id);
     const id = ensureUniquePlaylistId(existingIds);
     const newPlaylist: Playlist = {
       id,
@@ -290,7 +301,7 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
 
   const startNewPlaylist = () => {
     previousActive.current = activePlaylist;
-    const def = { ...safeAll };
+    const def: Playlist = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
     ignoreActiveChange.current = true;
     setActivePlaylist(def);
     localStorage.setItem(activeKey, JSON.stringify(def));
@@ -303,7 +314,7 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
   const startAddSongs = () => {
     if (!activePlaylist) return;
     previousActive.current = activePlaylist;
-    const def = { ...safeAll };
+    const def: Playlist = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
     ignoreActiveChange.current = true;
     setActivePlaylist(def);
     localStorage.setItem(activeKey, JSON.stringify(def));
@@ -321,7 +332,7 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
   const handleRemoveSong = (slug: string) => {
     if (
       !activePlaylist ||
-      activePlaylist.id === SAFE_ALL_ID ||
+      activePlaylist.id === ALL_PLAYLIST_ID ||
       activePlaylist.id === 'album-songs'
     )
       return;
@@ -390,9 +401,7 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
         localStorage.removeItem(makeOrderStorageKey(toDelete.id));
       }
       if (toDelete?.name) {
-        localStorage.removeItem(
-          makeOrderStorageKey(toDelete.name as unknown as string),
-        );
+        localStorage.removeItem(makeOrderStorageKey(toDelete.name as unknown as string));
       }
       const updated = prev.filter((_, i) => i !== deleteIndex);
       localStorage.setItem(playlistsKey, JSON.stringify(updated));
@@ -404,16 +413,6 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
   return (
     <>
       <div className="call-guide-actions">
-        <button className="glass-button" onClick={() => setShowSearch(true)}>
-          <Image
-            src="/images/search.svg"
-            alt="곡 검색/해금"
-            width={24}
-            height={24}
-            className="button-icon"
-          />
-          <span className="button-text">곡 검색/해금</span>
-        </button>
         <button className="glass-button" onClick={openPlaylistModal}>
           <Image
             src="/images/list.svg"
@@ -436,55 +435,56 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
             <span className="button-text">새 재생목록</span>
           </button>
         )}
-        {activePlaylist?.id !== SAFE_ALL_ID &&
-          activePlaylist?.id !== 'album-songs' && (
-          <div className="edit-menu-wrapper" ref={editMenuRef}>
-            <button
-              className="glass-button"
-              onClick={() => {
-                setRemoveMode(false);
-                setShowEditModal((v) => !v);
-              }}
-            >
-              <Image
-                src="/images/edit.svg"
-                alt="목록 편집"
-                width={24}
-                height={24}
-                className="button-icon"
-              />
-              <span className="button-text">목록 편집</span>
-            </button>
-            {showEditModal && (
-              <PlaylistEditModal
-                onAdd={() => {
-                  setShowEditModal(false);
-                  startAddSongs();
-                }}
-                onRemove={() => {
-                  setShowEditModal(false);
-                  startRemoveSongs();
-                }}
-                onClose={() => setShowEditModal(false)}
-                parentRef={editMenuRef}
-              />
-            )}
-          </div>
-        )}
-        {showSortButton && (
+        {activePlaylist?.id !== ALL_PLAYLIST_ID &&
+          activePlaylist?.id !== 'album-songs' &&
+          !activePlaylist?.id?.startsWith('safe:') && (
+        <div className="edit-menu-wrapper" ref={editMenuRef}>
           <button
-            ref={sortButtonRef}
-            className="glass-button sort-button"
-            onClick={() => songListRef.current?.restoreSongOrder()}
+            className="glass-button"
+            onClick={() => {
+              setRemoveMode(false);
+              setShowEditModal((v) => !v);
+            }}
           >
-            <span className="sort-text-full">재생목록 정렬</span>
-            <span className="sort-text-short">정렬</span>
+            <Image
+              src="/images/edit.svg"
+              alt="목록 편집"
+              width={24}
+              height={24}
+              className="button-icon"
+            />
+            <span className="button-text">목록 편집</span>
           </button>
-        )}
+          {showEditModal && (
+            <PlaylistEditModal
+              onAdd={() => {
+                setShowEditModal(false);
+                startAddSongs();
+              }}
+              onRemove={() => {
+                setShowEditModal(false);
+                startRemoveSongs();
+              }}
+              onClose={() => setShowEditModal(false)}
+              parentRef={editMenuRef}
+            />
+          )}
+        </div>
+      )}
+      {showSortButton && (
+        <button
+          ref={sortButtonRef}
+          className="glass-button sort-button"
+          onClick={() => songListRef.current?.restoreSongOrder()}
+        >
+          <span className="sort-text-full">재생목록 정렬</span>
+          <span className="sort-text-short">정렬</span>
+        </button>
+      )}
       </div>
 
       <SongList
-        songs={safeSongs}
+        songs={songs}
         setPlaylists={setPlaylists}
         activePlaylist={activePlaylist}
         setActivePlaylist={setActivePlaylist}
@@ -495,9 +495,6 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
         removeMode={removeMode}
         onRemoveSong={handleRemoveSong}
         ref={songListRef}
-        linkExtraQuery="&safe=1"
-        playlistsKey={playlistsKey}
-        activeKey={activeKey}
         eventBasePath={eventBasePath}
       />
 
@@ -512,13 +509,16 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
       {showPlaylistModal && (
         <PlaylistModal
           playlists={playlists}
-          songs={safeSongs}
+          songs={songs}
           activePlaylist={activePlaylist}
           setPlaylists={setPlaylists}
           setActivePlaylist={setActivePlaylist}
           onClose={closePlaylistModal}
           onDeleteRequest={openDeleteModal}
-          defaultPlaylists={[safeAll, ...(albumPlaylist ? [albumPlaylist] : [])]}
+          defaultPlaylists={[
+            { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) },
+            ...sharedSafePlaylists,
+          ]}
           playlistsKey={playlistsKey}
           activeKey={activeKey}
         />
@@ -550,9 +550,9 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
           style={
             activePlaylist.color
               ? {
-                  background: activePlaylist.color,
-                  borderTop: `1px solid ${activePlaylist.color}`,
-                }
+                background: activePlaylist.color,
+                borderTop: `1px solid ${activePlaylist.color}`,
+              }
               : undefined
           }
         >
@@ -561,7 +561,11 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
             className="glass-button"
             onClick={(e) => {
               e.stopPropagation();
-              const def = { ...safeAll };
+              const def: Playlist = {
+                id: ALL_PLAYLIST_ID,
+                name: '전체 곡',
+                slugs: songs.map((s) => s.slug!),
+              };
               localStorage.setItem(activeKey, JSON.stringify(def));
               setActivePlaylist(def);
             }}
@@ -569,21 +573,6 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
             전체 곡
           </button>
         </div>
-      )}
-
-      {showSearch && (
-        <SongSearchOverlay
-          songs={songs}
-          safeSongs={safeSongs}
-          storageKey={songsKey}
-          onClose={() => setShowSearch(false)}
-          onUnlock={() => {
-            setSafeSongs(computeSafeSongs());
-            const allPlaylist = { ...safeAll };
-            localStorage.setItem(activeKey, JSON.stringify(allPlaylist));
-            setActivePlaylist(allPlaylist);
-          }}
-        />
       )}
     </>
   );

@@ -81,6 +81,12 @@ export default function PlaylistModal({
       const updated = [...prev];
       const [moved] = updated.splice(dragIndex, 1);
       updated.splice(index, 0, moved);
+
+      const orderedIds = updated.map((pl) => pl.id);
+      const orderKey = playlistsKey.includes('Safe')
+        ? playlistsKey.replace('Playlists', 'PlaylistsOrder')
+        : `${playlistsKey}:order`;
+      localStorage.setItem(orderKey, JSON.stringify(orderedIds));
       localStorage.setItem(playlistsKey, JSON.stringify(updated));
       return updated;
     });
