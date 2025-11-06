@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import React, { Suspense } from 'react';
+import React, { Suspense, cache } from 'react';
 import Header from '@/components/Header';
 import SongList from '@/components/SongList';
 import PlaylistPopup from '@/components/PlaylistPopup';
@@ -11,7 +11,7 @@ export const revalidate = 60;
 
 const EVENT_SLUG = 'magical-mirai-2025';
 
-async function getConcertWithSetlist(setlistId: string) {
+const getConcertWithSetlist = cache(async (setlistId: string) => {
   const id = Number.parseInt(setlistId, 10);
   if (Number.isNaN(id)) return null;
 
@@ -43,6 +43,28 @@ async function getConcertWithSetlist(setlistId: string) {
       },
     },
   });
+});
+
+export async function generateStaticParams() {
+  const concerts = await prisma.concert.findMany({
+    where: {
+      event: {
+        is: { slug: EVENT_SLUG },
+      },
+      setlistId: {
+        not: null,
+      },
+    },
+    select: {
+      setlistId: true,
+    },
+  });
+
+  return concerts
+    .filter((c): c is { setlistId: number } => c.setlistId !== null)
+    .map((concert) => ({
+      concertId: concert.setlistId.toString(),
+    }));
 }
 
 // --- Metadata Generation ---
