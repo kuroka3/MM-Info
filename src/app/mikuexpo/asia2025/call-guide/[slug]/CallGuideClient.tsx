@@ -385,9 +385,10 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
   const songDurations = useMemo(() => {
     const map: Record<string, number> = {};
     songs.forEach((s) => {
-      const lyrics = (s.lyrics as { times?: Record<string, number> }[] | null) || [];
+      const lyricsData = s.lyrics as any;
+      const lyrics = Array.isArray(lyricsData?.lyrics) ? lyricsData.lyrics : (Array.isArray(lyricsData) ? lyricsData : []);
       let max = 0;
-      lyrics.forEach((line) => {
+      lyrics.forEach((line: any) => {
         if (line.times) {
           Object.values(line.times).forEach((v) => {
             const num = Number(v);

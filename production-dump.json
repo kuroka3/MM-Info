@@ -1,0 +1,697 @@
+{
+  "setlists": [
+    {
+      "id": 1,
+      "name": "MIKU EXPO 2025 Bangkok"
+    }
+  ],
+  "songs": [
+    {
+      "id": 4,
+      "title": "太陽系デスコ",
+      "krtitle": "태양계 디스코",
+      "artist": "NayutalieN",
+      "krartist": "나유타리엔",
+      "slug": "taiyokei-disco",
+      "videoId": "mh7tLfhU5-Q",
+      "summary": null,
+      "lyrics": null,
+      "spotify": "https://open.spotify.com/track/0WMh2F8J9vCMKLUaHVPbVl",
+      "youtube": "https://www.youtube.com/watch?v=mh7tLfhU5-Q",
+      "thumbnail": "https://i.ytimg.com/vi/mh7tLfhU5-Q/maxresdefault.jpg",
+      "part": [
+        "MIKU"
+      ],
+      "anotherName": []
+    },
+    {
+      "id": 25,
+      "title": "Artifact",
+      "krtitle": "아티팩트",
+      "artist": "buzzG",
+      "krartist": "버즈지",
+      "slug": "artifact",
+      "videoId": "UPL_viPDFSM",
+      "summary": null,
+      "lyrics": null,
+      "spotify": "https://open.spotify.com/track/25a28jcbgjocfD2jWlZ1Ay",
+      "youtube": "https://www.youtube.com/watch?v=UPL_viPDFSM",
+      "thumbnail": "https://i.scdn.co/image/ab67616d00001e02e70f3d1abbf38c02352c4e65",
+      "part": [
+        "MIKU"
+      ],
+      "anotherName": []
+    },
+    {
+      "id": 26,
+      "title": "ヴァンパイア",
+      "krtitle": "뱀파이어",
+      "artist": "DECO*27",
+      "krartist": "데코*27",
+      "slug": "vampire",
+      "videoId": "e1xCOsgWG0M",
+      "summary": null,
+      "lyrics": null,
+      "spotify": "https://open.spotify.com/track/5Atjzvg5qZcWZhXwZkHqPO",
+      "youtube": "https://www.youtube.com/watch?v=e1xCOsgWG0M",
+      "thumbnail": "https://i.scdn.co/image/ab67616d00001e02c18cabe59bf0c54d6a729669",
+      "part": [
+        "MIKU"
+      ],
+      "anotherName": []
+    },
+    {
+      "id": 27,
+      "title": "カルチャ",
+      "krtitle": "컬쳐",
+      "artist": "ツミキ",
+      "krartist": "츠미키",
+      "slug": "culture",
+      "videoId": "KAoY-tK1l0o",
+      "summary": null,
+      "lyrics": null,
+      "spotify": "https://open.spotify.com/track/0dt8ev3Jebpwk6Z1eNYJaS",
+      "youtube": "https://www.youtube.com/watch?v=KAoY-tK1l0o",
+      "thumbnail": "https://i.scdn.co/image/ab67616d00001e02793cc1981eec7f485cbc5697",
+      "part": [
+        "MIKU"
+      ],
+      "anotherName": [
+        "컬처"
+      ]
+    },
+    {
+      "id": 28,
+      "title": "スイートマジック",
+      "krtitle": "스위트 매직",
+      "artist": "Junky",
+      "krartist": "정키",
+      "slug": "sweet-magic",
+      "videoId": "wZ1gEDquuyQ",
+      "summary": null,
+      "lyrics": null,
+      "spotify": "https://open.spotify.com/track/3UyiHKbiPinMJX8HnLrAZo",
+      "youtube": "https://www.youtube.com/watch?v=wZ1gEDquuyQ",
+      "thumbnail": "https://static.wikia.nocookie.net/vocaloid/images/2/23/Games_-_Project_DIVA_-_Sweet_Magic.jpg/revision/latest?cb=20221102055256",
+      "part": [
+        "RIN"
+      ],
+      "anotherName": []
+    },
+    {
+      "id": 29,
+      "title": "テレキャスタービーボーイ",
+      "krtitle": "텔레캐스터 비보이",
+      "artist": "すりぃ",
+      "krartist": "스리",
+      "slug": "telecaster-b-boy",
+      "videoId": "i-DZukWFR64",
+      "summary": null,
+      "lyrics": null,
+      "spotify": "https://open.spotify.com/track/2rkSQrbwRoH82pA40rTQf3",
+      "youtube": "https://www.youtube.com/watch?v=i-DZukWFR64",
+      "thumbnail": "https://static.wikia.nocookie.net/vocaloid/images/c/cb/Games_-_Project_SEKAI_-_Telecaster_B-Boy.png/revision/latest?cb=20220710101203",
+      "part": [
+        "REN"
+      ],
+      "anotherName": []
+    },
+    {
+      "id": 30,
+      "title": "劣等上等",
+      "krtitle": "열등상등",
+      "artist": "Giga",
+      "krartist": "기가",
+      "slug": "rettou-joutou",
+      "videoId": "oEkGC2HV7rc",
+      "summary": null,
+      "lyrics": null,
+      "spotify": "https://open.spotify.com/track/367IrkRR4wk5WtSL41rONn",
+      "youtube": "https://www.youtube.com/watch?v=oEkGC2HV7rc",
+      "thumbnail": "https://static.wikia.nocookie.net/vocaloid/images/7/70/Games_-_Project_SEKAI_-_%E5%8A%B7%E7%AD%89%E4%B8%8A%E7%AD%89.png/revision/latest?cb=20220625151314",
+      "part": [
+        "RIN",
+        "REN"
+      ],
+      "anotherName": []
+    },
+    {
+      "id": 31,
+      "title": "神っぽいな",
+      "krtitle": "신 같네",
+      "artist": "ピノキオピー",
+      "krartist": "피노키오피",
+      "slug": "god-ish",
+      "videoId": "EHBFKhLUVig",
+      "summary": null,
+      "lyrics": null,
+      "spotify": "https://open.spotify.com/track/206UWNKXURTnN4zf9vmXUV",
+      "youtube": "https://www.youtube.com/watch?v=EHBFKhLUVig",
+      "thumbnail": "https://static.wikia.nocookie.net/vocaloid/images/c/ca/God-ish_Pinocchio-P_%28single%29.png/revision/latest?cb=20230117043514",
+      "part": [
+        "MIKU"
+      ],
+      "anotherName": [
+        "카밋포이나",
+        "카밋뽀이나"
+      ]
+    },
+    {
+      "id": 32,
+      "title": "ナイフ、ナイフ、ナイフ",
+      "krtitle": "나이프, 나이프, 나이프",
+      "artist": "きくお",
+      "krartist": "키쿠오",
+      "slug": "knife-knife-knife",
+      "videoId": "h4WrL4wLp3M",
+      "summary": null,
+      "lyrics": null,
+      "spotify": "https://open.spotify.com/track/4HwiyW9d8fyoKWZ8fPsnqX",
+      "youtube": "https://www.youtube.com/watch?v=h4WrL4wLp3M",
+      "thumbnail": "https://i.scdn.co/image/ab67616d00001e025ca2a3cb354a0c2fe81e8ec0",
+      "part": [
+        "MIKU"
+      ],
+      "anotherName": [
+        "🔪、🔪、🔪",
+        "나이프 나이프 나이프"
+      ]
+    },
+    {
+      "id": 33,
+      "title": "深海少女",
+      "krtitle": "심해소녀",
+      "artist": "ゆうゆP",
+      "krartist": "유우유P",
+      "slug": "shinkai-shoujo",
+      "videoId": "2CwBFr-Eoxg",
+      "summary": null,
+      "lyrics": null,
+      "spotify": "https://open.spotify.com/track/5ymnEcBJonBJMSRRXIWM25",
+      "youtube": "https://www.youtube.com/watch?v=2CwBFr-Eoxg",
+      "thumbnail": "https://i.scdn.co/image/ab67616d0000b27319da7fce128382794082a226",
+      "part": [
+        "MIKU"
+      ],
+      "anotherName": []
+    },
+    {
+      "id": 34,
+      "title": "レッドランドマーカー",
+      "krtitle": "레드 랜드 마커",
+      "artist": "Twinfield",
+      "krartist": "트윈필드",
+      "slug": "red-land-marker",
+      "videoId": "DJfPFNLVVR8",
+      "summary": null,
+      "lyrics": null,
+      "spotify": "https://open.spotify.com/track/2Lfr5cRJW4kzlYpMT2fQN8",
+      "youtube": "https://www.youtube.com/watch?v=DJfPFNLVVR8",
+      "thumbnail": "https://i.scdn.co/image/ab67616d00001e02a8c7ea3bccff25a6274cbfe9",
+      "part": [
+        "MEIKO"
+      ],
+      "anotherName": []
+    },
+    {
+      "id": 35,
+      "title": "リテラシー",
+      "krtitle": "리터러시",
+      "artist": "wotaku",
+      "krartist": "워타쿠",
+      "slug": "literacy",
+      "videoId": "d3ZOnM1I17s",
+      "summary": null,
+      "lyrics": null,
+      "spotify": "https://open.spotify.com/track/0l43BkBXDlH51F5a1FqCjp",
+      "youtube": "https://www.youtube.com/watch?v=d3ZOnM1I17s",
+      "thumbnail": "https://i.scdn.co/image/ab67616d00001e02b16ce2f75863be8556992e58",
+      "part": [
+        "KAITO"
+      ],
+      "anotherName": []
+    },
+    {
+      "id": 36,
+      "title": "on the rocks",
+      "krtitle": "온 더 락",
+      "artist": "OSTER project",
+      "krartist": "오스터 프로젝트",
+      "slug": "on-the-rocks",
+      "videoId": "hk1L0ZV2bVc",
+      "summary": null,
+      "lyrics": null,
+      "spotify": "https://open.spotify.com/track/5oUBjW4Bc69fcYBak14CyO",
+      "youtube": "https://www.youtube.com/watch?v=hk1L0ZV2bVc",
+      "thumbnail": "https://static.wikia.nocookie.net/vocaloid/images/e/ec/Games_-_Project_SEKAI_-_On_the_rocks.png/revision/latest?cb=20220726162332",
+      "part": [
+        "MEIKO",
+        "KAITO"
+      ],
+      "anotherName": [
+        "온 더 락스"
+      ]
+    },
+    {
+      "id": 37,
+      "title": "ツギハギスタッカート",
+      "krtitle": "누덕누덕 스타카토",
+      "artist": "とあ",
+      "krartist": "토아",
+      "slug": "tsugihagi-staccato",
+      "videoId": "p2Irc9NPCtk",
+      "summary": null,
+      "lyrics": null,
+      "spotify": "https://open.spotify.com/track/0V7RxFamMkLN6tXR7S2t1W",
+      "youtube": "https://www.youtube.com/watch?v=p2Irc9NPCtk",
+      "thumbnail": "https://static.wikia.nocookie.net/vocaloid/images/d/df/Games_-_Project_SEKAI_-_%E3%83%84%E3%82%AE%E3%83%8F%E3%82%AE%E3%82%B9%E3%82%BF%E3%83%83%E3%82%AB%E3%83%BC%E3%83%88.png/revision/latest?cb=20220708094901",
+      "part": [
+        "MIKU"
+      ],
+      "anotherName": [
+        "츠기하기 스타카토"
+      ]
+    },
+    {
+      "id": 38,
+      "title": "ダブルラリアット",
+      "krtitle": "더블 래리어트",
+      "artist": "アゴアニキ",
+      "krartist": "아고아니키",
+      "slug": "double-lariat",
+      "videoId": "hC8KrIY8qT4",
+      "summary": null,
+      "lyrics": null,
+      "spotify": "https://open.spotify.com/track/3ZCA0UwO63EJAnstJ80pCN",
+      "youtube": "https://www.youtube.com/watch?v=hC8KrIY8qT4",
+      "thumbnail": "https://static.wikia.nocookie.net/vocaloid/images/4/4b/Games_-_Project_SEKAI_-_%E3%83%80%E3%83%96%E3%83%AB%E3%83%A9%E3%83%AA%E3%82%A2%E3%83%83%E3%83%88.png/revision/latest?cb=20221003091250",
+      "part": [
+        "LUKA"
+      ],
+      "anotherName": []
+    },
+    {
+      "id": 39,
+      "title": "愛Dee",
+      "krtitle": "아이Dee",
+      "artist": "Mitchie M",
+      "krartist": "밋치M",
+      "slug": "aidee",
+      "videoId": "8I0H1dXQxEo",
+      "summary": null,
+      "lyrics": null,
+      "spotify": "https://open.spotify.com/track/1MytGyxmiRweA6GmXsMJ3A",
+      "youtube": "https://www.youtube.com/watch?v=8I0H1dXQxEo",
+      "thumbnail": "https://i1.sndcdn.com/artworks-000125082317-avcxuy-t1080x1080.jpg",
+      "part": [
+        "MIKU",
+        "LUKA"
+      ],
+      "anotherName": [
+        "아이디"
+      ]
+    },
+    {
+      "id": 40,
+      "title": "M@GICAL☆CURE! LOVE ♥ SHOT!",
+      "krtitle": "매지컬 큐어 러브 샷",
+      "artist": "SAWTOWNE",
+      "krartist": "소타운",
+      "slug": "magical-cure-love-shot",
+      "videoId": "LaEgpNBt-bQ",
+      "summary": null,
+      "lyrics": null,
+      "spotify": "https://open.spotify.com/track/63yoRZd5zl6Ah30hfDm97k",
+      "youtube": "https://www.youtube.com/watch?v=LaEgpNBt-bQ",
+      "thumbnail": "https://i.scdn.co/image/ab67616d00001e02a2f3d4936b6f398d90949081",
+      "part": [
+        "MIKU"
+      ],
+      "anotherName": [
+        "M@GICAL☆CURE! LOVE SHOT!",
+        "미쿠미쿠빔",
+        "MAGICAL CURE! LOVE SHOT!",
+        "MAGICAL CURE LOVE SHOT",
+        "매지컬 큐어! 러브 샷!"
+      ]
+    },
+    {
+      "id": 41,
+      "title": "Satisfaction",
+      "krtitle": "새티스팩션",
+      "artist": "kz(livetune)",
+      "krartist": "kz(라이브튠)",
+      "slug": "satisfaction",
+      "videoId": "4h6n6Q4BLVs",
+      "summary": null,
+      "lyrics": null,
+      "spotify": "https://open.spotify.com/track/3D4oFADIdzNln7HTdXMuuE",
+      "youtube": "https://www.youtube.com/watch?v=4h6n6Q4BLVs",
+      "thumbnail": "https://i.scdn.co/image/ab67616d00001e02db6a2b443194a73fd9fa7298",
+      "part": [
+        "MIKU"
+      ],
+      "anotherName": [
+        "새디스팩션"
+      ]
+    },
+    {
+      "id": 42,
+      "title": "shake it!",
+      "krtitle": "셰이크 잇",
+      "artist": "emon(Tes.)",
+      "krartist": "에몬(Tes.)",
+      "slug": "shake-it",
+      "videoId": "WxexMGe83No",
+      "summary": null,
+      "lyrics": null,
+      "spotify": "https://open.spotify.com/track/3Vpeg9gppDumSMsGmbKsYZ",
+      "youtube": "https://www.youtube.com/watch?v=WxexMGe83No",
+      "thumbnail": "https://static.wikia.nocookie.net/vocaloid/images/8/8d/Shake_it%21.png/revision/latest?cb=20170414095136",
+      "part": [
+        "MIKU",
+        "RIN",
+        "REN"
+      ],
+      "anotherName": []
+    },
+    {
+      "id": 43,
+      "title": "39",
+      "krtitle": "39",
+      "artist": "sasakure.UK x DECO*27",
+      "krartist": "사사쿠레UK x 데코*27",
+      "slug": "39",
+      "videoId": "ecU_uJRzhfk",
+      "summary": null,
+      "lyrics": null,
+      "spotify": "https://open.spotify.com/track/3wmmuJJ1G9Ykkhp3NAqk8u",
+      "youtube": "https://www.youtube.com/watch?v=ecU_uJRzhfk",
+      "thumbnail": "https://i.scdn.co/image/ab67616d00001e02eb7f14c455606d9170d2e7bb",
+      "part": [
+        "MIKU"
+      ],
+      "anotherName": []
+    },
+    {
+      "id": 44,
+      "title": "Intergalactic Bound",
+      "krtitle": "인터갤럭틱 바운드",
+      "artist": "Yunosuke & CircusP",
+      "krartist": "유노스케 & 서커스P",
+      "slug": "intergalactic-bound",
+      "videoId": "jsQXgDZIIrY",
+      "summary": null,
+      "lyrics": null,
+      "spotify": "https://open.spotify.com/track/25tNraNmMNwSEccFVcXxnu",
+      "youtube": "https://www.youtube.com/watch?v=jsQXgDZIIrY",
+      "thumbnail": "https://i.scdn.co/image/ab67616d00001e0223e498c04c74bdcbcd842b7f",
+      "part": [
+        "MIKU"
+      ],
+      "anotherName": []
+    },
+    {
+      "id": 45,
+      "title": "ローリンガール",
+      "krtitle": "롤링 걸",
+      "artist": "wowaka",
+      "krartist": "워와카",
+      "slug": "rolling-girl",
+      "videoId": "vnw8zURAxkU",
+      "summary": null,
+      "lyrics": null,
+      "spotify": "https://open.spotify.com/track/3CNptmi6HPZj6lgglUafW7",
+      "youtube": "https://www.youtube.com/watch?v=vnw8zURAxkU",
+      "thumbnail": "https://static.wikia.nocookie.net/vocaloid/images/b/b0/Rollingirl.jpg/revision/latest?cb=20200307050333",
+      "part": [
+        "MIKU"
+      ],
+      "anotherName": []
+    },
+    {
+      "id": 46,
+      "title": "DECORATOR",
+      "krtitle": "데코레이터",
+      "artist": "kz(livetune)",
+      "krartist": "kz(라이브튠)",
+      "slug": "decorator",
+      "videoId": "zweVJrnE1uY",
+      "summary": null,
+      "lyrics": null,
+      "spotify": "https://open.spotify.com/track/68cGngZvXl6qKGLH3joVpZ",
+      "youtube": "https://www.youtube.com/watch?v=zweVJrnE1uY",
+      "thumbnail": "https://static.wikia.nocookie.net/vocaloid/images/2/23/DECORATOR_EP.jpg/revision/latest?cb=20140307172934",
+      "part": [
+        "MIKU"
+      ],
+      "anotherName": []
+    },
+    {
+      "id": 47,
+      "title": "メルト",
+      "krtitle": "멜트",
+      "artist": "ryo",
+      "krartist": "료",
+      "slug": "melt",
+      "videoId": "o1jAMSQyVPc",
+      "summary": null,
+      "lyrics": null,
+      "spotify": "https://open.spotify.com/track/6nWONiqCJwFxKKfAJSKaev",
+      "youtube": "https://www.youtube.com/watch?v=o1jAMSQyVPc",
+      "thumbnail": "https://static.wikia.nocookie.net/vocaloid/images/e/e0/HatsuneMiku-Melt.jpg/revision/latest?cb=20091005152345",
+      "part": [
+        "MIKU"
+      ],
+      "anotherName": []
+    }
+  ],
+  "setlistSongs": [
+    {
+      "setlistId": 1,
+      "songId": 25,
+      "order": 1,
+      "type": "song",
+      "text": null
+    },
+    {
+      "setlistId": 1,
+      "songId": 26,
+      "order": 2,
+      "type": "song",
+      "text": null
+    },
+    {
+      "setlistId": 1,
+      "songId": 27,
+      "order": 3,
+      "type": "song",
+      "text": null
+    },
+    {
+      "setlistId": 1,
+      "songId": 4,
+      "order": 4,
+      "type": "song",
+      "text": null
+    },
+    {
+      "setlistId": 1,
+      "songId": 28,
+      "order": 5,
+      "type": "song",
+      "text": null
+    },
+    {
+      "setlistId": 1,
+      "songId": 29,
+      "order": 6,
+      "type": "song",
+      "text": null
+    },
+    {
+      "setlistId": 1,
+      "songId": 30,
+      "order": 7,
+      "type": "song",
+      "text": null
+    },
+    {
+      "setlistId": 1,
+      "songId": 31,
+      "order": 8,
+      "type": "song",
+      "text": null
+    },
+    {
+      "setlistId": 1,
+      "songId": 32,
+      "order": 9,
+      "type": "song",
+      "text": null
+    },
+    {
+      "setlistId": 1,
+      "songId": 33,
+      "order": 10,
+      "type": "song",
+      "text": null
+    },
+    {
+      "setlistId": 1,
+      "songId": 34,
+      "order": 11,
+      "type": "song",
+      "text": null
+    },
+    {
+      "setlistId": 1,
+      "songId": 35,
+      "order": 12,
+      "type": "song",
+      "text": null
+    },
+    {
+      "setlistId": 1,
+      "songId": 36,
+      "order": 13,
+      "type": "song",
+      "text": null
+    },
+    {
+      "setlistId": 1,
+      "songId": 37,
+      "order": 14,
+      "type": "song",
+      "text": null
+    },
+    {
+      "setlistId": 1,
+      "songId": 38,
+      "order": 15,
+      "type": "song",
+      "text": null
+    },
+    {
+      "setlistId": 1,
+      "songId": 39,
+      "order": 16,
+      "type": "song",
+      "text": null
+    },
+    {
+      "setlistId": 1,
+      "songId": 40,
+      "order": 17,
+      "type": "song",
+      "text": null
+    },
+    {
+      "setlistId": 1,
+      "songId": 41,
+      "order": 18,
+      "type": "song",
+      "text": null
+    },
+    {
+      "setlistId": 1,
+      "songId": 42,
+      "order": 19,
+      "type": "song",
+      "text": null
+    },
+    {
+      "setlistId": 1,
+      "songId": 43,
+      "order": 20,
+      "type": "song",
+      "text": null
+    },
+    {
+      "setlistId": 1,
+      "songId": 44,
+      "order": 21,
+      "type": "song",
+      "text": null
+    },
+    {
+      "setlistId": 1,
+      "songId": 45,
+      "order": 22,
+      "type": "encore",
+      "text": null
+    },
+    {
+      "setlistId": 1,
+      "songId": 46,
+      "order": 23,
+      "type": "encore",
+      "text": null
+    },
+    {
+      "setlistId": 1,
+      "songId": 47,
+      "order": 24,
+      "type": "encore",
+      "text": null
+    }
+  ],
+  "concerts": [
+    {
+      "id": 1,
+      "title": "MIKU EXPO 2025 Bangkok",
+      "date": "2025-02-01T00:00:00.000Z",
+      "day": "Saturday",
+      "block": "DAY 1",
+      "hidden": false,
+      "venueId": 1,
+      "setlistId": 1,
+      "eventId": 2,
+      "showTime": null,
+      "doorTime": null,
+      "vipTime": null,
+      "timeZone": "Asia/Bangkok",
+      "timeOffset": "+07:00",
+      "showTimeUTC": null,
+      "doorTimeUTC": null,
+      "vipTimeUTC": null
+    }
+  ],
+  "venues": [
+    {
+      "id": 1,
+      "name": "Thunder Dome",
+      "name_en": "Thunder Dome"
+    }
+  ],
+  "events": [
+    {
+      "id": 1,
+      "name": "매지컬 미라이 2025",
+      "year": 2025,
+      "slug": "magical-mirai-2025",
+      "seriesid": 1
+    },
+    {
+      "id": 2,
+      "name": "MIKU EXPO 2025 ASIA",
+      "year": 2025,
+      "slug": "miku-expo-2025-asia",
+      "seriesid": 2
+    }
+  ],
+  "series": [
+    {
+      "id": 1,
+      "name": "매지컬 미라이",
+      "slug": "magical-mirai",
+      "note": null
+    },
+    {
+      "id": 2,
+      "name": "MIKU EXPO",
+      "slug": "miku-expo",
+      "note": null
+    }
+  ]
+}

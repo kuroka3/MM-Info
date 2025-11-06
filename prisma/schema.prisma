@@ -15,6 +15,7 @@ model Song {
   title     String
   krtitle   String?
   artist    String
+  krartist  String?
   slug      String?   @unique
   videoId   String?
   summary   String?
@@ -87,9 +88,10 @@ model Concert {
 }
 
 model Setlist {
-  id      Int       @id @default(autoincrement())
-  name    String
-  songs   SetlistSong[]
+  id       Int       @id @default(autoincrement())
+  name     String
+  playlist String?
+  songs    SetlistSong[]
   concerts Concert[]
 }
 

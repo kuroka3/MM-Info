@@ -322,7 +322,8 @@ export default function SafeCallGuideIndexClient({ songs, safeSongIndex, albumSo
     if (
       !activePlaylist ||
       activePlaylist.id === SAFE_ALL_ID ||
-      activePlaylist.id === 'album-songs'
+      activePlaylist.id === 'album-songs' ||
+      !Array.isArray(activePlaylist.slugs)
     )
       return;
     const updated = {

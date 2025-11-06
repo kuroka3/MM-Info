@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Checking for database changes..."
+
+if git diff --cached --name-only | grep -q "prisma/schema.prisma\|scripts/.*\.ts"; then
+  echo "📦 Database-related files detected, creating backup..."
+  npm run backup:db
+
+  if [ $? -ne 0 ]; then
+    echo "❌ Backup failed! Push aborted."
+    exit 1
+  fi
+
+  echo "✅ Backup completed successfully!"
+else
+  echo "✓ No database changes detected, skipping backup."
+fi
