@@ -11,7 +11,7 @@ import React, {
 } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { partColors } from './colors';
+import { partColors, createGradientWithRinLenBoundary } from './colors';
 import type { SongWithSetlist, Playlist } from '@/types/callGuide';
 import { ALL_PLAYLIST_ID } from '@/utils/playlistOrder';
 
@@ -499,17 +499,9 @@ function SongList(
                 .filter(Boolean)
             : [];
 
-          const hasRinLen =
-            colors.length === 2 &&
-            colors.includes(partColors.RIN) &&
-            colors.includes(partColors.LEN);
-
-          const background =
-            colors.length === 1
-              ? colors[0]
-              : hasRinLen
-              ? `linear-gradient(to bottom right, ${partColors.RIN}, ${partColors.RIN} 49%, rgba(255,255,255,0.9) 50%, ${partColors.LEN} 51%, ${partColors.LEN})`
-              : `linear-gradient(to bottom right, ${colors.join(', ')})`;
+          const background = song.part && song.part.length > 0
+            ? createGradientWithRinLenBoundary(song.part)
+            : '';
 
           const borderStyle: CSSProperties | undefined =
             colors.length > 0

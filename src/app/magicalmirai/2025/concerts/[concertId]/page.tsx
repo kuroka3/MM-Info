@@ -4,7 +4,7 @@ export const revalidate = 60;
 
 const config = {
   eventSlug: 'magical-mirai-2025',
-  artistName: 'マジカルミライ２０２５',
+  artistName: 'Magical Mirai 2025',
   spoilerStorageKey: 'spoilerConfirmed:magical-mirai-2025',
   redirectPath: '/magicalmirai/2025',
   preparingMessage: '公演情報は準備中です',

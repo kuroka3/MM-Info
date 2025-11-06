@@ -77,6 +77,7 @@ model Concert {
   showTimeUTC  DateTime? @db.Timestamptz(6)
   doorTimeUTC  DateTime? @db.Timestamptz(6)
   vipTimeUTC   DateTime? @db.Timestamptz(6)
+  playlistImageUrl String?
 
   venue   Venue?   @relation(fields: [venueId], references: [id])
   setlist Setlist? @relation(fields: [setlistId], references: [id])

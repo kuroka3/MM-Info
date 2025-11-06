@@ -4,6 +4,7 @@ import Header from '@/components/Header';
 import SongList from '@/components/SongList';
 import PlaylistPopup from '@/components/PlaylistPopup';
 import SpoilerGate from '@/components/SpoilerGate';
+import SetlistImageGenerator from '@/components/SetlistImageGenerator';
 import prisma from '@/lib/prisma';
 import { formatConcertDate } from '@/utils/groupConcerts';
 
@@ -32,6 +33,7 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
         },
       },
       include: {
+        venue: true,
         event: {
           include: {
             series: true,
@@ -140,6 +142,35 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
       };
     });
 
+    const playlistImageUrl = concert.playlistImageUrl || config.playlistImageUrl || '/images/playlist-icon.png';
+
+    const allConcerts = await prisma.concert.findMany({
+      where: {
+        eventId: concert.eventId,
+        venueId: concert.venueId,
+      },
+      select: {
+        day: true,
+      },
+    });
+
+    const uniqueDays = new Set(allConcerts.map(c => c.day).filter(Boolean));
+    const hasMultipleDays = uniqueDays.size >= 2;
+
+    const eventName = concert.event?.name || '';
+    const venueName = concert.venue?.krname || concert.venue?.name || '';
+    const dayPart = concert.day ? `${concert.day}요일` : '';
+    const blockPart = concert.block && concert.block !== '공연' ? concert.block : '';
+
+    const line1 = eventName;
+    const line2Parts: string[] = [];
+    if (venueName) line2Parts.push(venueName);
+    if (hasMultipleDays && dayPart) line2Parts.push(dayPart);
+    if (blockPart) line2Parts.push(`${blockPart} 공연`);
+    line2Parts.push('세트리스트');
+
+    const setlistTitle = line1 ? `${line1}\n${line2Parts.join(' ')}` : line2Parts.join(' ');
+
     if (setlist.playlist || setlist.spotifyPlaylist) {
       songs.push({
         type: 'final-playlist',
@@ -147,7 +178,7 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
         artist: '',
         spotifyUrl: setlist.spotifyPlaylist || '',
         youtubeUrl: setlist.playlist || '',
-        jacketUrl: config.playlistImageUrl || '/images/playlist-icon.png',
+        jacketUrl: playlistImageUrl,
         part: [],
         higawari: false,
         locationgawari: false,
@@ -162,16 +193,42 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
       dateParts.push(date);
     }
     if (concert.block) {
-      dateParts.push(concert.block);
+      dateParts.push(`${concert.block} 공연`);
     } else if (block) {
-      dateParts.push(block);
+      dateParts.push(`${block} 공연`);
     }
     const dateString = dateParts.length > 0 ? dateParts.join(' ') : (config.preparingMessage || '공연 정보 준비 중');
 
+    let concertTime: string | undefined;
+    if (concert.showTimeUTC) {
+      const showDate = new Date(concert.showTimeUTC);
+      concertTime = showDate.toLocaleString('ko-KR', {
+        timeZone: concert.timeZone || 'UTC',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      });
+    } else if (concert.showTime) {
+      concertTime = typeof concert.showTime === 'string'
+        ? concert.showTime
+        : concert.showTime.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false });
+    }
+
     return (
       <>
-        <Header title={setlist.name} artist={config.artistName} date={dateString} />
+        <Header title={setlistTitle} artist={concert.event?.name || config.artistName} date={dateString} />
         <section className="container">
+          <SetlistImageGenerator
+            songs={songs}
+            eventName={concert.event?.name || config.artistName}
+            concertTitle={setlistTitle}
+            concertTime={concertTime}
+            timeZone={concert.timeOffset || concert.timeZone}
+            playlistImageUrl={playlistImageUrl}
+          />
           <SongList songs={songs} />
         </section>
         {(setlist.playlist || setlist.spotifyPlaylist) && (
