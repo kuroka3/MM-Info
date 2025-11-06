@@ -226,7 +226,7 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
             eventName={concert.event?.name || config.artistName}
             concertTitle={setlistTitle}
             concertTime={concertTime}
-            timeZone={concert.timeOffset || concert.timeZone}
+            timeZone={concert.timeOffset || concert.timeZone || undefined}
             playlistImageUrl={playlistImageUrl}
           />
           <SongList songs={songs} />
