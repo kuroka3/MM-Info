@@ -192,9 +192,9 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
     } else if (date) {
       dateParts.push(date);
     }
-    if (concert.block) {
+    if (concert.block && concert.block !== '공연') {
       dateParts.push(`${concert.block} 공연`);
-    } else if (block) {
+    } else if (block && block !== '공연') {
       dateParts.push(`${block} 공연`);
     }
     const dateString = dateParts.length > 0 ? dateParts.join(' ') : (config.preparingMessage || '공연 정보 준비 중');

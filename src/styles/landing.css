@@ -446,9 +446,15 @@
   opacity: 1;
 }
 
+.legacy-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-self: flex-start;
+}
+
 .legacy-card-badge {
   display: inline-flex;
-  align-self: flex-start;
   padding: 4px 12px;
   border-radius: 9999px;
   font-size: 0.8rem;
