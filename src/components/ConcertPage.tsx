@@ -136,6 +136,7 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
         higawari: variation?.isHigawari || false,
         locationgawari: variation?.isLocationgawari || false,
         slug: item.song.slug || undefined,
+        lyrics: item.song.lyrics || undefined,
       };
     });
 
