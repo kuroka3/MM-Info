@@ -80,6 +80,10 @@ model Concert {
   venue   Venue?   @relation(fields: [venueId], references: [id])
   setlist Setlist? @relation(fields: [setlistId], references: [id])
   event   Event?   @relation(fields: [eventId], references: [id])
+
+  @@index([setlistId])
+  @@index([eventId])
+  @@index([setlistId, eventId])
 }
 
 model Setlist {
