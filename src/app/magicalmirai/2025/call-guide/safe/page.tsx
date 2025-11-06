@@ -30,6 +30,7 @@ export default async function SafeCallGuidePage() {
       title: true,
       krtitle: true,
       artist: true,
+      krartist: true,
       slug: true,
       videoId: true,
       summary: true,

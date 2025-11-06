@@ -402,10 +402,11 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
   const songDurations = useMemo(() => {
     const map: Record<string, number> = {};
     songs.forEach((s) => {
-      const lyrics = (s.lyrics as { times?: Record<string, number> }[] | null) || [];
+      const lyricsData = s.lyrics as Record<string, unknown> | unknown[] | undefined;
+      const lyrics = Array.isArray(lyricsData) ? lyricsData : (lyricsData && typeof lyricsData === 'object' && 'lyrics' in lyricsData && Array.isArray(lyricsData.lyrics) ? lyricsData.lyrics : []);
       let max = 0;
-      lyrics.forEach((line) => {
-        if (line.times) {
+      lyrics.forEach((line: unknown) => {
+        if (line && typeof line === 'object' && 'times' in line && line.times && typeof line.times === 'object') {
           Object.values(line.times).forEach((v) => {
             const num = Number(v);
             if (num > max) max = num;
@@ -1641,7 +1642,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
         <header className="header">
           <Link href={isSafeMode ? `${EVENT_BASE_PATH}/call-guide/safe` : `${EVENT_BASE_PATH}/call-guide`} className="container header-content" style={{ textDecoration: 'none' }}>
             <h1 className="header-title">콜 가이드</h1>
-            <p className="header-subtitle">{song.krtitle || song.title}</p>
+            <p className="header-subtitle">{song.krtitle || song.title} - {song.krartist || song.artist}</p>
           </Link>
         </header>
 

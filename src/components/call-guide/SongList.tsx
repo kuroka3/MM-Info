@@ -77,14 +77,14 @@ function SongList(
   );
 
   const defaultSortedSlugs = useMemo(() => {
-    if (!activePlaylist || isDefaultPlaylist) return [] as string[];
+    if (!activePlaylist || isDefaultPlaylist || !Array.isArray(activePlaylist.slugs)) return [] as string[];
     return [...activePlaylist.slugs].sort(
       (a, b) => getSongOrder(a) - getSongOrder(b),
     );
   }, [activePlaylist, getSongOrder, isDefaultPlaylist]);
 
   const isSorted = useMemo(() => {
-    if (!activePlaylist || isDefaultPlaylist) return true;
+    if (!activePlaylist || isDefaultPlaylist || !Array.isArray(activePlaylist.slugs)) return true;
     return activePlaylist.slugs.every(
       (slug, i) => slug === defaultSortedSlugs[i],
     );
@@ -148,7 +148,7 @@ function SongList(
   };
 
   const swapSong = (from: number, to: number) => {
-    if (!activePlaylist || isDefaultPlaylist) return;
+    if (!activePlaylist || isDefaultPlaylist || !Array.isArray(activePlaylist.slugs)) return;
     if (swapTimeoutRef.current) clearTimeout(swapTimeoutRef.current);
     swappingRef.current = true;
     const container = document.querySelector('.call-list');
@@ -263,7 +263,8 @@ function SongList(
       currentIndex === null ||
       currentIndex === index ||
       !activePlaylist ||
-      isDefaultPlaylist
+      isDefaultPlaylist ||
+      !Array.isArray(activePlaylist.slugs)
     )
       return;
     stopAutoScroll();
@@ -386,7 +387,7 @@ function SongList(
   };
 
   const restoreSongOrder = () => {
-    if (!activePlaylist || isDefaultPlaylist) return;
+    if (!activePlaylist || isDefaultPlaylist || !Array.isArray(activePlaylist.slugs)) return;
     const container = document.querySelector('.call-list');
     if (!container) return;
     const rectMap = new Map<string, DOMRect>();
@@ -553,11 +554,13 @@ function SongList(
                   height={80}
                   className="song-jacket"
                 />
-                <div className="song-text-info">
-                  <p className="song-title">
-                    {song.krtitle ? song.krtitle : song.title}
+                <div className="song-text-info" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                  <p className="song-title" style={{ textAlign: 'center', width: '100%' }}>
+                    {song.krtitle || song.title}
                   </p>
-                  <p className="song-artist">{song.artist}</p>
+                  <p className="song-artist" style={{ textAlign: 'center', width: '100%' }}>
+                    {song.krartist || song.artist}
+                  </p>
                 </div>
               </div>
               <div className="call-item-summary">
@@ -601,11 +604,35 @@ function SongList(
                     height={80}
                     className="song-jacket"
                   />
-                  <div className="song-text-info">
-                    <p className="song-title">
-                      {song.krtitle ? song.krtitle : song.title}
+                  <div className="song-text-info" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                    <p className="song-title" style={{ textAlign: 'center', width: '100%' }}>
+                      {song.krtitle ? (
+                        song.krtitle !== song.title ? (
+                          <>
+                            <span>{song.krtitle}</span>
+                            <span style={{ fontSize: '0.85em', color: '#999' }}>{song.title}</span>
+                          </>
+                        ) : (
+                          song.krtitle
+                        )
+                      ) : (
+                        song.title
+                      )}
                     </p>
-                    <p className="song-artist">{song.artist}</p>
+                    <p className="song-artist" style={{ textAlign: 'center', width: '100%' }}>
+                      {song.krartist ? (
+                        song.krartist !== song.artist ? (
+                          <>
+                            <span>{song.krartist}</span>
+                            <span style={{ fontSize: '0.9em', color: '#999' }}>{song.artist}</span>
+                          </>
+                        ) : (
+                          song.krartist
+                        )
+                      ) : (
+                        song.artist
+                      )}
+                    </p>
                   </div>
                 </div>
                 <div className="call-item-summary">
@@ -692,11 +719,13 @@ function SongList(
                   height={80}
                   className="song-jacket"
                 />
-                <div className="song-text-info">
-                  <p className="song-title">
-                    {song.krtitle ? song.krtitle : song.title}
+                <div className="song-text-info" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                  <p className="song-title" style={{ textAlign: 'center', width: '100%' }}>
+                    {song.krtitle || song.title}
                   </p>
-                  <p className="song-artist">{song.artist}</p>
+                  <p className="song-artist" style={{ textAlign: 'center', width: '100%' }}>
+                    {song.krartist || song.artist}
+                  </p>
                 </div>
               </div>
               <div className="call-item-summary">
