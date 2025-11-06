@@ -36,7 +36,6 @@ import {
   applyToggleShuffle,
   persistOrder,
   restoreOrderValidated,
-  isValidPermutation,
   makeOrderStorageKey,
   generateShortId11,
   ensureUniquePlaylistId,
@@ -459,7 +458,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
       try {
         const arr = JSON.parse(safeStored) as Playlist[];
         const seen = new Set<string>(arr.filter((p) => p.id).map((p) => p.id));
-        let migrated = arr.map((pl) => {
+        const migrated = arr.map((pl) => {
           if (pl.id) return pl;
           const id = ensureUniquePlaylistId(seen);
           seen.add(id);
@@ -468,10 +467,11 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
 
         const safeOrderKey = safePlaylistsKey.replace('Playlists', 'PlaylistsOrder');
         const safeOrderStored = localStorage.getItem(safeOrderKey);
+        let sorted = migrated;
         if (safeOrderStored) {
           try {
             const orderedIds = JSON.parse(safeOrderStored) as string[];
-            migrated.sort((a, b) => {
+            sorted = [...migrated].sort((a, b) => {
               const indexA = orderedIds.indexOf(a.id);
               const indexB = orderedIds.indexOf(b.id);
               if (indexA === -1 && indexB === -1) return 0;
@@ -483,10 +483,10 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
           }
         }
 
-        if (JSON.stringify(arr) !== JSON.stringify(migrated)) {
-          localStorage.setItem(safePlaylistsKey, JSON.stringify(migrated));
+        if (JSON.stringify(arr) !== JSON.stringify(sorted)) {
+          localStorage.setItem(safePlaylistsKey, JSON.stringify(sorted));
         }
-        safeCustom = migrated
+        safeCustom = sorted
           .filter((pl) => Array.isArray(pl.slugs) && pl.slugs.length > 0)
           .map((pl) => ({
             ...pl,

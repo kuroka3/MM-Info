@@ -36,7 +36,6 @@ import {
   applyToggleShuffle,
   persistOrder,
   restoreOrderValidated,
-  isValidPermutation,
   makeOrderStorageKey,
   generateShortId11,
   ensureUniquePlaylistId,
