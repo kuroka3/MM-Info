@@ -57,7 +57,7 @@ export default async function CallGuideAllPage() {
           </div>
         </header>
         <section className="container call-section">
-          <CallGuideIndex songs={songs} eventSlug={EVENT_SLUG} eventBasePath={EVENT_BASE_PATH} forceAllSongs={true} />
+          <CallGuideIndex songs={songs} eventSlug={EVENT_SLUG} eventBasePath={EVENT_BASE_PATH} />
         </section>
       </main>
     </SpoilerGate>
