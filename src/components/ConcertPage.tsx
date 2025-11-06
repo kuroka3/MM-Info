@@ -158,7 +158,7 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
     const hasMultipleDays = uniqueDays.size >= 2;
 
     const eventName = concert.event?.name || '';
-    const venueName = concert.venue?.krname || concert.venue?.name || '';
+    const venueName = concert.venue?.name || '';
     const dayPart = concert.day ? `${concert.day}요일` : '';
     const blockPart = concert.block && concert.block !== '공연' ? concert.block : '';
 
