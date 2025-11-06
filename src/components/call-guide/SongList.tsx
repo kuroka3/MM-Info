@@ -554,11 +554,13 @@ function SongList(
                   height={80}
                   className="song-jacket"
                 />
-                <div className="song-text-info">
-                  <p className="song-title">
-                    {song.krtitle ? song.krtitle : song.title}
+                <div className="song-text-info" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                  <p className="song-title" style={{ textAlign: 'center', width: '100%' }}>
+                    {song.krtitle || song.title}
                   </p>
-                  <p className="song-artist">{song.artist}</p>
+                  <p className="song-artist" style={{ textAlign: 'center', width: '100%' }}>
+                    {song.krartist || song.artist}
+                  </p>
                 </div>
               </div>
               <div className="call-item-summary">
@@ -602,11 +604,35 @@ function SongList(
                     height={80}
                     className="song-jacket"
                   />
-                  <div className="song-text-info">
-                    <p className="song-title">
-                      {song.krtitle ? song.krtitle : song.title}
+                  <div className="song-text-info" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                    <p className="song-title" style={{ textAlign: 'center', width: '100%' }}>
+                      {song.krtitle ? (
+                        song.krtitle !== song.title ? (
+                          <>
+                            <span>{song.krtitle}</span>
+                            <span style={{ fontSize: '0.85em', color: '#999' }}>{song.title}</span>
+                          </>
+                        ) : (
+                          song.krtitle
+                        )
+                      ) : (
+                        song.title
+                      )}
                     </p>
-                    <p className="song-artist">{song.artist}</p>
+                    <p className="song-artist" style={{ textAlign: 'center', width: '100%' }}>
+                      {song.krartist ? (
+                        song.krartist !== song.artist ? (
+                          <>
+                            <span>{song.krartist}</span>
+                            <span style={{ fontSize: '0.9em', color: '#999' }}>{song.artist}</span>
+                          </>
+                        ) : (
+                          song.krartist
+                        )
+                      ) : (
+                        song.artist
+                      )}
+                    </p>
                   </div>
                 </div>
                 <div className="call-item-summary">
@@ -693,11 +719,13 @@ function SongList(
                   height={80}
                   className="song-jacket"
                 />
-                <div className="song-text-info">
-                  <p className="song-title">
-                    {song.krtitle ? song.krtitle : song.title}
+                <div className="song-text-info" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                  <p className="song-title" style={{ textAlign: 'center', width: '100%' }}>
+                    {song.krtitle || song.title}
                   </p>
-                  <p className="song-artist">{song.artist}</p>
+                  <p className="song-artist" style={{ textAlign: 'center', width: '100%' }}>
+                    {song.krartist || song.artist}
+                  </p>
                 </div>
               </div>
               <div className="call-item-summary">

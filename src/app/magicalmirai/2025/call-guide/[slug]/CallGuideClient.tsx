@@ -1642,7 +1642,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
         <header className="header">
           <Link href={isSafeMode ? `${EVENT_BASE_PATH}/call-guide/safe` : `${EVENT_BASE_PATH}/call-guide`} className="container header-content" style={{ textDecoration: 'none' }}>
             <h1 className="header-title">콜 가이드</h1>
-            <p className="header-subtitle">{song.krtitle || song.title}</p>
+            <p className="header-subtitle">{song.krtitle || song.title} - {song.krartist || song.artist}</p>
           </Link>
         </header>
 

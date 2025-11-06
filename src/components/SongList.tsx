@@ -8,6 +8,7 @@ interface Song {
   title: string;
   krtitle?: string;
   artist: string;
+  krartist?: string;
   spotifyUrl: string;
   youtubeUrl: string;
   jacketUrl: string;
@@ -15,6 +16,7 @@ interface Song {
   locationgawari?: boolean;
   part?: string[];
   slug?: string;
+  lyrics?: any;
 }
 
 interface SongListProps {
@@ -36,12 +38,11 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
   return (
     <div className="song-list">
       {songs.map((song, index) => {
-        const isSegment = song.type && song.type !== 'song';
-        const isFinalPlaylist =
-          song.title === '최종 플레이리스트' || song.artist === '';
+        const isSegment = song.type && song.type !== 'song' && song.type !== 'final-playlist';
+        const isFinalPlaylist = song.type === 'final-playlist';
 
         const prevSong = index > 0 ? songs[index - 1] : null;
-        const showSeparator = isFinalPlaylist && prevSong?.type === 'mc' && prevSong?.title === 'MC③';
+        const showSeparator = isFinalPlaylist && prevSong && !isSegment;
 
         if (!isSegment && !isFinalPlaylist) {
           songIndex++;
@@ -58,7 +59,8 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
           ? 'song-item locationgawari'
           : 'song-item';
 
-        const finalTitle = song.krtitle ? `${song.krtitle} (${song.title})` : song.title;
+        const hasKoreanTitle = song.krtitle && song.krtitle !== song.title;
+        const hasKoreanArtist = song.krartist && song.krartist !== song.artist;
 
         const colors = song.part
           ? song.part.map(name => partColors[name as keyof typeof partColors]).filter(Boolean)
@@ -109,6 +111,11 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
           return (
             <React.Fragment key={index}>
               <div className="setlist-separator" />
+              <div className="song-item segment-item">
+                <div className="segment-content">
+                  <p className="segment-title">최종 플레이리스트</p>
+                </div>
+              </div>
               <div
                 className={itemClass}
                 style={{ borderColor: colors.length > 0 ? 'transparent' : undefined }}
@@ -134,16 +141,44 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
                           <>
                             최종 플레이<wbr />리스트
                           </>
+                        ) : song.krtitle ? (
+                          hasKoreanTitle ? (
+                            <>
+                              <span>{song.krtitle}</span>
+                              <span style={{ fontSize: '0.85em', color: '#999' }}>
+                                {song.title}
+                              </span>
+                            </>
+                          ) : (
+                            song.krtitle
+                          )
                         ) : (
-                          finalTitle
+                          song.title
                         )}
                       </p>
-                      {song.artist && <p className="song-artist">{song.artist}</p>}
+                      {song.artist && (
+                        <p className="song-artist">
+                          {song.krartist ? (
+                            hasKoreanArtist ? (
+                              <>
+                                <span>{song.krartist}</span>
+                                <span style={{ fontSize: '0.9em', color: '#999' }}>
+                                  {song.artist}
+                                </span>
+                              </>
+                            ) : (
+                              song.krartist
+                            )
+                          ) : (
+                            song.artist
+                          )}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
                 <div className="song-links">
-                  {song.slug && (
+                  {song.slug && song.lyrics && (
                     <Link
                       href={`/call-guide/${song.slug}?list=${ALL_PLAYLIST_ID}`}
                       className="glow-link glow-link--call-guide"
@@ -219,16 +254,44 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
                       <>
                         최종 플레이<wbr />리스트
                       </>
+                    ) : song.krtitle ? (
+                      hasKoreanTitle ? (
+                        <>
+                          <span>{song.krtitle}</span>
+                          <span style={{ fontSize: '0.85em', color: '#999' }}>
+                            {song.title}
+                          </span>
+                        </>
+                      ) : (
+                        song.krtitle
+                      )
                     ) : (
-                      finalTitle
+                      song.title
                     )}
                   </p>
-                  {song.artist && <p className="song-artist">{song.artist}</p>}
+                  {song.artist && (
+                    <p className="song-artist" style={{ fontWeight: 300 }}>
+                      {song.krartist ? (
+                        hasKoreanArtist ? (
+                          <>
+                            <span style={{ color: 'rgba(255, 255, 255, 0.95)' }}>{song.krartist}</span>
+                            <span style={{ fontSize: '0.8em', color: 'rgba(255, 255, 255, 0.5)' }}>
+                              {song.artist}
+                            </span>
+                          </>
+                        ) : (
+                          <span style={{ color: 'rgba(255, 255, 255, 0.95)' }}>{song.krartist}</span>
+                        )
+                      ) : (
+                        <span style={{ color: 'rgba(255, 255, 255, 0.95)' }}>{song.artist}</span>
+                      )}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
             <div className="song-links">
-              {song.slug && (
+              {song.slug && song.lyrics && (
                 <Link
                   href={`/call-guide/${song.slug}?list=${ALL_PLAYLIST_ID}`}
                   className="glow-link glow-link--call-guide"

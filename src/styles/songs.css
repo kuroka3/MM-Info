@@ -137,6 +137,15 @@
   align-items: center;
   gap: 24px;
   flex: 1;
+  min-width: 0;
+}
+
+.song-details {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex: 1;
+  min-width: 0;
 }
 
 .song-index-wrapper {
@@ -175,6 +184,8 @@
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  object-fit: contain;
+  background: rgba(0, 0, 0, 0.3);
 }
 
 .song-jacket::after {
@@ -201,26 +212,53 @@
 .song-text-info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  z-index: 2;
 }
 
 .song-title {
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 6px;
   line-height: 1.3;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+
+.song-title span {
+  display: inline-block;
 }
 
 .song-artist {
   font-size: 1rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'Pretendard', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 200;
+  line-height: 1.5;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  letter-spacing: 0.01em;
+}
+
+.song-artist span {
+  display: inline-block;
 }
 
 .song-links {
