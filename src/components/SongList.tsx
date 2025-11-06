@@ -16,7 +16,7 @@ interface Song {
   locationgawari?: boolean;
   part?: string[];
   slug?: string;
-  lyrics?: any;
+  lyrics?: unknown;
 }
 
 interface SongListProps {
@@ -178,7 +178,7 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
                   </div>
                 </div>
                 <div className="song-links">
-                  {song.slug && song.lyrics && (
+                  {song.slug && song.lyrics != null && (
                     <Link
                       href={`/call-guide/${song.slug}?list=${ALL_PLAYLIST_ID}`}
                       className="glow-link glow-link--call-guide"
@@ -291,7 +291,7 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
               </div>
             </div>
             <div className="song-links">
-              {song.slug && song.lyrics && (
+              {song.slug && song.lyrics != null && (
                 <Link
                   href={`/call-guide/${song.slug}?list=${ALL_PLAYLIST_ID}`}
                   className="glow-link glow-link--call-guide"
