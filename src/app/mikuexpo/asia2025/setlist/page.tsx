@@ -71,7 +71,7 @@ export default async function Page() {
               <span className="header-date">{date} ({day})</span>
               <div className="block-buttons" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                 {blocks.map(({ block, label, id, hidden, concertId }, blockIndex) => {
-                  const key = id ? `set-${id}` : `concert-${concertId}-${blockIndex}`;
+                  const key = `concert-${concertId}-${blockIndex}`;
 
                   if (hidden) {
                     return (
@@ -92,7 +92,7 @@ export default async function Page() {
                   return (
                     <Link
                       key={key}
-                      href={`${basePath}/concerts/${id}?date=${encodeURIComponent(
+                      href={`${basePath}/concerts/${concertId}?date=${encodeURIComponent(
                         date
                       )}&block=${encodeURIComponent(block)}`}
                       className="glass-effect block-link"

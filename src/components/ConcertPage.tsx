@@ -21,13 +21,16 @@ interface ConcertPageConfig {
 }
 
 export function createConcertPageHandlers(config: ConcertPageConfig) {
-  const getConcertWithSetlist = cache(async (setlistId: string) => {
-    const id = Number.parseInt(setlistId, 10);
+  const getConcertWithSetlist = cache(async (concertId: string) => {
+    const id = Number.parseInt(concertId, 10);
     if (Number.isNaN(id)) return null;
 
     return prisma.concert.findFirst({
       where: {
-        setlistId: id,
+        id,
+        setlistId: {
+          not: null,
+        },
         event: {
           is: { slug: config.eventSlug },
         },
@@ -67,15 +70,13 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
         },
       },
       select: {
-        setlistId: true,
+        id: true,
       },
     });
 
-    return concerts
-      .filter((c): c is { setlistId: number } => c.setlistId !== null)
-      .map((concert) => ({
-        concertId: concert.setlistId.toString(),
-      }));
+    return concerts.map((concert) => ({
+      concertId: concert.id.toString(),
+    }));
   };
 
   const generateMetadata = async ({ params }: { params: Promise<{ concertId: string }> }): Promise<Metadata> => {
@@ -85,15 +86,15 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
   };
 
   async function SetlistContent({
-    setlistId,
+    concertId,
     date,
     block,
   }: {
-    setlistId: string;
+    concertId: string;
     date?: string;
     block?: string;
   }) {
-    const concert = await getConcertWithSetlist(setlistId);
+    const concert = await getConcertWithSetlist(concertId);
     const setlist = concert?.setlist;
 
     if (!concert || !setlist) {
@@ -260,7 +261,7 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
               </div>
             }
           >
-            <SetlistContent setlistId={(await params).concertId} date={date} block={block} />
+            <SetlistContent concertId={(await params).concertId} date={date} block={block} />
           </Suspense>
         </main>
       </SpoilerGate>
