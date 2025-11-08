@@ -14,6 +14,8 @@ interface Song {
   jacketUrl: string;
   higawari?: boolean;
   locationgawari?: boolean;
+  venueName?: string;
+  blockName?: string;
   part?: string[];
   slug?: string;
   lyrics?: unknown;
@@ -163,6 +165,12 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
                 {!isFinalPlaylist && (
                   <div className="song-index-wrapper">
                     <span className="song-index">{displayIndex}</span>
+                    {song.locationgawari && song.venueName && (
+                      <span className="venue-badge">{song.venueName}</span>
+                    )}
+                    {song.higawari && song.blockName && (
+                      <span className="block-badge">{song.blockName}</span>
+                    )}
                   </div>
                 )}
                 <div className="song-info">
@@ -276,6 +284,12 @@ const SongList: React.FC<SongListProps> = ({ songs }) => {
             {!isFinalPlaylist && (
               <div className="song-index-wrapper">
                 <span className="song-index">{displayIndex}</span>
+                {song.locationgawari && song.venueName && (
+                  <span className="venue-badge">{song.venueName}</span>
+                )}
+                {song.higawari && song.blockName && (
+                  <span className="block-badge">{song.blockName}</span>
+                )}
               </div>
             )}
             <div className="song-info">

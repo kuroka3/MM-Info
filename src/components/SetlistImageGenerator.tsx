@@ -14,6 +14,8 @@ interface Song {
   part?: string[];
   higawari?: boolean;
   locationgawari?: boolean;
+  venueName?: string;
+  blockName?: string;
 }
 
 interface SetlistImageGeneratorProps {
@@ -657,29 +659,73 @@ const SetlistImageGenerator: React.FC<SetlistImageGeneratorProps> = ({
 
                           <div style={{
                             display: 'flex',
-                            flexDirection: 'column',
-                            gap: '4px',
+                            alignItems: 'center',
+                            gap: '12px',
                             minWidth: 0,
+                            flex: 1,
                           }}>
                             <div style={{
-                              fontSize: '24px',
-                              fontWeight: '700',
-                              color: '#ffffff',
-                              lineHeight: 1.2,
-                              wordBreak: 'break-word',
-                              overflowWrap: 'break-word',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '4px',
+                              flex: 1,
+                              minWidth: 0,
                             }}>
-                              {song.krtitle || song.title}
+                              <div style={{
+                                fontSize: '24px',
+                                fontWeight: '700',
+                                color: '#ffffff',
+                                lineHeight: 1.2,
+                                wordBreak: 'break-word',
+                                overflowWrap: 'break-word',
+                              }}>
+                                {song.krtitle || song.title}
+                              </div>
+                              <div style={{
+                                fontSize: '18px',
+                                fontWeight: '300',
+                                color: 'rgba(255, 255, 255, 0.9)',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }}>
+                                {song.krartist || song.artist}
+                              </div>
                             </div>
                             <div style={{
-                              fontSize: '18px',
-                              fontWeight: '300',
-                              color: 'rgba(255, 255, 255, 0.9)',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              flexShrink: 0,
                             }}>
-                              {song.krartist || song.artist}
+                              {song.locationgawari && song.venueName && (
+                                <div style={{
+                                  fontSize: '14px',
+                                  fontWeight: '600',
+                                  color: '#ffffff',
+                                  padding: '4px 10px',
+                                  background: 'rgba(48, 209, 88, 0.35)',
+                                  border: '1.5px solid rgba(48, 209, 88, 0.7)',
+                                  borderRadius: '6px',
+                                  whiteSpace: 'nowrap',
+                                }}>
+                                  {song.venueName}
+                                </div>
+                              )}
+                              {song.higawari && song.blockName && (
+                                <div style={{
+                                  fontSize: '14px',
+                                  fontWeight: '600',
+                                  color: '#ffffff',
+                                  padding: '4px 10px',
+                                  background: 'rgba(0, 122, 255, 0.35)',
+                                  border: '1.5px solid rgba(0, 122, 255, 0.7)',
+                                  borderRadius: '6px',
+                                  whiteSpace: 'nowrap',
+                                }}>
+                                  {song.blockName}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -821,47 +867,77 @@ const SetlistImageGenerator: React.FC<SetlistImageGeneratorProps> = ({
 
                             <div style={{
                               display: 'flex',
-                              flexDirection: 'column',
-                              gap: '4px',
+                              alignItems: 'center',
+                              gap: '12px',
                               minWidth: 0,
+                              flex: 1,
                             }}>
                               <div style={{
-                                fontSize: '24px',
-                                fontWeight: '700',
-                                color: '#ffffff',
-                                lineHeight: 1.2,
-                                wordBreak: 'break-word',
-                                overflowWrap: 'break-word',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '4px',
+                                flex: 1,
+                                minWidth: 0,
                               }}>
-                                {song.krtitle || song.title}
+                                <div style={{
+                                  fontSize: '24px',
+                                  fontWeight: '700',
+                                  color: '#ffffff',
+                                  lineHeight: 1.2,
+                                  wordBreak: 'break-word',
+                                  overflowWrap: 'break-word',
+                                }}>
+                                  {song.krtitle || song.title}
+                                </div>
+                                <div style={{
+                                  fontSize: '18px',
+                                  fontWeight: '300',
+                                  color: 'rgba(255, 255, 255, 0.9)',
+                                  whiteSpace: 'nowrap',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                }}>
+                                  {song.krartist || song.artist}
+                                </div>
                               </div>
                               <div style={{
-                                fontSize: '18px',
-                                fontWeight: '300',
-                                color: 'rgba(255, 255, 255, 0.9)',
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                flexShrink: 0,
                               }}>
-                                {song.krartist || song.artist}
+                                {song.locationgawari && song.venueName && (
+                                  <div style={{
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    color: '#ffffff',
+                                    padding: '4px 10px',
+                                    background: 'rgba(48, 209, 88, 0.35)',
+                                    border: '1.5px solid rgba(48, 209, 88, 0.7)',
+                                    borderRadius: '6px',
+                                    whiteSpace: 'nowrap',
+                                  }}>
+                                    {song.venueName}
+                                  </div>
+                                )}
+                                {song.higawari && song.blockName && (
+                                  <div style={{
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    color: '#ffffff',
+                                    padding: '4px 10px',
+                                    background: 'rgba(0, 122, 255, 0.35)',
+                                    border: '1.5px solid rgba(0, 122, 255, 0.7)',
+                                    borderRadius: '6px',
+                                    whiteSpace: 'nowrap',
+                                  }}>
+                                    {song.blockName}
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </div>
                         </div>
-                        {actualIndex === rightColumn.length - 1 && (
-                          <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'flex-end',
-                            padding: '6px 8px 6px 0',
-                            fontSize: '14px',
-                            fontWeight: '700',
-                            color: 'rgba(255, 255, 255, 0.6)',
-                            letterSpacing: '1px',
-                          }}>
-                            ▲END▲
-                          </div>
-                        )}
                       </React.Fragment>
                     );
                   })}

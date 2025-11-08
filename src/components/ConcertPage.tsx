@@ -110,6 +110,37 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
       eventVariations.map(v => [v.songSlug, v])
     );
 
+    const allEventConcertsWithVenues = await prisma.concert.findMany({
+      where: {
+        eventId: concert.eventId,
+        setlistId: { not: null },
+      },
+      include: {
+        venue: true,
+        setlist: {
+          include: {
+            songs: {
+              include: { song: true },
+            },
+          },
+        },
+      },
+    });
+
+    const songToVenueMap = new Map<string, string[]>();
+    allEventConcertsWithVenues.forEach(c => {
+      if (!c.venue || !c.setlist) return;
+      c.setlist.songs.forEach(ss => {
+        if (ss.song?.slug) {
+          const venues = songToVenueMap.get(ss.song.slug) || [];
+          if (!venues.includes(c.venue!.name)) {
+            venues.push(c.venue!.name);
+          }
+          songToVenueMap.set(ss.song.slug, venues);
+        }
+      });
+    });
+
     const songs = setlist.songs.map(item => {
       if (item.type !== 'song' || !item.song) {
         return {
@@ -126,6 +157,9 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
       }
 
       const variation = item.song.slug ? eventVariationMap.get(item.song.slug) : null;
+      const venueName = concert.venue?.name;
+      const blockName = concert.block && concert.block !== '공연' ? concert.block : undefined;
+
       return {
         type: 'song',
         title: item.song.title,
@@ -138,6 +172,8 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
         part: item.song.part || '',
         higawari: variation?.isHigawari || false,
         locationgawari: variation?.isLocationgawari || false,
+        venueName: variation?.isLocationgawari ? venueName : undefined,
+        blockName: variation?.isHigawari ? blockName : undefined,
         slug: item.song.slug || undefined,
         lyrics: item.song.lyrics || undefined,
       };
