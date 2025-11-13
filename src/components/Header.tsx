@@ -4,9 +4,10 @@ interface HeaderProps {
   title: string;
   artist: string;
   date: string;
+  higawariLabel?: string;
 }
 
-const Header: React.FC<HeaderProps> = ({ title, artist, date }) => {
+const Header: React.FC<HeaderProps> = ({ title, artist, date, higawariLabel }) => {
   return (
     <header className="header">
       <div className="container header-content">
@@ -18,7 +19,10 @@ const Header: React.FC<HeaderProps> = ({ title, artist, date }) => {
             </React.Fragment>
           ))}
         </h1>
-        <p className="header-subtitle">{artist} • {date}</p>
+        <p className="header-subtitle">
+          {artist} • {date}
+          {higawariLabel && ` • ${higawariLabel} 세트리`}
+        </p>
       </div>
     </header>
   );

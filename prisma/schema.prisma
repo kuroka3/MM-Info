@@ -93,6 +93,7 @@ model Setlist {
   name     String
   playlist String?
   spotifyPlaylist String?
+  higawariLabel String?
   songs    SetlistSong[]
   concerts Concert[]
 }

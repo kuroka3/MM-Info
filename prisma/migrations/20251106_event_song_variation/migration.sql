@@ -43,3 +43,6 @@ CREATE INDEX "idx_event_song_variation_songslug" ON "EventSongVariation"("songSl
 -- AlterTable (Remove columns from SetlistSong)
 ALTER TABLE "SetlistSong" DROP COLUMN IF EXISTS "higawari";
 ALTER TABLE "SetlistSong" DROP COLUMN IF EXISTS "locationgawari";
+
+-- AlterTable (Add higawariLabel to Setlist)
+ALTER TABLE "Setlist" ADD COLUMN IF NOT EXISTS "higawariLabel" TEXT;

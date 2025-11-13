@@ -25,6 +25,7 @@ interface SetlistImageGeneratorProps {
   concertTime?: string;
   timeZone?: string;
   playlistImageUrl?: string;
+  higawariLabel?: string;
 }
 
 const partColors = {
@@ -268,6 +269,7 @@ const SetlistImageGenerator: React.FC<SetlistImageGeneratorProps> = ({
   concertTime,
   timeZone,
   playlistImageUrl,
+  higawariLabel,
 }) => {
   const imageRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -474,7 +476,7 @@ const SetlistImageGenerator: React.FC<SetlistImageGeneratorProps> = ({
             </div>
           )}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '8px' }}>
-            {concertTitle.split('\n').map((line, idx) => (
+            {concertTitle.split('\n').map((line, idx, arr) => (
               <h1 key={idx} style={{
                 fontSize: '44px',
                 fontWeight: '700',
@@ -486,6 +488,16 @@ const SetlistImageGenerator: React.FC<SetlistImageGeneratorProps> = ({
                 overflowWrap: 'break-word',
               }}>
                 {line}
+                {idx === arr.length - 1 && higawariLabel && (
+                  <span style={{
+                    fontSize: '28px',
+                    fontWeight: '500',
+                    color: 'rgba(255, 255, 255, 0.5)',
+                    marginLeft: '12px',
+                  }}>
+                    - {higawariLabel} 세트리
+                  </span>
+                )}
               </h1>
             ))}
             {concertTime && (
@@ -700,7 +712,7 @@ const SetlistImageGenerator: React.FC<SetlistImageGeneratorProps> = ({
                             }}>
                               {song.locationgawari && song.venueName && (
                                 <div style={{
-                                  fontSize: '14px',
+                                  fontSize: '16px',
                                   fontWeight: '600',
                                   color: '#ffffff',
                                   padding: '4px 10px',
@@ -714,7 +726,7 @@ const SetlistImageGenerator: React.FC<SetlistImageGeneratorProps> = ({
                               )}
                               {song.higawari && song.blockName && (
                                 <div style={{
-                                  fontSize: '14px',
+                                  fontSize: '16px',
                                   fontWeight: '600',
                                   color: '#ffffff',
                                   padding: '4px 10px',

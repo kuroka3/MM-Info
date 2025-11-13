@@ -157,8 +157,7 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
       }
 
       const variation = item.song.slug ? eventVariationMap.get(item.song.slug) : null;
-      const venueName = concert.venue?.name;
-      const blockName = concert.block && concert.block !== '공연' ? concert.block : undefined;
+      const higawariLabel = concert.setlist?.higawariLabel || undefined;
 
       return {
         type: 'song',
@@ -172,8 +171,8 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
         part: item.song.part || '',
         higawari: variation?.isHigawari || false,
         locationgawari: variation?.isLocationgawari || false,
-        venueName: variation?.isLocationgawari ? venueName : undefined,
-        blockName: variation?.isHigawari ? blockName : undefined,
+        venueName: variation?.isLocationgawari ? concert.venue?.name : undefined,
+        blockName: variation?.isHigawari ? higawariLabel : undefined,
         slug: item.song.slug || undefined,
         lyrics: item.song.lyrics || undefined,
       };
@@ -256,7 +255,12 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
 
     return (
       <>
-        <Header title={setlistTitle} artist={concert.event?.name || config.artistName} date={dateString} />
+        <Header
+          title={setlistTitle}
+          artist={concert.event?.name || config.artistName}
+          date={dateString}
+          higawariLabel={concert.setlist?.higawariLabel || undefined}
+        />
         <section className="container">
           <SetlistImageGenerator
             songs={songs}
@@ -265,6 +269,7 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
             concertTime={concertTime}
             timeZone={concert.timeOffset || concert.timeZone || undefined}
             playlistImageUrl={playlistImageUrl}
+            higawariLabel={concert.setlist?.higawariLabel || undefined}
           />
           <SongList songs={songs} />
         </section>
