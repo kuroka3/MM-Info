@@ -255,7 +255,12 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
 
     return (
       <>
-        <Header title={setlistTitle} artist={concert.event?.name || config.artistName} date={dateString} />
+        <Header
+          title={setlistTitle}
+          artist={concert.event?.name || config.artistName}
+          date={dateString}
+          higawariLabel={concert.setlist?.higawariLabel || undefined}
+        />
         <section className="container">
           <SetlistImageGenerator
             songs={songs}
@@ -264,6 +269,7 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
             concertTime={concertTime}
             timeZone={concert.timeOffset || concert.timeZone || undefined}
             playlistImageUrl={playlistImageUrl}
+            higawariLabel={concert.setlist?.higawariLabel || undefined}
           />
           <SongList songs={songs} />
         </section>
