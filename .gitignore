@@ -68,6 +68,7 @@ next-env.d.ts
 #Claude files
 /.claude/*
 /CLAUDE.md
+/scripts/*
 
 # Image files
 /.github/*

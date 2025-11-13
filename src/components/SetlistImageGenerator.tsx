@@ -700,7 +700,7 @@ const SetlistImageGenerator: React.FC<SetlistImageGeneratorProps> = ({
                             }}>
                               {song.locationgawari && song.venueName && (
                                 <div style={{
-                                  fontSize: '14px',
+                                  fontSize: '16px',
                                   fontWeight: '600',
                                   color: '#ffffff',
                                   padding: '4px 10px',
@@ -714,7 +714,7 @@ const SetlistImageGenerator: React.FC<SetlistImageGeneratorProps> = ({
                               )}
                               {song.higawari && song.blockName && (
                                 <div style={{
-                                  fontSize: '14px',
+                                  fontSize: '16px',
                                   fontWeight: '600',
                                   color: '#ffffff',
                                   padding: '4px 10px',
