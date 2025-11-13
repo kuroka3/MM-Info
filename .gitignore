@@ -65,6 +65,9 @@ next-env.d.ts
 # Test files
 /.dev/*
 
+# Database backups
+*.sql
+
 #Claude files
 /.claude/*
 /CLAUDE.md
