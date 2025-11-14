@@ -1,5 +1,6 @@
 'use client';
 
+import { useCallback, useLayoutEffect } from 'react';
 import type React from 'react';
 import type { Token, ProcessedLine } from './types';
 import type { CallItem } from '@/types/call-guide';
@@ -29,6 +30,30 @@ export default function LyricsDisplay({
   onLineClick,
   currentTime,
 }: LyricsDisplayProps) {
+  const clampLyricCalls = useCallback(() => {
+    const lines = lineRefs.current ?? [];
+    lines.forEach((lineEl) => {
+      if (!lineEl) return;
+      const lineWidth = lineEl.clientWidth;
+      if (!lineWidth) return;
+      const calls = lineEl.querySelectorAll<HTMLDivElement>('.lyric-call');
+      calls.forEach((callEl) => {
+        const baseLeftAttr = callEl.dataset.callLeft;
+        if (!baseLeftAttr) return;
+        const baseLeft = Number(baseLeftAttr);
+        if (!Number.isFinite(baseLeft)) return;
+        const callWidth = callEl.offsetWidth;
+        const maxLeft = Math.max(0, lineWidth - callWidth);
+        const clampedLeft = Math.min(baseLeft, maxLeft);
+        callEl.style.left = `${clampedLeft}px`;
+      });
+    });
+  }, [lineRefs]);
+
+  useLayoutEffect(() => {
+    clampLyricCalls();
+  }, [clampLyricCalls, callPositions, lyrics, currentTime]);
+
   return (
     <div className="lyrics">
       {lyrics.map((line, idx) => (
@@ -43,17 +68,19 @@ export default function LyricsDisplay({
           }}
           onClick={() => onLineClick(idx)}
         >
-          <div
-            className={`lyric-call${callActive(line) ? ' active' : ''}`}
-            style={(() => {
-              const left = callPositions[idx]?.[0];
-              return line.call?.pos != null && left != null
-                ? { left, transform: 'none' }
-                : { visibility: 'hidden' };
-            })()}
-          >
-            {line.call?.text ?? ''}
-          </div>
+          {(() => {
+            const left = callPositions[idx]?.[0];
+            const shouldShow = line.call?.pos != null && left != null;
+            return (
+              <div
+                className={`lyric-call${callActive(line) ? ' active' : ''}`}
+                data-call-left={shouldShow ? String(left) : undefined}
+                style={shouldShow ? { left, transform: 'none' } : { visibility: 'hidden' }}
+              >
+                {line.call?.text ?? ''}
+              </div>
+            );
+          })()}
           {(() => {
             let nonRepeatIdx = 0;
             return line.calls?.map((c, cIdx) => {
@@ -92,6 +119,7 @@ export default function LyricsDisplay({
                     <div
                       key={`${cIdx}-arrow`}
                       className="lyric-call"
+                      data-call-left={firstLeft != null ? String(firstLeft) : undefined}
                       style={firstLeft != null ? { left: firstLeft, transform: 'none' } : { visibility: 'hidden' }}
                     >
                       {'→'}
@@ -128,6 +156,7 @@ export default function LyricsDisplay({
                   <div
                     key={cIdx}
                     className={`lyric-call${active ? ' active' : ''}`}
+                    data-call-left={left != null ? String(left) : undefined}
                     style={left != null ? { left, transform: 'none' } : { visibility: 'hidden' }}
                   >
                     {label}
@@ -137,16 +166,14 @@ export default function LyricsDisplay({
               }
               nonRepeatIdx++;
               const pos0 = c.pos?.[0];
+              const left = callPositions[idx]?.[nonRepeatIdx];
+              const shouldShow = pos0 != null && left != null;
               return (
                 <div
                   key={cIdx}
                   className={`lyric-call${callItemActive(c) ? ' active' : ''}`}
-                  style={(() => {
-                    const left = callPositions[idx]?.[nonRepeatIdx];
-                    return pos0 != null && left != null
-                      ? { left, transform: 'none' }
-                      : { visibility: 'hidden' };
-                  })()}
+                  data-call-left={shouldShow ? String(left) : undefined}
+                  style={shouldShow ? { left, transform: 'none' } : { visibility: 'hidden' }}
                 >
                   {c.text}
                 </div>
