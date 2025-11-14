@@ -2,6 +2,8 @@ import { Suspense } from 'react';
 import prisma from '@/lib/prisma';
 import { Prisma, type Song } from '@prisma/client';
 import CallGuideClient from './CallGuideClient';
+import CallGuideWrapper from '@/components/call-guide/CallGuideWrapper';
+import CallGuideSkeleton from '@/components/loading/CallGuideSkeleton';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getAlbumSongs, getSafeSongIndex } from '@/data/safeSongIndex';
@@ -91,14 +93,17 @@ export default async function CallGuideSongPage({ params, searchParams }: PagePr
   const isSafeMode = s.safe === '1';
   const { song, songs } = await getSongData(slug, isSafeMode);
   return (
-    <Suspense fallback={null}>
-      <CallGuideClient
-        key={song.slug}
-        song={song}
-        songs={songs}
+    <Suspense fallback={<CallGuideSkeleton />}>
+      <CallGuideWrapper
+        key={slug}
+        initialSong={song}
+        initialSongs={songs}
+        eventSlug={EVENT_SLUG}
         safeSongIndex={SAFE_SONG_INDEX}
         albumSongs={ALBUM_SONGS}
-        eventSlug={EVENT_SLUG}
+        slug={slug}
+        isSafeMode={isSafeMode}
+        CallGuideComponent={CallGuideClient}
       />
     </Suspense>
   );
