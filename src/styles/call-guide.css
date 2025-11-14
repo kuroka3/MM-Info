@@ -914,7 +914,8 @@
 }
 
 .lyric-char {
-  white-space: pre;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   transition: color 0.2s linear;
 }
 
