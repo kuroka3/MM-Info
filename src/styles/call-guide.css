@@ -873,6 +873,7 @@
   left: 50%;
   transform: translateX(-50%);
   text-align: left;
+  white-space: nowrap;
 }
 
 .lyric-call.active {
