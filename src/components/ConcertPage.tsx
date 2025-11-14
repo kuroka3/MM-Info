@@ -5,6 +5,7 @@ import SongList from '@/components/SongList';
 import PlaylistPopup from '@/components/PlaylistPopup';
 import SpoilerGate from '@/components/SpoilerGate';
 import SetlistImageGenerator from '@/components/SetlistImageGenerator';
+import ConcertDetailSkeleton from '@/components/loading/ConcertDetailSkeleton';
 import prisma from '@/lib/prisma';
 import { formatConcertDate } from '@/utils/groupConcerts';
 
@@ -295,13 +296,7 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
     return (
       <SpoilerGate storageKey={config.spoilerStorageKey} redirectPath={config.redirectPath}>
         <main>
-          <Suspense
-            fallback={
-              <div className="loading-spinner-container">
-                <div className="loading-spinner"></div>
-              </div>
-            }
-          >
+          <Suspense fallback={<ConcertDetailSkeleton />}>
             <SetlistContent concertId={(await params).concertId} date={date} block={block} />
           </Suspense>
         </main>
