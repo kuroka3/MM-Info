@@ -18,9 +18,21 @@ interface Props {
   songs: SongWithSetlist[];
   eventSlug: string;
   eventBasePath?: string;
+  showBadges?: boolean;
+  songToOrderMap?: Map<string, number>;
+  venueMap?: Map<string, string[]>;
+  higawariLabelMap?: Map<string, string>;
 }
 
-export default function CallGuideIndexClient({ songs, eventSlug, eventBasePath = '' }: Props) {
+export default function CallGuideIndexClient({
+  songs,
+  eventSlug,
+  eventBasePath = '',
+  showBadges = false,
+  songToOrderMap = new Map(),
+  venueMap = new Map(),
+  higawariLabelMap = new Map(),
+}: Props) {
   const playlistsKey = `callGuidePlaylists:${eventSlug}`;
   const activeKey = `callGuideActivePlaylist:${eventSlug}`;
   const safePlaylistsKey = `callGuideSafePlaylists:${eventSlug}`;
@@ -496,6 +508,10 @@ export default function CallGuideIndexClient({ songs, eventSlug, eventBasePath =
         onRemoveSong={handleRemoveSong}
         ref={songListRef}
         eventBasePath={eventBasePath}
+        showBadges={showBadges}
+        songToOrderMap={songToOrderMap}
+        venueMap={venueMap}
+        higawariLabelMap={higawariLabelMap}
       />
 
       {selectMode && (

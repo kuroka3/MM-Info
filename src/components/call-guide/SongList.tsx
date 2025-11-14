@@ -14,6 +14,7 @@ import Image from 'next/image';
 import { partColors, createGradientWithRinLenBoundary } from './colors';
 import type { SongWithSetlist, Playlist } from '@/types/callGuide';
 import { ALL_PLAYLIST_ID } from '@/utils/playlistOrder';
+import SongBadges from './SongBadges';
 
 interface Props {
   songs: SongWithSetlist[];
@@ -31,6 +32,10 @@ interface Props {
   activeKey?: string;
   filterPersist?: (pls: Playlist[]) => Playlist[];
   eventBasePath?: string;
+  showBadges?: boolean;
+  songToOrderMap?: Map<string, number>;
+  venueMap?: Map<string, string[]>;
+  higawariLabelMap?: Map<string, string>;
 }
 
 export type SongListHandle = {
@@ -54,6 +59,10 @@ function SongList(
     activeKey = 'callGuideActivePlaylist',
     filterPersist,
     eventBasePath = '',
+    showBadges = false,
+    songToOrderMap = new Map(),
+    venueMap = new Map(),
+    higawariLabelMap = new Map(),
   }: Props,
   ref: React.ForwardedRef<SongListHandle>,
 ) {
@@ -484,8 +493,7 @@ function SongList(
     <>
       <div className="call-list">
         {playlistSongs.map((song, index) => {
-          const first = song.setlists[0];
-          const order = song.safeIndex ?? (first?.order ?? 0);
+          const order = index + 1;
           const variation = song.eventVariations?.[0];
           const itemClass = variation?.isHigawari
             ? 'call-item higawari'
@@ -547,12 +555,22 @@ function SongList(
                   className="song-jacket"
                 />
                 <div className="song-text-info" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-                  <p className="song-title" style={{ textAlign: 'center', width: '100%' }}>
+                  <p className="song-title" style={{ textAlign: 'center', width: '100%', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                     {song.krtitle || song.title}
                   </p>
                   <p className="song-artist" style={{ textAlign: 'center', width: '100%' }}>
                     {song.krartist || song.artist}
                   </p>
+                  {showBadges && (
+                    <SongBadges
+                      songSlug={song.slug!}
+                      songToOrderMap={songToOrderMap}
+                      venueMap={venueMap}
+                      higawariLabelMap={higawariLabelMap}
+                      isHigawari={variation?.isHigawari || false}
+                      isLocationgawari={variation?.isLocationgawari || false}
+                    />
+                  )}
                 </div>
               </div>
               <div className="call-item-summary">
@@ -597,7 +615,7 @@ function SongList(
                     className="song-jacket"
                   />
                   <div className="song-text-info" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-                    <p className="song-title" style={{ textAlign: 'center', width: '100%' }}>
+                    <p className="song-title" style={{ textAlign: 'center', width: '100%', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                       {song.krtitle ? (
                         song.krtitle !== song.title ? (
                           <>
@@ -625,6 +643,16 @@ function SongList(
                         song.artist
                       )}
                     </p>
+                    {showBadges && (
+                      <SongBadges
+                        songSlug={song.slug!}
+                        songToOrderMap={songToOrderMap}
+                        venueMap={venueMap}
+                        higawariLabelMap={higawariLabelMap}
+                        isHigawari={variation?.isHigawari || false}
+                        isLocationgawari={variation?.isLocationgawari || false}
+                      />
+                    )}
                   </div>
                 </div>
                 <div className="call-item-summary">
@@ -712,12 +740,22 @@ function SongList(
                   className="song-jacket"
                 />
                 <div className="song-text-info" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
-                  <p className="song-title" style={{ textAlign: 'center', width: '100%' }}>
+                  <p className="song-title" style={{ textAlign: 'center', width: '100%', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                     {song.krtitle || song.title}
                   </p>
                   <p className="song-artist" style={{ textAlign: 'center', width: '100%' }}>
                     {song.krartist || song.artist}
                   </p>
+                  {showBadges && (
+                    <SongBadges
+                      songSlug={song.slug!}
+                      songToOrderMap={songToOrderMap}
+                      venueMap={venueMap}
+                      higawariLabelMap={higawariLabelMap}
+                      isHigawari={variation?.isHigawari || false}
+                      isLocationgawari={variation?.isLocationgawari || false}
+                    />
+                  )}
                 </div>
               </div>
               <div className="call-item-summary">
