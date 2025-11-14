@@ -17,6 +17,65 @@ export default async function CallGuideAllPage() {
     select: { id: true },
   });
 
+  const concerts = event
+    ? await prisma.concert.findMany({
+        where: { eventId: event.id, setlistId: { not: null } },
+        include: {
+          venue: true,
+          setlist: {
+            include: {
+              songs: {
+                include: { song: true },
+                orderBy: { order: 'asc' },
+              },
+            },
+          },
+        },
+      })
+    : [];
+
+  const songToOrderMap = new Map<string, number>();
+  const songToVenuesMap = new Map<string, Set<string>>();
+  const songToHigawariMap = new Map<string, Set<string>>();
+
+  concerts.forEach((concert) => {
+    if (!concert.setlist) return;
+
+    concert.setlist.songs.forEach((ss) => {
+      const songSlug = ss.song?.slug;
+      if (!songSlug) return;
+
+      const currentOrder = songToOrderMap.get(songSlug);
+      if (currentOrder === undefined || ss.order < currentOrder) {
+        songToOrderMap.set(songSlug, ss.order);
+      }
+
+      if (concert.venue) {
+        if (!songToVenuesMap.has(songSlug)) {
+          songToVenuesMap.set(songSlug, new Set());
+        }
+        songToVenuesMap.get(songSlug)!.add(concert.venue.name);
+      }
+
+      if (concert.setlist?.higawariLabel) {
+        if (!songToHigawariMap.has(songSlug)) {
+          songToHigawariMap.set(songSlug, new Set());
+        }
+        songToHigawariMap.get(songSlug)!.add(concert.setlist.higawariLabel);
+      }
+    });
+  });
+
+  const venueMap = new Map<string, string[]>();
+  songToVenuesMap.forEach((venues, slug) => {
+    venueMap.set(slug, Array.from(venues));
+  });
+
+  const higawariLabelMap = new Map<string, string>();
+  songToHigawariMap.forEach((labels, slug) => {
+    higawariLabelMap.set(slug, Array.from(labels).join(', '));
+  });
+
   const songs = await prisma.song.findMany({
     where: {
       slug: { not: null },
@@ -38,9 +97,23 @@ export default async function CallGuideAllPage() {
   });
 
   songs.sort((a, b) => {
-    const orderA = a.setlists[0]?.order ?? Number.MAX_SAFE_INTEGER;
-    const orderB = b.setlists[0]?.order ?? Number.MAX_SAFE_INTEGER;
-    return orderA - orderB;
+    const aSlug = a.slug!;
+    const bSlug = b.slug!;
+    const aInEvent = songToOrderMap.has(aSlug);
+    const bInEvent = songToOrderMap.has(bSlug);
+
+    if (aInEvent && !bInEvent) return -1;
+    if (!aInEvent && bInEvent) return 1;
+
+    if (aInEvent && bInEvent) {
+      const orderA = songToOrderMap.get(aSlug)!;
+      const orderB = songToOrderMap.get(bSlug)!;
+      return orderA - orderB;
+    }
+
+    const titleA = a.krtitle || a.title;
+    const titleB = b.krtitle || b.title;
+    return titleA.localeCompare(titleB, 'ko');
   });
 
   return (
@@ -57,7 +130,15 @@ export default async function CallGuideAllPage() {
           </div>
         </header>
         <section className="container call-section">
-          <CallGuideIndex songs={songs} eventSlug={EVENT_SLUG} eventBasePath={EVENT_BASE_PATH} />
+          <CallGuideIndex
+            songs={songs}
+            eventSlug={EVENT_SLUG}
+            eventBasePath={EVENT_BASE_PATH}
+            showBadges={true}
+            songToOrderMap={songToOrderMap}
+            venueMap={venueMap}
+            higawariLabelMap={higawariLabelMap}
+          />
         </section>
       </main>
     </SpoilerGate>

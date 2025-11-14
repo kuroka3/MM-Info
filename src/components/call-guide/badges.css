@@ -1,0 +1,45 @@
+.song-badges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+.song-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.badge-order {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: 700;
+}
+
+.badge-higawari {
+  background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
+  color: white;
+}
+
+.badge-locationgawari {
+  background: linear-gradient(135deg, #30D158 0%, #28A745 100%);
+  color: white;
+}
+
+.badge-fixed {
+  background: linear-gradient(135deg, #8E8E93 0%, #636366 100%);
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .song-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+}
