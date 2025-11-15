@@ -41,13 +41,17 @@ export default async function CallGuideAllPage() {
   concerts.forEach((concert) => {
     if (!concert.setlist) return;
 
-    concert.setlist.songs.forEach((ss) => {
-      const songSlug = ss.song?.slug;
-      if (!songSlug) return;
+    const songItems = concert.setlist.songs.filter(
+      (ss) => ss.type === 'song' && ss.song?.slug
+    );
+
+    songItems.forEach((ss, index) => {
+      const songSlug = ss.song!.slug!;
+      const songOnlyOrder = index + 1;
 
       const currentOrder = songToOrderMap.get(songSlug);
-      if (currentOrder === undefined || ss.order < currentOrder) {
-        songToOrderMap.set(songSlug, ss.order);
+      if (currentOrder === undefined || songOnlyOrder < currentOrder) {
+        songToOrderMap.set(songSlug, songOnlyOrder);
       }
 
       if (concert.venue) {
