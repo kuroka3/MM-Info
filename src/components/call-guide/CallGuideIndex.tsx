@@ -537,10 +537,9 @@ export default function CallGuideIndexClient({
           onDeleteRequest={openDeleteModal}
           defaultPlaylists={
             defaultPlaylists && defaultPlaylists.length > 0
-              ? [...defaultPlaylists, ...sharedSafePlaylists]
+              ? defaultPlaylists
               : [
                   { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) },
-                  ...sharedSafePlaylists,
                 ]
           }
           playlistsKey={playlistsKey}

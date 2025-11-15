@@ -16,6 +16,7 @@ interface CallGuideComponentProps {
   safeSongIndex: string[]
   albumSongs: string[]
   eventSlug: string
+  defaultPlaylists?: Array<{ id: string; name: string; slugs: string[] }>
 }
 
 interface CallGuideWrapperProps {
@@ -27,6 +28,7 @@ interface CallGuideWrapperProps {
   slug: string
   isSafeMode: boolean
   CallGuideComponent: React.ComponentType<CallGuideComponentProps>
+  defaultPlaylists?: Array<{ id: string; name: string; slugs: string[] }>
 }
 
 interface SongsResponse {
@@ -42,6 +44,7 @@ export default function CallGuideWrapper({
   slug,
   isSafeMode,
   CallGuideComponent,
+  defaultPlaylists,
 }: CallGuideWrapperProps) {
   const { data, error, isLoading } = useSWR<SongsResponse>(
     `/api/events/${eventSlug}/songs`,
@@ -82,6 +85,7 @@ export default function CallGuideWrapper({
         safeSongIndex={safeSongIndex}
         albumSongs={albumSongs}
         eventSlug={eventSlug}
+        defaultPlaylists={defaultPlaylists}
       />
     )
   }
@@ -93,6 +97,7 @@ export default function CallGuideWrapper({
       safeSongIndex={safeSongIndex}
       albumSongs={albumSongs}
       eventSlug={eventSlug}
+      defaultPlaylists={defaultPlaylists}
     />
   )
 }
