@@ -46,7 +46,7 @@ import {
 const SPOILER_STORAGE_KEY = 'spoilerConfirmed:mikuexpo-asia2025';
 const EVENT_BASE_PATH = '/mikuexpo/asia2025';
 
-export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs, eventSlug }: CallGuideClientProps) {
+export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs, eventSlug, defaultPlaylists }: CallGuideClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isSafeMode = searchParams.get('safe') === '1';
@@ -196,14 +196,22 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
     let active: Playlist | null = null;
     if (list === 'safe-all') active = safeAll;
     else if (list === 'album-songs' && album) active = album;
-    else active = custom.find((p) => p.id === list) || null;
+    else if (list && defaultPlaylists) {
+      active = defaultPlaylists.find((p) => p.id === list) || custom.find((p) => p.id === list) || null;
+    } else {
+      active = custom.find((p) => p.id === list) || null;
+    }
     if (!active && activeStored) {
       try {
         const parsed = JSON.parse(activeStored) as Playlist;
         if (parsed.id === 'safe-all') active = safeAll;
         else if (parsed.id === 'album-songs' && album) active = album;
         else if (parsed.id === 'album-songs') active = safeAll;
-        else active = custom.find((p) => p.id === parsed.id) || null;
+        else if (defaultPlaylists) {
+          active = defaultPlaylists.find((p) => p.id === parsed.id) || custom.find((p) => p.id === parsed.id) || null;
+        } else {
+          active = custom.find((p) => p.id === parsed.id) || null;
+        }
       } catch {
         active = null;
       }
@@ -211,7 +219,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
     if (!active || !Array.isArray(active.slugs)) active = safeAll;
     setActivePlaylist(active);
     localStorage.setItem(activeKey, JSON.stringify(active));
-  }, [isSafeMode, songs, song.slug, searchParams, router, playlistsKey, activeKey, safeSongsKey, safeSongIndex, albumSongs]);
+  }, [isSafeMode, songs, song.slug, searchParams, router, playlistsKey, activeKey, safeSongsKey, safeSongIndex, albumSongs, defaultPlaylists]);
 
   const prevPlaylistIdRef = useRef<string | null>(null);
   const prevBaseRef = useRef<string[] | null>(null);
@@ -335,7 +343,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
   useEffect(() => {
     if (!activePlaylist) return;
     const urlList = searchParams.get('list');
-    if (urlList !== playlistId) {
+    if (!urlList || (urlList !== playlistId && activePlaylist.id === playlistId)) {
       router.replace(`${EVENT_BASE_PATH}/call-guide/${song.slug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
     }
   }, [activePlaylist, playlistId, router, searchParams, song.slug, isSafeMode]);
@@ -407,10 +415,13 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
     return `${m}:${s}`;
   };
 
-  const selectablePlaylists = useMemo(
-    () => (isSafeMode ? playlists : [...sharedSafePlaylists, ...playlists]),
-    [isSafeMode, sharedSafePlaylists, playlists],
-  );
+  const selectablePlaylists = useMemo(() => {
+    const defaults = defaultPlaylists || [];
+    if (isSafeMode) {
+      return [...defaults, ...playlists];
+    }
+    return [...defaults, ...sharedSafePlaylists, ...playlists];
+  }, [isSafeMode, defaultPlaylists, sharedSafePlaylists, playlists]);
 
   useEffect(() => {
     if (isSafeMode) return;
@@ -494,9 +505,23 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
       setPlaylists([]);
     }
 
+    const list = searchParams.get('list');
     const activeStored = localStorage.getItem(activeKey);
     let active: Playlist | null = null;
-    if (activeStored) {
+
+    if (list) {
+      if (list.startsWith('safe:')) {
+        active = sharedSafe.find((pl) => pl.id === list) ?? null;
+      } else if (list === 'safe-all') {
+        active = sharedSafe.find((pl) => pl.id === 'safe:all') ?? null;
+      } else if (defaultPlaylists) {
+        active = defaultPlaylists.find((p) => p.id === list) || migrated.find((p) => p.id === list) || null;
+      } else {
+        active = migrated.find((p) => p.id === list) || null;
+      }
+    }
+
+    if (!active && activeStored) {
       try {
         const parsed = JSON.parse(activeStored) as Playlist;
         if (parsed?.id?.startsWith('safe:')) {
@@ -506,6 +531,8 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
         } else if (parsed?.name === 'default' || parsed?.name === '전체 곡') {
           active = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
           localStorage.setItem(activeKey, JSON.stringify(active));
+        } else if (defaultPlaylists) {
+          active = defaultPlaylists.find((p) => p.id === parsed.id) || migrated.find((p) => p.id === parsed.id) || parsed;
         } else {
           active = parsed;
         }
@@ -522,8 +549,10 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
       active = { ...active, id };
       localStorage.setItem(activeKey, JSON.stringify(active));
     } else if (!active.id.startsWith('safe:')) {
-      const exists = migrated.some((pl) => pl.id === active!.id);
-      if (!exists) {
+      const existsInCustom = migrated.some((pl) => pl.id === active!.id);
+      const existsInDefaults =
+        defaultPlaylists?.some((pl) => pl.id === active!.id) ?? false;
+      if (!existsInCustom && !existsInDefaults) {
         const match = migrated.find((pl) => pl.name === active!.name && sameSet(pl.slugs, active!.slugs));
         if (match) {
           active = match;
@@ -536,7 +565,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
     }
 
     setActivePlaylist(active);
-  }, [songs, isSafeMode, playlistsKey, activeKey, safeSongIndex, albumSongs, eventSlug]);
+  }, [songs, isSafeMode, playlistsKey, activeKey, safeSongIndex, albumSongs, eventSlug, searchParams, defaultPlaylists]);
 
   const focusThenScroll = (idx: number) => {
     const el = lineRefs.current[idx];
@@ -663,17 +692,8 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
   const openPlaylistModal = () => setShowPlaylistModal(true);
   const closePlaylistModal = () => setShowPlaylistModal(false);
 
-  const selectPlaylist = (pl: 'default' | Playlist) => {
-    const selected: Playlist =
-      pl === 'default'
-        ? isSafeMode
-          ? safeAllRef.current || {
-            id: ALL_PLAYLIST_ID,
-            name: '전체 곡',
-            slugs: songs.map((s) => s.slug!),
-          }
-          : { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) }
-        : pl;
+  const selectPlaylist = (pl: Playlist) => {
+    const selected: Playlist = pl;
 
     closePlaylistModal();
 
@@ -1779,7 +1799,8 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
             className="glass-button"
             onClick={(e) => {
               e.stopPropagation();
-              selectPlaylist('default');
+              const defaultPl = defaultPlaylists?.[0] || { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+              selectPlaylist(defaultPl);
             }}
           >
             전체 곡

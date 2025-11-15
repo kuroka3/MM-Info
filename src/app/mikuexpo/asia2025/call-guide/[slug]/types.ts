@@ -37,6 +37,7 @@ export interface CallGuideClientProps {
   safeSongIndex: string[];
   albumSongs: string[];
   eventSlug: string;
+  defaultPlaylists?: Array<{ id: string; name: string; slugs: string[] }>;
 }
 
 declare global {

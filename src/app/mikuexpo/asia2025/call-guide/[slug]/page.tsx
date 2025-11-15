@@ -22,7 +22,7 @@ const ALBUM_SONGS = getAlbumSongs(EVENT_SLUG);
 const getSongData = async (
   slug: string,
   isSafeMode: boolean,
-): Promise<{ song: Song; songs: Song[] }> => {
+): Promise<{ song: Song; songs: Song[]; defaultPlaylists?: Array<{ id: string; name: string; slugs: string[] }> }> => {
   const event = await prisma.event.findUnique({
     where: { slug: EVENT_SLUG },
     select: { id: true },
@@ -48,6 +48,72 @@ const getSongData = async (
     },
   });
 
+  let defaultPlaylists: Array<{ id: string; name: string; slugs: string[] }> | undefined = undefined;
+
+  if (!isSafeMode) {
+    const concerts = event
+      ? await prisma.concert.findMany({
+          where: { eventId: event.id, setlistId: { not: null } },
+          include: {
+            setlist: {
+              include: {
+                songs: {
+                  include: { song: true },
+                  orderBy: { order: 'asc' },
+                },
+              },
+            },
+          },
+        })
+      : [];
+
+    const setlistASlugToOrder = new Map<string, number>();
+    const setlistBSlugToOrder = new Map<string, number>();
+    const allSetlistSlugToOrder = new Map<string, number>();
+
+    concerts.forEach((concert) => {
+      if (!concert.setlist) return;
+
+      const songItems = concert.setlist.songs.filter(
+        (ss) => ss.type === 'song' && ss.song?.slug
+      );
+
+      songItems.forEach((ss, index) => {
+        const songSlug = ss.song!.slug!;
+        const songOnlyOrder = index + 1;
+
+        if (!allSetlistSlugToOrder.has(songSlug)) {
+          allSetlistSlugToOrder.set(songSlug, songOnlyOrder);
+        }
+
+        if (concert.setlist?.higawariLabel === 'A' && !setlistASlugToOrder.has(songSlug)) {
+          setlistASlugToOrder.set(songSlug, songOnlyOrder);
+        } else if (concert.setlist?.higawariLabel === 'B' && !setlistBSlugToOrder.has(songSlug)) {
+          setlistBSlugToOrder.set(songSlug, songOnlyOrder);
+        }
+      });
+    });
+
+    const setlistASlugs = Array.from(setlistASlugToOrder.entries())
+      .sort((a, b) => a[1] - b[1])
+      .map(([slug]) => slug);
+
+    const setlistBSlugs = Array.from(setlistBSlugToOrder.entries())
+      .sort((a, b) => a[1] - b[1])
+      .map(([slug]) => slug);
+
+    const allSetlistSlugs = Array.from(allSetlistSlugToOrder.entries())
+      .sort((a, b) => a[1] - b[1])
+      .map(([slug]) => slug);
+
+    defaultPlaylists = [
+      { id: 'all-songs', name: '전체 곡', slugs: songs.map((s) => s.slug!) },
+      { id: 'setlist-integrated', name: '세트리 통합', slugs: allSetlistSlugs },
+      { id: 'setlist-a', name: '세트리 A', slugs: setlistASlugs },
+      { id: 'setlist-b', name: '세트리 B', slugs: setlistBSlugs },
+    ];
+  }
+
   if (isSafeMode) {
     songs.sort((a, b) => {
       const idxA = SAFE_SONG_INDEX.indexOf(a.slug!);
@@ -67,7 +133,7 @@ const getSongData = async (
   const song = songs.find((s) => s.slug === slug);
   if (!song) notFound();
 
-  return { song: song!, songs };
+  return { song: song!, songs, defaultPlaylists };
 };
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -91,7 +157,7 @@ export default async function CallGuideSongPage({ params, searchParams }: PagePr
   const { slug } = await params;
   const s = await searchParams;
   const isSafeMode = s.safe === '1';
-  const { song, songs } = await getSongData(slug, isSafeMode);
+  const { song, songs, defaultPlaylists } = await getSongData(slug, isSafeMode);
   return (
     <Suspense fallback={<CallGuideSkeleton />}>
       <CallGuideWrapper
@@ -104,6 +170,7 @@ export default async function CallGuideSongPage({ params, searchParams }: PagePr
         slug={slug}
         isSafeMode={isSafeMode}
         CallGuideComponent={CallGuideClient}
+        defaultPlaylists={defaultPlaylists}
       />
     </Suspense>
   );
