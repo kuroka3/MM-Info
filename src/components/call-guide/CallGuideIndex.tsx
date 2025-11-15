@@ -22,6 +22,7 @@ interface Props {
   songToOrderMap?: Map<string, number>;
   venueMap?: Map<string, string[]>;
   higawariLabelMap?: Map<string, string>;
+  defaultPlaylists?: Playlist[];
 }
 
 export default function CallGuideIndexClient({
@@ -32,6 +33,7 @@ export default function CallGuideIndexClient({
   songToOrderMap = new Map(),
   venueMap = new Map(),
   higawariLabelMap = new Map(),
+  defaultPlaylists,
 }: Props) {
   const playlistsKey = `callGuidePlaylists:${eventSlug}`;
   const activeKey = `callGuideActivePlaylist:${eventSlug}`;
@@ -197,7 +199,9 @@ export default function CallGuideIndexClient({
       setPlaylists([]);
     }
 
-    const defaultPlaylist = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+    const defaultPlaylist = defaultPlaylists && defaultPlaylists.length > 0
+      ? defaultPlaylists.find(pl => pl.id === 'setlist-integrated') || defaultPlaylists[0]
+      : { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
 
     const activeStored = localStorage.getItem(activeKey);
     if (activeStored) {
@@ -226,7 +230,7 @@ export default function CallGuideIndexClient({
       localStorage.setItem(activeKey, JSON.stringify(defaultPlaylist));
       setActivePlaylist(defaultPlaylist);
     }
-  }, [songs, activeKey, playlistsKey, safePlaylistsKey, eventSlug]);
+  }, [songs, activeKey, playlistsKey, safePlaylistsKey, eventSlug, defaultPlaylists]);
 
   const toggleSelect = useCallback((slug: string) => {
     setSelected((prev) => {
@@ -531,10 +535,14 @@ export default function CallGuideIndexClient({
           setActivePlaylist={setActivePlaylist}
           onClose={closePlaylistModal}
           onDeleteRequest={openDeleteModal}
-          defaultPlaylists={[
-            { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) },
-            ...sharedSafePlaylists,
-          ]}
+          defaultPlaylists={
+            defaultPlaylists && defaultPlaylists.length > 0
+              ? [...defaultPlaylists, ...sharedSafePlaylists]
+              : [
+                  { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) },
+                  ...sharedSafePlaylists,
+                ]
+          }
           playlistsKey={playlistsKey}
           activeKey={activeKey}
         />

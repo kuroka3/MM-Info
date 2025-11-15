@@ -80,6 +80,45 @@ export default async function CallGuideAllPage() {
     higawariLabelMap.set(slug, Array.from(labels).join(', '));
   });
 
+  const setlistASlugToOrder = new Map<string, number>();
+  const setlistBSlugToOrder = new Map<string, number>();
+  const allSetlistSlugToOrder = new Map<string, number>();
+
+  concerts.forEach((concert) => {
+    if (!concert.setlist) return;
+
+    const songItems = concert.setlist.songs.filter(
+      (ss) => ss.type === 'song' && ss.song?.slug
+    );
+
+    songItems.forEach((ss, index) => {
+      const slug = ss.song!.slug!;
+      const songOnlyOrder = index + 1;
+
+      if (!allSetlistSlugToOrder.has(slug)) {
+        allSetlistSlugToOrder.set(slug, songOnlyOrder);
+      }
+
+      if (concert.setlist?.higawariLabel === 'A' && !setlistASlugToOrder.has(slug)) {
+        setlistASlugToOrder.set(slug, songOnlyOrder);
+      } else if (concert.setlist?.higawariLabel === 'B' && !setlistBSlugToOrder.has(slug)) {
+        setlistBSlugToOrder.set(slug, songOnlyOrder);
+      }
+    });
+  });
+
+  const setlistASlugs = Array.from(setlistASlugToOrder.entries())
+    .sort((a, b) => a[1] - b[1])
+    .map(([slug]) => slug);
+
+  const setlistBSlugs = Array.from(setlistBSlugToOrder.entries())
+    .sort((a, b) => a[1] - b[1])
+    .map(([slug]) => slug);
+
+  const allSetlistSlugs = Array.from(allSetlistSlugToOrder.entries())
+    .sort((a, b) => a[1] - b[1])
+    .map(([slug]) => slug);
+
   const songs = await prisma.song.findMany({
     where: {
       slug: { not: null },
@@ -120,6 +159,13 @@ export default async function CallGuideAllPage() {
     return titleA.localeCompare(titleB, 'ko');
   });
 
+  const defaultPlaylists = [
+    { id: 'all-songs', name: '전체 곡', slugs: songs.map((s) => s.slug!) },
+    { id: 'setlist-integrated', name: '세트리 통합', slugs: allSetlistSlugs },
+    { id: 'setlist-a', name: '세트리 A', slugs: setlistASlugs },
+    { id: 'setlist-b', name: '세트리 B', slugs: setlistBSlugs },
+  ];
+
   return (
     <SpoilerGate
       storageKey="spoilerConfirmed:mikuexpo-asia2025"
@@ -142,6 +188,7 @@ export default async function CallGuideAllPage() {
             songToOrderMap={songToOrderMap}
             venueMap={venueMap}
             higawariLabelMap={higawariLabelMap}
+            defaultPlaylists={defaultPlaylists}
           />
         </section>
       </main>

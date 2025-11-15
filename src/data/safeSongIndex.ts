@@ -8,14 +8,18 @@ const MAGICAL_MIRAI_2025_ALBUM_SONGS = [
   'street-light',
 ];
 
+const MIKU_EXPO_2025_ASIA_ALBUM_SONGS = [
+  'artifact',
+];
+
 const EVENT_ALBUM_SONGS: Record<string, string[]> = {
   'magical-mirai-2025': MAGICAL_MIRAI_2025_ALBUM_SONGS,
-  'miku-expo-2025-asia': [],
+  'miku-expo-2025-asia': MIKU_EXPO_2025_ASIA_ALBUM_SONGS,
 };
 
 const EVENT_SAFE_SONG_INDEX: Record<string, string[] | undefined> = {
   'magical-mirai-2025': MAGICAL_MIRAI_2025_ALBUM_SONGS,
-  'miku-expo-2025-asia': undefined,
+  'miku-expo-2025-asia': MIKU_EXPO_2025_ASIA_ALBUM_SONGS,
 };
 
 export function getAlbumSongs(eventSlug: string): string[] {
