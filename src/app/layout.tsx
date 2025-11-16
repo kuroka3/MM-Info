@@ -5,6 +5,7 @@ import NavBar from "@/components/NavBar";
 import HomeButton from "@/components/HomeButton";
 import ViewportHeightSetter from "@/components/ViewportHeightSetter";
 import SWRProvider from "@/components/SWRProvider";
+import SupportServerButton from "@/components/SupportServerButton";
 
 export const metadata: Metadata = {
   title: {
@@ -42,6 +43,7 @@ export default function RootLayout({
             {children}
             <Footer />
           </div>
+          <SupportServerButton />
         </SWRProvider>
       </body>
     </html>

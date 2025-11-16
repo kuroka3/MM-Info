@@ -50,7 +50,15 @@ const getSongData = async (
 
   let defaultPlaylists: Array<{ id: string; name: string; slugs: string[] }> | undefined = undefined;
 
-  if (!isSafeMode) {
+  if (isSafeMode) {
+    songs.sort((a, b) => {
+      const idxA = SAFE_SONG_INDEX.indexOf(a.slug!);
+      const idxB = SAFE_SONG_INDEX.indexOf(b.slug!);
+      const orderA = idxA === -1 ? Number.MAX_SAFE_INTEGER : idxA;
+      const orderB = idxB === -1 ? Number.MAX_SAFE_INTEGER : idxB;
+      return orderA - orderB;
+    });
+  } else {
     const concerts = event
       ? await prisma.concert.findMany({
           where: { eventId: event.id, setlistId: { not: null } },
@@ -67,6 +75,7 @@ const getSongData = async (
         })
       : [];
 
+    const songToOrderMap = new Map<string, number>();
     const setlistASlugToOrder = new Map<string, number>();
     const setlistBSlugToOrder = new Map<string, number>();
     const allSetlistSlugToOrder = new Map<string, number>();
@@ -82,6 +91,11 @@ const getSongData = async (
         const songSlug = ss.song!.slug!;
         const songOnlyOrder = index + 1;
 
+        const currentOrder = songToOrderMap.get(songSlug);
+        if (currentOrder === undefined || songOnlyOrder < currentOrder) {
+          songToOrderMap.set(songSlug, songOnlyOrder);
+        }
+
         if (!allSetlistSlugToOrder.has(songSlug)) {
           allSetlistSlugToOrder.set(songSlug, songOnlyOrder);
         }
@@ -92,6 +106,26 @@ const getSongData = async (
           setlistBSlugToOrder.set(songSlug, songOnlyOrder);
         }
       });
+    });
+
+    songs.sort((a, b) => {
+      const aSlug = a.slug!;
+      const bSlug = b.slug!;
+      const aInEvent = songToOrderMap.has(aSlug);
+      const bInEvent = songToOrderMap.has(bSlug);
+
+      if (aInEvent && !bInEvent) return -1;
+      if (!aInEvent && bInEvent) return 1;
+
+      if (aInEvent && bInEvent) {
+        const orderA = songToOrderMap.get(aSlug)!;
+        const orderB = songToOrderMap.get(bSlug)!;
+        return orderA - orderB;
+      }
+
+      const titleA = a.krtitle || a.title;
+      const titleB = b.krtitle || b.title;
+      return titleA.localeCompare(titleB, 'ko');
     });
 
     const setlistASlugs = Array.from(setlistASlugToOrder.entries())
@@ -112,22 +146,6 @@ const getSongData = async (
       { id: 'setlist-a', name: '세트리 A', slugs: setlistASlugs },
       { id: 'setlist-b', name: '세트리 B', slugs: setlistBSlugs },
     ];
-  }
-
-  if (isSafeMode) {
-    songs.sort((a, b) => {
-      const idxA = SAFE_SONG_INDEX.indexOf(a.slug!);
-      const idxB = SAFE_SONG_INDEX.indexOf(b.slug!);
-      const orderA = idxA === -1 ? Number.MAX_SAFE_INTEGER : idxA;
-      const orderB = idxB === -1 ? Number.MAX_SAFE_INTEGER : idxB;
-      return orderA - orderB;
-    });
-  } else {
-    songs.sort((a, b) => {
-      const orderA = a.setlists[0]?.order ?? Number.MAX_SAFE_INTEGER;
-      const orderB = b.setlists[0]?.order ?? Number.MAX_SAFE_INTEGER;
-      return orderA - orderB;
-    });
   }
 
   const song = songs.find((s) => s.slug === slug);
