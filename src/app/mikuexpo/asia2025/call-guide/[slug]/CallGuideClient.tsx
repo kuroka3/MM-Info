@@ -51,6 +51,11 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
   const searchParams = useSearchParams();
   const isSafeMode = searchParams.get('safe') === '1';
 
+  const songsWithCallGuide = useMemo(
+    () => songs.filter((s) => s.summary || s.lyrics),
+    [songs]
+  );
+
   const playlistsKey = isSafeMode ? `callGuideSafePlaylists:${eventSlug}` : `callGuidePlaylists:${eventSlug}`;
   const activeKey = isSafeMode ? `callGuideSafeActivePlaylist:${eventSlug}` : `callGuideActivePlaylist:${eventSlug}`;
   const safeSongsKey = `callGuideSafeSongs:${eventSlug}`;
@@ -179,7 +184,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
     const safeAll: Playlist = {
       id: 'safe-all',
       name: '전체 곡',
-      slugs: songs.filter((s) => safeSet.has(s.slug!)).map((s) => s.slug!),
+      slugs: songsWithCallGuide.filter((s) => safeSet.has(s.slug!)).map((s) => s.slug!),
     };
     const album =
       albumSongs.length > 0
@@ -219,7 +224,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
     if (!active || !Array.isArray(active.slugs)) active = safeAll;
     setActivePlaylist(active);
     localStorage.setItem(activeKey, JSON.stringify(active));
-  }, [isSafeMode, songs, song.slug, searchParams, router, playlistsKey, activeKey, safeSongsKey, safeSongIndex, albumSongs, defaultPlaylists]);
+  }, [isSafeMode, songsWithCallGuide, song.slug, searchParams, router, playlistsKey, activeKey, safeSongsKey, safeSongIndex, albumSongs, defaultPlaylists]);
 
   const prevPlaylistIdRef = useRef<string | null>(null);
   const prevBaseRef = useRef<string[] | null>(null);
@@ -294,7 +299,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
     const last = playlistOrder.length - 1;
 
     if (repeatMode === 'all' && shuffle && idx === last) {
-      const base = buildBaseSlugs(activePlaylist?.slugs, songs);
+      const base = buildBaseSlugs(activePlaylist?.slugs, songsWithCallGuide);
       const { nextSlug, newOrder } = onEndedDecision({
         order: playlistOrder,
         currentSlug: song.slug,
@@ -305,7 +310,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
       if (nextSlug && newOrder) return { slug: nextSlug, order: newOrder };
     }
     return { slug: playlistOrder[(idx + 1) % playlistOrder.length], order: undefined };
-  }, [playlistOrder, song.slug, repeatMode, shuffle, activePlaylist, songs]);
+  }, [playlistOrder, song.slug, repeatMode, shuffle, activePlaylist, songsWithCallGuide]);
 
   const settingsLoaded =
     autoNextLoaded && repeatModeLoaded && shuffleLoaded && volumeLoaded && mutedLoaded;
@@ -369,10 +374,10 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
     activePlaylistRef.current = activePlaylist;
   }, [activePlaylist]);
 
-  const songsRef = useRef(songs);
+  const songsRef = useRef(songsWithCallGuide);
   useEffect(() => {
-    songsRef.current = songs;
-  }, [songs]);
+    songsRef.current = songsWithCallGuide;
+  }, [songsWithCallGuide]);
 
   useEffect(() => {
     if (!activePlaylist?.id) return;
@@ -529,7 +534,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
         } else if (parsed?.id === 'safe-all') {
           active = sharedSafe.find((pl) => pl.id === 'safe:all') ?? null;
         } else if (parsed?.name === 'default' || parsed?.name === '전체 곡') {
-          active = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+          active = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songsWithCallGuide.map((s) => s.slug!) };
           localStorage.setItem(activeKey, JSON.stringify(active));
         } else if (defaultPlaylists) {
           active = defaultPlaylists.find((p) => p.id === parsed.id) || migrated.find((p) => p.id === parsed.id) || parsed;
@@ -541,7 +546,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
       }
     }
     if (!active || !Array.isArray(active.slugs)) {
-      active = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+      active = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songsWithCallGuide.map((s) => s.slug!) };
       localStorage.setItem(activeKey, JSON.stringify(active));
     } else if (!active.id || active.id === '') {
       const match = migrated.find((pl) => pl.name === active!.name && sameSet(pl.slugs, active!.slugs));
@@ -558,14 +563,14 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
           active = match;
           localStorage.setItem(activeKey, JSON.stringify(active));
         } else {
-          active = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+          active = { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songsWithCallGuide.map((s) => s.slug!) };
           localStorage.setItem(activeKey, JSON.stringify(active));
         }
       }
     }
 
     setActivePlaylist(active);
-  }, [songs, isSafeMode, playlistsKey, activeKey, safeSongIndex, albumSongs, eventSlug, searchParams, defaultPlaylists]);
+  }, [songsWithCallGuide, isSafeMode, playlistsKey, activeKey, safeSongIndex, albumSongs, eventSlug, searchParams, defaultPlaylists]);
 
   const focusThenScroll = (idx: number) => {
     const el = lineRefs.current[idx];
@@ -588,7 +593,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
 
   const handleToggleShuffle = useCallback(() => {
     if (!activePlaylist?.slugs?.length) return;
-    const base = buildBaseSlugs(activePlaylist.slugs, songs);
+    const base = buildBaseSlugs(activePlaylist.slugs, songsWithCallGuide);
     animateReorder(() => {
       const { shuffle: nextShuffle, order } = applyToggleShuffle({
         base,
@@ -601,7 +606,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
       playlistOrderRef.current = order;
       if (storageKey) persistOrder(storageKey, order);
     }, { container: '.playlist-songs-popup' });
-  }, [activePlaylist?.slugs, songs, song.slug, storageKey]);
+  }, [activePlaylist?.slugs, songsWithCallGuide, song.slug, storageKey]);
 
   useEffect(() => {
     const apl = activePlaylist;
@@ -908,7 +913,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
 
   const resetOrder = () => {
     if (!activePlaylist) return;
-    const base = buildBaseSlugs(activePlaylist.slugs, songs);
+    const base = buildBaseSlugs(activePlaylist.slugs, songsWithCallGuide);
     const newOrder =
       originalOrderRef.current?.length ? [...originalOrderRef.current] : [...base];
     if (!newOrder.length) return;
@@ -1123,13 +1128,39 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
             const iframe = e.target.getIframe?.();
             if (spoilerAllowed) iframe?.setAttribute('allow', 'autoplay');
             iframe?.setAttribute('playsinline', '1');
+
+            let shouldAutoPlay = false;
+
+            try {
+              const transitionData = sessionStorage.getItem('callGuideTransition');
+              if (transitionData) {
+                const transition = JSON.parse(transitionData);
+                if (transition.toSlug === song.slug && (Date.now() - transition.timestamp) < 5000) {
+                  shouldAutoPlay = transition.shouldAutoPlay;
+                  sessionStorage.removeItem('callGuideTransition');
+                }
+              }
+            } catch { }
+
             autoScrollRef.current = true;
-            scrollToLine(activeLineRef.current);
+            scrollToLine(0);
+
             if (pendingSeekRef.current != null) {
               playerRef.current?.seekTo?.(pendingSeekRef.current, true);
             }
-            if (autoNextRef.current && spoilerAllowed) {
-              e.target.playVideo?.();
+
+            if (shouldAutoPlay || (autoNextRef.current && spoilerAllowed)) {
+              const attemptPlay = (retryCount = 0) => {
+                e.target.playVideo?.();
+                if (retryCount < 3) {
+                  setTimeout(() => {
+                    if (!isPlayingRef.current) {
+                      attemptPlay(retryCount + 1);
+                    }
+                  }, retryCount === 0 ? 100 : retryCount === 1 ? 300 : 500);
+                }
+              };
+              attemptPlay();
             }
           },
           onStateChange: (e: { data: number }) => {
@@ -1161,6 +1192,15 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
               }
 
               if (autoNextRef.current && nextSlug) {
+                try {
+                  sessionStorage.setItem('callGuideTransition', JSON.stringify({
+                    fromSlug: song.slug,
+                    toSlug: nextSlug,
+                    shouldAutoPlay: true,
+                    shouldAutoScroll: true,
+                    timestamp: Date.now()
+                  }));
+                } catch { }
                 router.push(`${EVENT_BASE_PATH}/call-guide/${nextSlug}?list=${playlistId}${isSafeMode ? '&safe=1' : ''}`);
               }
 
@@ -1799,7 +1839,7 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
             className="glass-button"
             onClick={(e) => {
               e.stopPropagation();
-              const defaultPl = defaultPlaylists?.[0] || { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+              const defaultPl = defaultPlaylists?.[0] || { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songsWithCallGuide.map((s) => s.slug!) };
               selectPlaylist(defaultPl);
             }}
           >
