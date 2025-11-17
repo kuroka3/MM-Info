@@ -1,4 +1,5 @@
-import { Suspense } from 'react';
+import { Suspense, cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/prisma';
 import { Prisma, type Song } from '@prisma/client';
 import CallGuideClient from './CallGuideClient';
@@ -13,40 +14,58 @@ type PageProps = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-export const revalidate = 60;
+export const revalidate = 3600;
+export const dynamic = 'force-static';
+export const dynamicParams = true;
 
 const EVENT_SLUG = 'magical-mirai-2025';
 const SAFE_SONG_INDEX = getSafeSongIndex(EVENT_SLUG);
 const ALBUM_SONGS = getAlbumSongs(EVENT_SLUG);
 
-const getSongData = async (
+const getEventId = unstable_cache(
+  async () => {
+    const event = await prisma.event.findUnique({
+      where: { slug: EVENT_SLUG },
+      select: { id: true },
+    });
+    return event?.id;
+  },
+  [`event-id-${EVENT_SLUG}`],
+  { revalidate: 3600, tags: [`event-${EVENT_SLUG}`] }
+);
+
+const getAllSongs = unstable_cache(
+  async (eventId: number | undefined) => {
+    return await prisma.song.findMany({
+      where: {
+        slug: { not: null },
+        videoId: { not: null },
+        summary: { not: null },
+        lyrics: { not: Prisma.JsonNull },
+      },
+      include: {
+        setlists: {
+          select: { order: true },
+          orderBy: { order: 'asc' },
+          take: 1,
+        },
+        eventVariations: {
+          where: eventId ? { eventId } : undefined,
+          select: { isHigawari: true, isLocationgawari: true, eventId: true },
+        },
+      },
+    });
+  },
+  [`all-songs-${EVENT_SLUG}`],
+  { revalidate: 3600, tags: [`songs-${EVENT_SLUG}`] }
+);
+
+const getSongData = cache(async (
   slug: string,
   isSafeMode: boolean,
 ): Promise<{ song: Song; songs: Song[] }> => {
-  const event = await prisma.event.findUnique({
-    where: { slug: EVENT_SLUG },
-    select: { id: true },
-  });
-
-  const songs = await prisma.song.findMany({
-    where: {
-      slug: { not: null },
-      videoId: { not: null },
-      summary: { not: null },
-      lyrics: { not: Prisma.JsonNull },
-    },
-    include: {
-      setlists: {
-        select: { order: true },
-        orderBy: { order: 'asc' },
-        take: 1,
-      },
-      eventVariations: {
-        where: event ? { eventId: event.id } : undefined,
-        select: { isHigawari: true, isLocationgawari: true, eventId: true },
-      },
-    },
-  });
+  const eventId = await getEventId();
+  const songs = await getAllSongs(eventId);
 
   if (isSafeMode) {
     songs.sort((a, b) => {
@@ -68,7 +87,7 @@ const getSongData = async (
   if (!song) notFound();
 
   return { song: song!, songs };
-};
+});
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;

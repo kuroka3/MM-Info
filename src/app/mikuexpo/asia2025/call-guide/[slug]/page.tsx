@@ -1,4 +1,5 @@
-import { Suspense } from 'react';
+import { Suspense, cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import prisma from '@/lib/prisma';
 import { Prisma, type Song } from '@prisma/client';
 import CallGuideClient from './CallGuideClient';
@@ -13,40 +14,79 @@ type PageProps = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-export const revalidate = 60;
+export const revalidate = 3600;
+export const dynamic = 'force-static';
+export const dynamicParams = true;
 
 const EVENT_SLUG = 'miku-expo-2025-asia';
 const SAFE_SONG_INDEX = getSafeSongIndex(EVENT_SLUG);
 const ALBUM_SONGS = getAlbumSongs(EVENT_SLUG);
 
-const getSongData = async (
+const getEventId = unstable_cache(
+  async () => {
+    const event = await prisma.event.findUnique({
+      where: { slug: EVENT_SLUG },
+      select: { id: true },
+    });
+    return event?.id;
+  },
+  [`event-id-${EVENT_SLUG}`],
+  { revalidate: 3600, tags: [`event-${EVENT_SLUG}`] }
+);
+
+const getAllSongs = unstable_cache(
+  async (eventId: number | undefined) => {
+    return await prisma.song.findMany({
+      where: {
+        slug: { not: null },
+        videoId: { not: null },
+        summary: { not: null },
+        lyrics: { not: Prisma.JsonNull },
+      },
+      include: {
+        setlists: {
+          select: { order: true },
+          orderBy: { order: 'asc' },
+          take: 1,
+        },
+        eventVariations: {
+          where: eventId ? { eventId } : undefined,
+          select: { isHigawari: true, isLocationgawari: true, eventId: true },
+        },
+      },
+    });
+  },
+  [`all-songs-${EVENT_SLUG}`],
+  { revalidate: 3600, tags: [`songs-${EVENT_SLUG}`] }
+);
+
+const getConcertsForEvent = unstable_cache(
+  async (eventId: number | undefined) => {
+    if (!eventId) return [];
+    return await prisma.concert.findMany({
+      where: { eventId, setlistId: { not: null } },
+      include: {
+        setlist: {
+          include: {
+            songs: {
+              include: { song: true },
+              orderBy: { order: 'asc' },
+            },
+          },
+        },
+      },
+    });
+  },
+  [`concerts-${EVENT_SLUG}`],
+  { revalidate: 3600, tags: [`concerts-${EVENT_SLUG}`] }
+);
+
+const getSongData = cache(async (
   slug: string,
   isSafeMode: boolean,
 ): Promise<{ song: Song; songs: Song[]; defaultPlaylists?: Array<{ id: string; name: string; slugs: string[] }> }> => {
-  const event = await prisma.event.findUnique({
-    where: { slug: EVENT_SLUG },
-    select: { id: true },
-  });
-
-  const songs = await prisma.song.findMany({
-    where: {
-      slug: { not: null },
-      videoId: { not: null },
-      summary: { not: null },
-      lyrics: { not: Prisma.JsonNull },
-    },
-    include: {
-      setlists: {
-        select: { order: true },
-        orderBy: { order: 'asc' },
-        take: 1,
-      },
-      eventVariations: {
-        where: event ? { eventId: event.id } : undefined,
-        select: { isHigawari: true, isLocationgawari: true, eventId: true },
-      },
-    },
-  });
+  const eventId = await getEventId();
+  const songs = await getAllSongs(eventId);
 
   let defaultPlaylists: Array<{ id: string; name: string; slugs: string[] }> | undefined = undefined;
 
@@ -59,21 +99,7 @@ const getSongData = async (
       return orderA - orderB;
     });
   } else {
-    const concerts = event
-      ? await prisma.concert.findMany({
-          where: { eventId: event.id, setlistId: { not: null } },
-          include: {
-            setlist: {
-              include: {
-                songs: {
-                  include: { song: true },
-                  orderBy: { order: 'asc' },
-                },
-              },
-            },
-          },
-        })
-      : [];
+    const concerts = await getConcertsForEvent(eventId);
 
     const songToOrderMap = new Map<string, number>();
     const setlistASlugToOrder = new Map<string, number>();
@@ -152,7 +178,7 @@ const getSongData = async (
   if (!song) notFound();
 
   return { song: song!, songs, defaultPlaylists };
-};
+});
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
