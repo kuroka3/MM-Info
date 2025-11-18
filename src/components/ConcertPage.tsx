@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import React, { Suspense } from 'react';
+import React, { Suspense, cache } from 'react';
 import { unstable_cache } from 'next/cache';
 import Header from '@/components/Header';
 import SongList from '@/components/SongList';
@@ -24,13 +24,13 @@ interface ConcertPageConfig {
 }
 
 export function createConcertPageHandlers(config: ConcertPageConfig) {
-  const getConcertWithSetlist = (concertId: string) => {
+  const getConcertWithSetlist = cache((concertId: string) => {
     const id = Number.parseInt(concertId, 10);
     if (Number.isNaN(id)) return Promise.resolve(null);
 
     return unstable_cache(
       async () => {
-        // First, fetch the concert without setlist filter
+        // Fetch concert and determine setlist ID first
         const concert = await prisma.concert.findFirst({
           where: {
             id,
@@ -57,7 +57,7 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
 
         if (!effectiveSetlistId) return null;
 
-        // Fetch setlist separately
+        // Fetch setlist with all related data
         const setlist = await prisma.setlist.findUnique({
           where: { id: effectiveSetlistId },
           include: {
@@ -74,18 +74,21 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
 
         if (!setlist) return null;
 
-        // Combine concert and setlist
+        // Combine and return
         return {
           ...concert,
           setlist,
         };
       },
       [`concert-${concertId}-${config.eventSlug}`],
-      { revalidate: 3600, tags: [`concert-${concertId}`, `event-${config.eventSlug}`] }
+      {
+        revalidate: 3600,
+        tags: [`concert-${concertId}`, `event-${config.eventSlug}`]
+      }
     )();
-  };
+  });
 
-  const getEventConcertsWithVenues = (eventId: number) => {
+  const getEventConcertsWithVenues = cache((eventId: number) => {
     return unstable_cache(
       async () => {
         return prisma.concert.findMany({
@@ -108,9 +111,9 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
       [`event-concerts-${eventId}-${config.eventSlug}`],
       { revalidate: 3600, tags: [`concerts-${config.eventSlug}`, `event-${eventId}`] }
     )();
-  };
+  });
 
-  const getEventConcertsByVenue = (eventId: number, venueId: number) => {
+  const getEventConcertsByVenue = cache((eventId: number, venueId: number) => {
     return unstable_cache(
       async () => {
         return prisma.concert.findMany({
@@ -126,7 +129,7 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
       [`event-concerts-venue-${eventId}-${venueId}-${config.eventSlug}`],
       { revalidate: 3600, tags: [`concerts-${config.eventSlug}`, `event-${eventId}`, `venue-${venueId}`] }
     )();
-  };
+  });
 
   const generateStaticParams = async () => {
     const concerts = await prisma.concert.findMany({
