@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
-import React, { Suspense, cache } from 'react';
+import React, { Suspense } from 'react';
+import { unstable_cache } from 'next/cache';
 import Header from '@/components/Header';
 import SongList from '@/components/SongList';
 import PlaylistPopup from '@/components/PlaylistPopup';
@@ -9,7 +10,7 @@ import ConcertDetailSkeleton from '@/components/loading/ConcertDetailSkeleton';
 import prisma from '@/lib/prisma';
 import { formatConcertDate } from '@/utils/groupConcerts';
 
-export const revalidate = 60;
+export const revalidate = 3600;
 
 interface ConcertPageConfig {
   eventSlug: string;
@@ -22,43 +23,92 @@ interface ConcertPageConfig {
 }
 
 export function createConcertPageHandlers(config: ConcertPageConfig) {
-  const getConcertWithSetlist = cache(async (concertId: string) => {
+  const getConcertWithSetlist = (concertId: string) => {
     const id = Number.parseInt(concertId, 10);
-    if (Number.isNaN(id)) return null;
+    if (Number.isNaN(id)) return Promise.resolve(null);
 
-    return prisma.concert.findFirst({
-      where: {
-        id,
-        setlistId: {
-          not: null,
-        },
-        event: {
-          is: { slug: config.eventSlug },
-        },
-      },
-      include: {
-        venue: true,
-        event: {
-          include: {
-            series: true,
-            songVariations: true,
+    return unstable_cache(
+      async () => {
+        return prisma.concert.findFirst({
+          where: {
+            id,
+            setlistId: {
+              not: null,
+            },
+            event: {
+              is: { slug: config.eventSlug },
+            },
           },
-        },
-        setlist: {
           include: {
-            songs: {
+            venue: true,
+            event: {
               include: {
-                song: true,
+                series: true,
+                songVariations: true,
               },
-              orderBy: {
-                order: 'asc',
+            },
+            setlist: {
+              include: {
+                songs: {
+                  include: {
+                    song: true,
+                  },
+                  orderBy: {
+                    order: 'asc',
+                  },
+                },
               },
             },
           },
-        },
+        });
       },
-    });
-  });
+      [`concert-${concertId}-${config.eventSlug}`],
+      { revalidate: 3600, tags: [`concert-${concertId}`, `event-${config.eventSlug}`] }
+    )();
+  };
+
+  const getEventConcertsWithVenues = (eventId: number) => {
+    return unstable_cache(
+      async () => {
+        return prisma.concert.findMany({
+          where: {
+            eventId,
+            setlistId: { not: null },
+          },
+          include: {
+            venue: true,
+            setlist: {
+              include: {
+                songs: {
+                  include: { song: true },
+                },
+              },
+            },
+          },
+        });
+      },
+      [`event-concerts-${eventId}-${config.eventSlug}`],
+      { revalidate: 3600, tags: [`concerts-${config.eventSlug}`, `event-${eventId}`] }
+    )();
+  };
+
+  const getEventConcertsByVenue = (eventId: number, venueId: number) => {
+    return unstable_cache(
+      async () => {
+        return prisma.concert.findMany({
+          where: {
+            eventId,
+            venueId,
+          },
+          select: {
+            day: true,
+          },
+        });
+      },
+      [`event-concerts-venue-${eventId}-${venueId}-${config.eventSlug}`],
+      { revalidate: 3600, tags: [`concerts-${config.eventSlug}`, `event-${eventId}`, `venue-${venueId}`] }
+    )();
+  };
 
   const generateStaticParams = async () => {
     const concerts = await prisma.concert.findMany({
@@ -111,22 +161,9 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
       eventVariations.map(v => [v.songSlug, v])
     );
 
-    const allEventConcertsWithVenues = await prisma.concert.findMany({
-      where: {
-        eventId: concert.eventId,
-        setlistId: { not: null },
-      },
-      include: {
-        venue: true,
-        setlist: {
-          include: {
-            songs: {
-              include: { song: true },
-            },
-          },
-        },
-      },
-    });
+    const allEventConcertsWithVenues = concert.eventId
+      ? await getEventConcertsWithVenues(concert.eventId)
+      : [];
 
     const songToVenueMap = new Map<string, string[]>();
     allEventConcertsWithVenues.forEach(c => {
@@ -181,15 +218,9 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
 
     const playlistImageUrl = concert.playlistImageUrl || config.playlistImageUrl || '/images/playlist-icon.png';
 
-    const allConcerts = await prisma.concert.findMany({
-      where: {
-        eventId: concert.eventId,
-        venueId: concert.venueId,
-      },
-      select: {
-        day: true,
-      },
-    });
+    const allConcerts = (concert.eventId && concert.venueId)
+      ? await getEventConcertsByVenue(concert.eventId, concert.venueId)
+      : [];
 
     const uniqueDays = new Set(allConcerts.map(c => c.day).filter(Boolean));
     const hasMultipleDays = uniqueDays.size >= 2;

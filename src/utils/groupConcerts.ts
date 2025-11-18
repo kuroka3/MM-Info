@@ -2,13 +2,14 @@ import type { Concert, Venue } from '@prisma/client'
 
 export type ConcertWithVenue = Concert & { venue: Venue | null }
 
-const formatTimeFromOffset = (date: Date, offset: string) => {
+const formatTimeFromOffset = (date: Date | string, offset: string) => {
   const match = /^([+-])(\d{2}):(\d{2})$/.exec(offset.trim())
   if (!match) return null
 
   const [, sign, hours, minutes] = match
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
   const totalMinutes = Number.parseInt(hours, 10) * 60 + Number.parseInt(minutes, 10)
-  const adjusted = new Date(date.getTime() + (sign === '-' ? -totalMinutes : totalMinutes) * 60_000)
+  const adjusted = new Date(dateObj.getTime() + (sign === '-' ? -totalMinutes : totalMinutes) * 60_000)
   return adjusted.toISOString().slice(11, 16)
 }
 
@@ -18,10 +19,13 @@ const formatConcertBlockLabel = (concert: ConcertWithVenue) => {
   }
 
   if (concert.showTime) {
-    return concert.showTime.toISOString().slice(11, 16)
+    const showTimeObj = typeof concert.showTime === 'string' ? new Date(concert.showTime) : concert.showTime;
+    return showTimeObj.toISOString().slice(11, 16)
   }
 
   if (concert.showTimeUTC) {
+    const showTimeUTCObj = typeof concert.showTimeUTC === 'string' ? new Date(concert.showTimeUTC) : concert.showTimeUTC;
+
     if (concert.timeZone) {
       try {
         return new Intl.DateTimeFormat('en-GB', {
@@ -29,14 +33,14 @@ const formatConcertBlockLabel = (concert: ConcertWithVenue) => {
           hour: '2-digit',
           minute: '2-digit',
           hour12: false,
-        }).format(concert.showTimeUTC)
+        }).format(showTimeUTCObj)
       } catch {
         // fall through to other strategies
       }
     }
 
     if (concert.timeOffset) {
-      const formatted = formatTimeFromOffset(concert.showTimeUTC, concert.timeOffset)
+      const formatted = formatTimeFromOffset(showTimeUTCObj, concert.timeOffset)
       if (formatted) {
         return formatted
       }
@@ -47,7 +51,7 @@ const formatConcertBlockLabel = (concert: ConcertWithVenue) => {
       minute: '2-digit',
       hour12: false,
       timeZone: 'UTC',
-    }).format(concert.showTimeUTC)
+    }).format(showTimeUTCObj)
   }
 
   return concert.block
@@ -70,7 +74,10 @@ export type VenueGroup = {
   concerts: DateGroup[]
 }
 
-export const formatConcertDate = (date: Date, timeZone?: string | null) => {
+export const formatConcertDate = (date: Date | string, timeZone?: string | null) => {
+  // Convert string to Date if necessary (happens when data comes from unstable_cache)
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+
   if (timeZone) {
     try {
       return new Intl.DateTimeFormat('en-CA', {
@@ -78,13 +85,13 @@ export const formatConcertDate = (date: Date, timeZone?: string | null) => {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
-      }).format(date)
+      }).format(dateObj)
     } catch {
       // fall back to UTC formatting if the timezone is invalid
     }
   }
 
-  return date.toISOString().slice(0, 10)
+  return dateObj.toISOString().slice(0, 10)
 }
 
 const groupByDate = (concerts: ConcertWithVenue[]): DateGroup[] => {

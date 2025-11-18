@@ -154,17 +154,23 @@ const getSongData = cache(async (
       return titleA.localeCompare(titleB, 'ko');
     });
 
+    // Create a Set of slugs that have call-guide data
+    const songsWithCallGuideSet = new Set(songs.map((s) => s.slug));
+
     const setlistASlugs = Array.from(setlistASlugToOrder.entries())
       .sort((a, b) => a[1] - b[1])
-      .map(([slug]) => slug);
+      .map(([slug]) => slug)
+      .filter((slug) => songsWithCallGuideSet.has(slug));
 
     const setlistBSlugs = Array.from(setlistBSlugToOrder.entries())
       .sort((a, b) => a[1] - b[1])
-      .map(([slug]) => slug);
+      .map(([slug]) => slug)
+      .filter((slug) => songsWithCallGuideSet.has(slug));
 
     const allSetlistSlugs = Array.from(allSetlistSlugToOrder.entries())
       .sort((a, b) => a[1] - b[1])
-      .map(([slug]) => slug);
+      .map(([slug]) => slug)
+      .filter((slug) => songsWithCallGuideSet.has(slug));
 
     defaultPlaylists = [
       { id: 'all-songs', name: '전체 곡', slugs: songs.map((s) => s.slug!) },

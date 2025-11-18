@@ -159,11 +159,19 @@ export default async function CallGuideAllPage() {
     return titleA.localeCompare(titleB, 'ko');
   });
 
+  // Create a Set of slugs that have call-guide data
+  const songsWithCallGuideSet = new Set(songs.map((s) => s.slug));
+
+  // Filter setlist slugs to only include songs with call-guide data
+  const filteredSetlistASlugs = setlistASlugs.filter((slug) => songsWithCallGuideSet.has(slug));
+  const filteredSetlistBSlugs = setlistBSlugs.filter((slug) => songsWithCallGuideSet.has(slug));
+  const filteredAllSetlistSlugs = allSetlistSlugs.filter((slug) => songsWithCallGuideSet.has(slug));
+
   const defaultPlaylists = [
     { id: 'all-songs', name: '전체 곡', slugs: songs.map((s) => s.slug!) },
-    { id: 'setlist-integrated', name: '세트리 통합', slugs: allSetlistSlugs },
-    { id: 'setlist-a', name: '세트리 A', slugs: setlistASlugs },
-    { id: 'setlist-b', name: '세트리 B', slugs: setlistBSlugs },
+    { id: 'setlist-integrated', name: '세트리 통합', slugs: filteredAllSetlistSlugs },
+    { id: 'setlist-a', name: '세트리 A', slugs: filteredSetlistASlugs },
+    { id: 'setlist-b', name: '세트리 B', slugs: filteredSetlistBSlugs },
   ];
 
   return (
