@@ -9,6 +9,7 @@ import SetlistImageGenerator from '@/components/SetlistImageGenerator';
 import ConcertDetailSkeleton from '@/components/loading/ConcertDetailSkeleton';
 import prisma from '@/lib/prisma';
 import { formatConcertDate } from '@/utils/groupConcerts';
+import { getPredictedSetlist } from '@/utils/setlistPrediction';
 
 export const revalidate = 3600;
 
@@ -29,12 +30,10 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
 
     return unstable_cache(
       async () => {
-        return prisma.concert.findFirst({
+        // First, fetch the concert without setlist filter
+        const concert = await prisma.concert.findFirst({
           where: {
             id,
-            setlistId: {
-              not: null,
-            },
             event: {
               is: { slug: config.eventSlug },
             },
@@ -47,20 +46,39 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
                 songVariations: true,
               },
             },
-            setlist: {
+          },
+        });
+
+        if (!concert) return null;
+
+        // Get effective setlist ID (predicted or actual)
+        const prediction = getPredictedSetlist(concert);
+        const effectiveSetlistId = prediction?.setlistId ?? null;
+
+        if (!effectiveSetlistId) return null;
+
+        // Fetch setlist separately
+        const setlist = await prisma.setlist.findUnique({
+          where: { id: effectiveSetlistId },
+          include: {
+            songs: {
               include: {
-                songs: {
-                  include: {
-                    song: true,
-                  },
-                  orderBy: {
-                    order: 'asc',
-                  },
-                },
+                song: true,
+              },
+              orderBy: {
+                order: 'asc',
               },
             },
           },
         });
+
+        if (!setlist) return null;
+
+        // Combine concert and setlist
+        return {
+          ...concert,
+          setlist,
+        };
       },
       [`concert-${concertId}-${config.eventSlug}`],
       { revalidate: 3600, tags: [`concert-${concertId}`, `event-${config.eventSlug}`] }
@@ -230,12 +248,17 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
     const dayPart = concert.day ? `${concert.day}요일` : '';
     const blockPart = concert.block && concert.block !== '공연' ? concert.block : '';
 
+    // Check if setlist is predicted
+    const prediction = getPredictedSetlist(concert);
+    const isPredicted = prediction?.isPredicted ?? false;
+
     const line1 = eventName;
     const line2Parts: string[] = [];
     if (venueName) line2Parts.push(venueName);
     if (hasMultipleDays && dayPart) line2Parts.push(dayPart);
     if (blockPart) line2Parts.push(`${blockPart} 공연`);
     line2Parts.push('세트리스트');
+    if (isPredicted) line2Parts.push('- 예상');
 
     const setlistTitle = line1 ? `${line1}\n${line2Parts.join(' ')}` : line2Parts.join(' ');
 

@@ -45,9 +45,29 @@
 }
 
 .seoul-card .block-link:hover {
-  background: #39c5bb;
-  color: #031d1b;
-  box-shadow: 0 0 24px rgba(57, 197, 187, 0.35);
+  background: rgba(57, 197, 187, 0.25);
+  border-color: rgba(57, 197, 187, 0.9);
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.2),
+    0 0 24px rgba(57, 197, 187, 0.3);
+  transform: translateY(-2px);
+}
+
+.seoul-card .block-link--predicted {
+  border: 1px dashed rgba(57, 197, 187, 0.65);
+  background: rgba(57, 197, 187, 0.05);
+  box-shadow: 0 0 12px rgba(57, 197, 187, 0.15);
+}
+
+.seoul-card .block-link--predicted:hover {
+  background: rgba(57, 197, 187, 0.2);
+  border-color: rgba(57, 197, 187, 0.85);
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.2),
+    0 0 20px rgba(57, 197, 187, 0.25);
+  transform: translateY(-2px);
 }
 
 .seoul-card .block-disabled {
@@ -90,8 +110,29 @@
 }
 
 .seoul-card--ghost .block-link:hover {
-  background: rgba(57, 197, 187, 0.14);
-  color: rgba(3, 29, 27, 0.7);
+  background: rgba(57, 197, 187, 0.18);
+  border-color: rgba(57, 197, 187, 0.7);
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 0 20px rgba(57, 197, 187, 0.2);
+  transform: translateY(-2px);
+}
+
+.seoul-card--ghost .block-link--predicted {
+  border: 1px dashed rgba(57, 197, 187, 0.45);
+  background: rgba(57, 197, 187, 0.03);
+  box-shadow: none;
+}
+
+.seoul-card--ghost .block-link--predicted:hover {
+  background: rgba(57, 197, 187, 0.15);
+  border-color: rgba(57, 197, 187, 0.65);
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    0 0 18px rgba(57, 197, 187, 0.18);
+  transform: translateY(-2px);
 }
 
 .seoul-card--ghost .block-disabled {
@@ -104,4 +145,30 @@
   border: 1px solid rgba(57, 197, 187, 0.15);
   background: rgba(57, 197, 187, 0.03);
   color: rgba(57, 197, 187, 0.35);
+}
+
+/* Prediction marker styling */
+.block-link .prediction-marker {
+  font-size: 0.7rem;
+  font-weight: 500;
+  opacity: 0.8;
+  vertical-align: 0.05em;
+  letter-spacing: -0.02em;
+  margin-left: 0.15em;
+}
+
+.seoul-card .block-link .prediction-marker {
+  color: #ff5555;
+  opacity: 0.9;
+  font-weight: 600;
+}
+
+.seoul-card--ghost .block-link .prediction-marker {
+  color: #ff6b6b;
+  opacity: 0.85;
+}
+
+.block-link:hover .prediction-marker {
+  opacity: 1;
+  transition: opacity 0.2s ease;
 }

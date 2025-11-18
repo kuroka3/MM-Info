@@ -9,6 +9,7 @@ import {
   type ConcertWithVenue,
   type VenueGroup,
 } from '@/utils/groupConcerts';
+import { getPredictedSetlist } from '@/utils/setlistPrediction';
 import './global.css';
 
 const inter = Inter({ subsets: ['latin'], weight: ['600', '700', '800'] });
@@ -43,6 +44,11 @@ export default async function Page() {
   const seoulGroups = venueGroups.filter(({ venueName }) => venueName.includes('서울'));
   const hasConcerts = seoulGroups.length > 0 || venueGroups.length > 0;
 
+  // Create a map of concerts by ID for quick lookup
+  const concertMap = new Map(
+    event.concerts.map((concert) => [concert.id, concert])
+  );
+
   const renderVenueCard = (
     venueName: string,
     concerts: VenueGroup['concerts'],
@@ -67,7 +73,7 @@ export default async function Page() {
         <h3 className="feature-title">{venueName}</h3>
         <div className="feature-list">
           {concerts.map(({ date, day, blocks }) => (
-            <div key={date} className="date-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+            <div key={date} className="date-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'nowrap' }}>
               <span className="header-date">{date} ({day})</span>
               <div className="block-buttons" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                 {blocks.map(({ block, label, id, hidden, concertId }, blockIndex) => {
@@ -81,7 +87,13 @@ export default async function Page() {
                     );
                   }
 
-                  if (!id) {
+                  // Get concert and check for prediction
+                  const concert = concertMap.get(concertId);
+                  const prediction = concert ? getPredictedSetlist(concert) : null;
+                  const effectiveSetlistId = prediction?.setlistId ?? id;
+                  const isPredicted = prediction?.isPredicted ?? false;
+
+                  if (!effectiveSetlistId) {
                     return (
                       <span key={key} className="glass-effect block-disabled">
                         {label}
@@ -95,9 +107,9 @@ export default async function Page() {
                       href={`${basePath}/concerts/${concertId}?date=${encodeURIComponent(
                         date
                       )}&block=${encodeURIComponent(block)}`}
-                      className="glass-effect block-link"
+                      className={`glass-effect block-link${isPredicted ? ' block-link--predicted' : ''}`}
                     >
-                      {label}
+                      {label}{isPredicted ? <span className="prediction-marker"> (예상)</span> : ''}
                     </Link>
                   );
                 })}
