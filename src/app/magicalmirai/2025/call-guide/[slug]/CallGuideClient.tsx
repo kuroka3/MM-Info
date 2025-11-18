@@ -11,6 +11,7 @@ import React, {
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { track } from '@vercel/analytics';
 import SpoilerGate from '@/components/SpoilerGate';
 import ScrollTopButton from '@/components/ScrollTopButton';
 import type { Song } from '@prisma/client';
@@ -59,6 +60,17 @@ export default function CallGuideClient({ song, songs, safeSongIndex, albumSongs
   const playlistsKey = isSafeMode ? `callGuideSafePlaylists:${eventSlug}` : `callGuidePlaylists:${eventSlug}`;
   const activeKey = isSafeMode ? `callGuideSafeActivePlaylist:${eventSlug}` : `callGuideActivePlaylist:${eventSlug}`;
   const safeSongsKey = `callGuideSafeSongs:${eventSlug}`;
+
+  useEffect(() => {
+    const playlistParam = searchParams.get('list') || 'none';
+
+    track('Call Guide View', {
+      mode: isSafeMode ? 'safe' : 'normal',
+      event: eventSlug,
+      song: song.slug || 'unknown',
+      playlist: playlistParam,
+    });
+  }, [isSafeMode, eventSlug, song.slug, searchParams]);
 
   useEffect(() => {
     const legacyPlaylistsKey = isSafeMode ? 'callGuideSafePlaylists' : 'callGuidePlaylists';
