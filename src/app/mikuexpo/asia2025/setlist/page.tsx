@@ -14,11 +14,23 @@ import './global.css';
 
 const inter = Inter({ subsets: ['latin'], weight: ['600', '700', '800'] });
 
-export const metadata: Metadata = { title: '세트리스트' };
 export const revalidate = 60;
 
 const basePath = '/mikuexpo/asia2025';
 const EVENT_SLUG = 'miku-expo-2025-asia';
+
+export async function generateMetadata(): Promise<Metadata> {
+  const event = await prisma.event.findUnique({
+    where: { slug: EVENT_SLUG },
+    select: { name: true },
+  });
+
+  if (!event) {
+    return { title: '세트리스트' };
+  }
+
+  return { title: `${event.name} 세트리스트` };
+}
 
 export default async function Page() {
   const event = await prisma.event.findUnique({
