@@ -6,6 +6,7 @@ import HomeButton from "@/components/HomeButton";
 import ViewportHeightSetter from "@/components/ViewportHeightSetter";
 import SWRProvider from "@/components/SWRProvider";
 import SupportServerButton from "@/components/SupportServerButton";
+import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
   title: {
@@ -45,6 +46,7 @@ export default function RootLayout({
           </div>
           <SupportServerButton />
         </SWRProvider>
+        <Analytics />
       </body>
     </html>
   );
