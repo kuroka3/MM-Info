@@ -15,7 +15,6 @@ type PageProps = {
 };
 
 export const revalidate = 3600;
-export const dynamic = 'force-static';
 export const dynamicParams = true;
 
 const EVENT_SLUG = 'magical-mirai-2025';
