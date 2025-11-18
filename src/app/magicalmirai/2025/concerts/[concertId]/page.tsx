@@ -1,6 +1,7 @@
 import { createConcertPageHandlers } from '@/components/ConcertPage';
 
-export const revalidate = 60;
+export const dynamic = 'force-static';
+export const revalidate = 86400;
 
 const config = {
   eventSlug: 'magical-mirai-2025',

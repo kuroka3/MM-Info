@@ -11,7 +11,7 @@ import prisma from '@/lib/prisma';
 import { formatConcertDate } from '@/utils/groupConcerts';
 import { getPredictedSetlist } from '@/utils/setlistPrediction';
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 interface ConcertPageConfig {
   eventSlug: string;
@@ -82,7 +82,7 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
       },
       [`concert-${concertId}-${config.eventSlug}`],
       {
-        revalidate: 3600,
+        revalidate: 86400,
         tags: [`concert-${concertId}`, `event-${config.eventSlug}`]
       }
     )();
@@ -109,7 +109,7 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
         });
       },
       [`event-concerts-${eventId}-${config.eventSlug}`],
-      { revalidate: 3600, tags: [`concerts-${config.eventSlug}`, `event-${eventId}`] }
+      { revalidate: 86400, tags: [`concerts-${config.eventSlug}`, `event-${eventId}`] }
     )();
   });
 
@@ -127,7 +127,7 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
         });
       },
       [`event-concerts-venue-${eventId}-${venueId}-${config.eventSlug}`],
-      { revalidate: 3600, tags: [`concerts-${config.eventSlug}`, `event-${eventId}`, `venue-${venueId}`] }
+      { revalidate: 86400, tags: [`concerts-${config.eventSlug}`, `event-${eventId}`, `venue-${venueId}`] }
     )();
   });
 
@@ -187,12 +187,8 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
 
   async function SetlistContent({
     concertId,
-    date,
-    block,
   }: {
     concertId: string;
-    date?: string;
-    block?: string;
   }) {
     const concert = await getConcertWithSetlist(concertId);
     const setlist = concert?.setlist;
@@ -311,13 +307,9 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
     if (concert.date) {
       const formattedDate = formatConcertDate(concert.date, concert.timeZone);
       dateParts.push(concert.day ? `${formattedDate} (${concert.day})` : formattedDate);
-    } else if (date) {
-      dateParts.push(date);
     }
     if (concert.block && concert.block !== '공연') {
       dateParts.push(`${concert.block} 공연`);
-    } else if (block && block !== '공연') {
-      dateParts.push(`${block} 공연`);
     }
     const dateString = dateParts.length > 0 ? dateParts.join(' ') : (config.preparingMessage || '공연 정보 준비 중');
 
@@ -371,18 +363,14 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
 
   const ConcertPageComponent = async ({
     params,
-    searchParams,
   }: {
     params: Promise<{ concertId: string }>;
-    searchParams: Promise<{ date?: string; block?: string }>;
   }) => {
-    const { date, block } = await searchParams;
-
     return (
       <SpoilerGate storageKey={config.spoilerStorageKey} redirectPath={config.redirectPath}>
         <main>
           <Suspense fallback={<ConcertDetailSkeleton />}>
-            <SetlistContent concertId={(await params).concertId} date={date} block={block} />
+            <SetlistContent concertId={(await params).concertId} />
           </Suspense>
         </main>
       </SpoilerGate>
