@@ -150,7 +150,35 @@ export function createConcertPageHandlers(config: ConcertPageConfig) {
 
   const generateMetadata = async ({ params }: { params: Promise<{ concertId: string }> }): Promise<Metadata> => {
     const concert = await getConcertWithSetlist((await params).concertId);
-    const title = concert?.setlist?.name ?? (config.notFoundMessage || '세트리스트를 찾을 수 없습니다.');
+
+    if (!concert) {
+      return { title: config.notFoundMessage || '세트리스트를 찾을 수 없습니다.' };
+    }
+
+    // Check if there are multiple days for this venue
+    const allConcerts = (concert.eventId && concert.venueId)
+      ? await getEventConcertsByVenue(concert.eventId, concert.venueId)
+      : [];
+    const uniqueDays = new Set(allConcerts.map(c => c.day).filter(Boolean));
+    const hasMultipleDays = uniqueDays.size >= 2;
+
+    // Check if setlist is predicted
+    const prediction = getPredictedSetlist(concert);
+    const isPredicted = prediction?.isPredicted ?? false;
+
+    // Construct title parts (without event name)
+    const titleParts: string[] = [];
+    const venueName = concert.venue?.name || '';
+    const dayPart = concert.day ? `${concert.day}요일` : '';
+    const blockPart = concert.block && concert.block !== '공연' ? concert.block : '';
+
+    if (venueName) titleParts.push(venueName);
+    if (hasMultipleDays && dayPart) titleParts.push(dayPart);
+    if (blockPart) titleParts.push(`${blockPart} 공연`);
+    titleParts.push('세트리스트');
+    if (isPredicted) titleParts.push('- 예상');
+
+    const title = titleParts.join(' ');
     return { title };
   };
 
