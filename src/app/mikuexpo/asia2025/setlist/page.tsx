@@ -29,7 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
     return { title: '세트리스트' };
   }
 
-  return { title: `${event.name} 세트리스트` };
+  return { title: `세트리스트 - ${event.name}` };
 }
 
 export default async function Page() {
