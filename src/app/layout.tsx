@@ -7,6 +7,7 @@ import ViewportHeightSetter from "@/components/ViewportHeightSetter";
 import SWRProvider from "@/components/SWRProvider";
 import SupportServerButton from "@/components/SupportServerButton";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 export const metadata: Metadata = {
   title: {
@@ -47,6 +48,7 @@ export default function RootLayout({
           <SupportServerButton />
         </SWRProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
