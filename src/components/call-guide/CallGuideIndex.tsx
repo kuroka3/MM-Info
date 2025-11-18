@@ -199,36 +199,51 @@ export default function CallGuideIndexClient({
       setPlaylists([]);
     }
 
-    const defaultPlaylist = defaultPlaylists && defaultPlaylists.length > 0
-      ? defaultPlaylists.find(pl => pl.id === 'setlist-integrated') || defaultPlaylists[0]
-      : { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+    const defaultPlaylist =
+      defaultPlaylists && defaultPlaylists.length > 0
+        ? defaultPlaylists.find((pl) => pl.id === 'setlist-integrated') || defaultPlaylists[0]
+        : { id: ALL_PLAYLIST_ID, name: '전체 곡', slugs: songs.map((s) => s.slug!) };
+
+    const resolveDefaultPlaylist = (playlistId?: string | null): Playlist | null => {
+      if (!playlistId || !defaultPlaylists || defaultPlaylists.length === 0) {
+        return null;
+      }
+      return defaultPlaylists.find((pl) => pl.id === playlistId) ?? null;
+    };
+
+    const resolvedDefaultPlaylist =
+      resolveDefaultPlaylist(defaultPlaylist.id) ?? defaultPlaylist;
 
     const activeStored = localStorage.getItem(activeKey);
     if (activeStored) {
       try {
         let parsed = JSON.parse(activeStored) as Playlist | null;
         if (!parsed || !Array.isArray(parsed.slugs)) {
-          parsed = defaultPlaylist;
+          parsed = resolvedDefaultPlaylist;
         } else if (parsed?.id?.startsWith('safe:')) {
           const match = safePlaylists.find((pl) => pl.id === parsed!.id);
-          parsed = match ?? defaultPlaylist;
+          parsed = match ?? resolvedDefaultPlaylist;
         } else if (!parsed.id) {
           const match = migrated.find(pl => pl.name === parsed!.name && Array.isArray(pl.slugs) && pl.slugs.length === parsed!.slugs.length && pl.slugs.every(s => parsed!.slugs.includes(s)));
           const id = match?.id ?? generateShortId11();
           parsed = { ...parsed, id };
         }
         if (parsed.id === ALL_PLAYLIST_ID || parsed.name === 'default') {
-          parsed = defaultPlaylist;
+          parsed = resolvedDefaultPlaylist;
+        }
+        const defaultOverride = resolveDefaultPlaylist(parsed.id);
+        if (defaultOverride) {
+          parsed = defaultOverride;
         }
         localStorage.setItem(activeKey, JSON.stringify(parsed));
         setActivePlaylist(parsed);
       } catch {
-        localStorage.setItem(activeKey, JSON.stringify(defaultPlaylist));
-        setActivePlaylist(defaultPlaylist);
+        localStorage.setItem(activeKey, JSON.stringify(resolvedDefaultPlaylist));
+        setActivePlaylist(resolvedDefaultPlaylist);
       }
     } else {
-      localStorage.setItem(activeKey, JSON.stringify(defaultPlaylist));
-      setActivePlaylist(defaultPlaylist);
+      localStorage.setItem(activeKey, JSON.stringify(resolvedDefaultPlaylist));
+      setActivePlaylist(resolvedDefaultPlaylist);
     }
   }, [songs, activeKey, playlistsKey, safePlaylistsKey, eventSlug, defaultPlaylists]);
 
